@@ -1,4 +1,5 @@
 ## Local folders to ignore
+*.DS_Store
 /ubcdiss
 /code
 
