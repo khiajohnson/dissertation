@@ -1,0 +1,179 @@
+\chapter{The structure of acoustic voice variation}
+\label{ch3:Voice}
+
+
+\section{Introduction}\label{ch3:sec:introduction}
+Voices can tell you a lot about the person who is talking, and have been discussed as an ``auditory face'' \citep{belin_2004_voice}. They simultaneously provide information about the talker's current physical and emotional state, as well as cues to who they are \citep{belin_2004_voice}. However, voices are highly variable, and while different voices share some dimensions of acoustic variability, the way that voices vary is argued to be largely idiosyncratic \citep{lee_2019_acoustic-paper}. Despite the high degree of variability and idiosyncrasies, listeners nonetheless use talker-specific information to recognize and discriminate voices. Listeners are good at identifying familiar voices, but perform poorly on the same tasks with unfamiliar voices \citep{nygaard_1998_talker}. It was suggested by \citet{lee_2019_acoustic-paper} that familiarity with a voice largely comes from learning how that voice varies across time and space, whether within an utterance or across environments, physical states, and emotions.
+
+Bilingualism brings an additional dimension of variability into the picture. Prior research in both perception and production suggests that while some aspects of voice variability differ for linguistic reasons, other talker-indexical features remain constant across languages, and still others can be influenced by both linguistic and non-linguistic factors. That bilingual listeners are sensitive to this information signals its importance \citep{orena_2019_identifying,fricke_2016_phonetic}.
+
+In this study, we examine how voice varies across a bilingual's two languages. Some differences are expected. Languages differ in terms of their consonant and vowel inventories, which affect the spectral properties of a language. While all languages have consonants and vowels, they differ with respect to distribution, articulation, and acoustics \citeeg{munson_2010_deconstructing}. Suprasegmental and prosodic properties also vary across languages. Languages can differ in terms of whether a suprasegmental dimension is exploited at all, in addition to how a language might carve up a potential suprasegmental space (e.g., number of tonal contrasts). Within an individual bilingual, the acoustic variability within each language can also be related to the social identities a talker adopts within each language (see discussion in \citet{cheng_2020_f0}). 
+
+In an effort to understand what aspects of an individual's voice vary across languages and what are more or less fixed talker-specific attributes, researchers have compared spectral properties of bilingual speech. Results have been decidedly mixed \citep{cheng_2020_f0,altenberg_2006_f0,ryabov_2016_self}. For example, a small group of English-Cantonese bilinguals (n$=$9) in did not differ in mean fundamental frequency (F0), but exhibited greater variability in F0 \citep{altenberg_2006_f0}. This was not the case in \citet{ng_2012_ltas}, which examined voice differences with Cantonese-English bilinguals reading passages (n = 40). Based on Long-Term Average Spectral measures, females exhibited higher F0 in English than Cantonese, but males did not \citep{ng_2012_ltas}. In the same study, all participants had greater mean spectral energy values (mean amplitude of energy between 0--8 kHz) and lower spectral tilt (ratio of energy between 0--1 kHz and 1--5 kHz) in Cantonese \citep{ng_2012_ltas}. Respectively, these findings suggest a greater degree of laryngeal tension and breathier voice quality in Cantonese compared to English.
+
+Together, these bodies of literature invite us to consider whether bilingual talkers have the ``same'' voice in each of their languages. Using a new corpus of conversational Cantonese-English bilingual speech---SpiCE \citep{johnson_2020_spice}---we look at spectral properties \citep{cheng_2020_f0,altenberg_2006_f0, ryabov_2016_self,ng_2012_ltas}, and also examine how acoustic variation is structured, following the work of \citet{kreiman_2014_theory} and \citet{lee_2019_acoustic-paper}.
+
+\section{Methods}\label{ch3:sec:methods}
+\subsection{Data}\label{ch3:sec:data}
+The 34 talkers (17 female, 17 male) studied here come from the SpiCE corpus of bilingual speech in Cantonese and English \citep{johnson_2020_spice}. The corpus comprises two conversational interviews with early bilinguals---one in each language. While these interviews were conducted in either Cantonese or English, code-switching occurred regularly within each interview. Talkers were of a similar age (\textit{Mdn} = 21, \textit{M} = 22.4, \textit{SD} = 4), learned both languages from an early age (Cantonese: \textit{Mdn} = 0, \textit{M} = 0.03, \textit{SD} = 0.2; English: \textit{Mdn} = 0, \textit{M} = 1.32, \textit{SD} = 1.8), and considered themselves to be proficient speakers (Cantonese: Good/Excellent = 29, Fair = 5; English: Good/Excellent = 33; Fair = 1). Talkers, however, had varied language background profiles (e.g., locations lived, dialects, knowledge of other languages), and should not be characterized as a homogeneous bilingual group. This heterogeneity is an accurate representation of the Cantonese speech community \citep{liang_2015_china} and it is considered a boon in this study, as analyses are conducted on a within-talker basis. 
+
+The audio recordings are high quality, with a 44.1 kHz sampling rate, 24-bit resolution, and minimal background noise. Both the participant and interviewer wore head-mounted microphones connected to separate channels, and levels were adjusted to minimize speech from the other talker. The participant channel was extracted, including any code-switches they made during the interview, as this process was done without orthographic transcripts. We then identified all voiced segments with the \textit{Point Process (periodic, cc)}\footnote{The pitch range settings differed by gender (female: 100--500, male: 75--300).} and \textit{To TextGrid (vuv)} Praat algorithms \citep{boersma_2021_praat}, implemented with the Parselmouth Python package \citep{jadoul_2018_parselmouth}. While speech from the interviewer can occasionally be heard in the participant channel, it is quiet enough to have been ignored by the Praat algorithms. This method captures vowels and approximants, as well as some voiced obstruents, differing slightly from \citep{lee_2019_acoustic-paper}. 
+
+\subsection{Acoustic measurements}\label{ch3:sec:acoustic}
+All voiced segments were subjected to the same set of acoustic measurements of voice quality made by \citet{lee_2019_acoustic-paper}\footnote{The exception was formant dispersion, which was excluded because it was almost perfectly correlated with the measured value of F4 and led to problems with the principal components analyses.} in VoiceSauce \citep{shue_2011_voicesauce}. The suite of selected measurements are drawn from a psychoacoustic voice quality model \citep{kreiman_2014_theory}. Measurements were made every 5 ms during voiced segments, as in \citet{lee_2019_acoustic-paper}.
+
+\textbf{F0} is a correlate of pitch, associated with linguistic (e.g., lexical tone), prosodic, and talker characteristics. \textbf{F1}, \textbf{F2}, and \textbf{F3} are the three formant frequencies typically discussed in relation to linguistic contrasts (e.g., for vowels and sonorant consonants). The fourth formant frequency, \textbf{F4}, is not typically discussed in linguistic contexts, and is instead associated with talker characteristics.
+
+The corrected amplitude difference between the first two harmonics, \textbf{H1*--H2*}, is a measure of harmonic spectral slope associated with phonation type. The asterisk indicates that the value has been corrected \citep{iseli_2007_voice}. The corrected amplitude difference between the second and fourth harmonics, \textbf{H2*--H4*}, is a measure of harmonic spectral slope in a slightly higher frequency band. \textbf{H4*--H2kHz*} is the corrected amplitude difference between the fourth harmonic and the harmonic closest to 2000 Hz; it is a measure of harmonic spectral slope in a higher frequency band. The corrected amplitude difference between the harmonics closest to 2000 Hz and 5000 Hz, \textbf{H2kHz*--H5kHz*}, is a measure of harmonic spectral slope that does not depend on F0. Together, these harmonic-based measures characterize source spectral shape \citep{kreiman_2014_theory}. 
+
+Cepstral Peak Prominence (\textbf{CPP}) is a measure of the ratio between harmonic energy and spectral noise, and is associated with non-modal phonation types. Root Mean Square (RMS) \textbf{Energy} is a measure of overall amplitude. The subharmonics-harmonics amplitude ratio (\textbf{SHR}) is a measure of spectral noise associated with period doubling or irregularities in phonation. Together, these three measures characterize key aspects of spectral noise. 
+
+\subsection{Exclusionary criteria and post-processing}
+Observations were removed if they included impossible or erroneous values, including instances where F0, F1--F4, CPP, or H5kHz was equal to zero. Filtering was done with just one of the uncorrected harmonic amplitude measures, as erroneous values tended to co-occur on the same observation, and the distribution of H5kHz did not span zero, with the exception of (erroneous) values equal to zero. This minimizes the removal of correctly measured zero values.
+
+Moving standard deviations were calculated for each of the 12 measures using a centered 50 ms window ($\approx$ 10 observations). This captures dynamic changes for each of the voice quality measures, which is important as they may better reflect what listeners attend to in talker identification and discrimination tasks \citep{lee_2019_acoustic-paper}.\footnote{We used \textit{SD}, as opposed to the coefficients of variation used by \citet{lee_2019_acoustic-paper}. Regardless, all variables were scaled prior to inclusion the PCAs.} Observations missing a moving standard deviation value (i.e., those near a voicing boundary) were removed. Including both the values measured in VoiceSauce and their moving standard deviations, a total of 24 measures were used in the analysis described in the next section. Across the 34 talkers, there were 3,126,267 observations after winnowing the data. 
+
+\subsection{Principal components analysis}\label{ch3:sec:pca}
+
+Principal components analysis (PCA) is a dimensionality reduction technique appropriate for data that include a large number of (potentially) correlated variables. The distillation into components helps identify and facilitate describing the internal structure, in this case, of a voice. We adapt methods from work on voices \citep{lee_2019_acoustic-paper} and faces \citep{burton_2016_faces,turk_1991_eigenfaces}. The goal is to the capture similarities or differences for each talker's voice across languages. As such, we conducted PCAs separately for each talker-language pair, and compared the results of each talker's English and Cantonese PCAs. All 24 measures were normalized (z-scored) on by-PCA basis for the analysis. PCAs were implemented with the \textit{parameters} package \citep{makowski_2019_parameters} in R \citep{r_2021}, using an oblique \textit{promax} rotation to simplify the factor structure, as the measurements reported in the previous section were expected to be somewhat correlated \citep{lee_2019_acoustic-paper}.
+
+Each PCA included the number of components for which all resulting eigenvalues were greater than 0.7 times the mean eigenvalue, following Jolliffe's \citep{jolliffe_2002_pca} recommended adjustment to the Kaiser-Guttman rule. We used this rule, rather than a more sophisticated test (e.g., broken sticks), as it is not detrimental to our exploratory analysis to err on the side of including marginal components. Additionally, across each of the components, only loadings with an absolute value of 0.32 or higher were interpreted \citep{lee_2019_acoustic-paper,tabachnick_2013_statistics}; however, all loadings were retained for the canonical redundancy analysis described in the next section.
+
+\subsection{Canonical redundancy analysis}
+
+In order to assess whether variation in a talker's voice is structurally similar across both languages, we compare the PCA output from English and Cantonese by calculating redundancy indices from a canonical correlation analysis (CCA) \citep{stewart_1968_canonical,jolliffe_2002_pca}. CCA is a statistical method used to explore how groups of variables are related to one another. The two sets of variables are transformed such that the correlation between the rotated versions is maximized. This is useful here, as a talker may have similar components in their English PCA and Cantonese PCA, but these components might not necessarily be in the same order, even if they account for comparable amounts of variance. 
+
+Redundancy is a relatively simple way to characterize the relationship between the loadings matrices of two PCAs---the two sets of variables under consideration here. The two indices represent the amount of variation in a talker's Cantonese PCA output that can be accounted for via canonical variates by their English PCA output, and vice versa. Notably, the two redundancy indices are not symmetrical \citep{stewart_1968_canonical}.
+
+We computed redundancy indices for all pairwise combinations, including cases where similar values were expected (same talker, different language), and cases where we expected dissimilarity (different talker and language). Considering that the PCA analyses retain the lower-dimensional structure within each language, these redundancy indices effectively reflect the degree to which the lower-dimensional structure of the voice variability is retained across a talker's two languages.
+
+\section{Results}\label{ch3:sec:results}
+
+\subsection{Crosslinguistic comparison of acoustic measurements}
+
+For each acoustic measurement and talker, we conducted a Student's \textit{t}-test and calculated Cohen's \textit{d}, in order to give a high-level assessment of whether variable means differed across the two languages. These comparisons have no bearing on how a given variable \textit{varies}. Table~\ref{ch3:tab:cohend} reports counts of talkers by effect size. Notably, across all talkers and variables, only 21.1\% yielded non-trivial Cohen's \textit{d} values. Most talkers (32/34) had at least one non-trivial comparison. The distribution of these counts is depicted in Figure~\ref{ch3:fig:ntcounts}. 
+
+\begin{table}[htbp]
+\caption{This table reports counts of Cohen's \textit{d} for crosslinguistic comparisons of each of the acoustic measurements by talker. Degrees of freedom ranged between 49,274--136,644 across t-tests. For most talkers and variables, the difference in means was trivial, which is reflected in that column's high counts.}
+\label{ch3:tab:cohend}
+\centering
+\begin{tabular}{lccc}
+\toprule
+         & \multicolumn{3}{c}{\textbf{Cohen's \textit{d}}} \\
+         & \textbf{Trivial} & \textbf{Small} & \textbf{Medium} \\
+\textbf{Variable} & \textbf{\textit{0.0--0.2}} & \textbf{\textit{0.2--0.5}} & \textbf{\textit{0.5--0.8}} \\ 
+\midrule
+F0 & 21 & 10 & 3 \\
+F0 s.d. & 34 & 0 & 0 \\
+F1 & 24 & 9 & 1 \\
+F1 s.d. & 29 & 5 & 0 \\
+F2 & 26 & 8 & 0 \\
+F2 s.d. & 32 & 2 & 0 \\
+F3 & 24 & 9 & 1 \\
+F3 s.d. & 29 & 5 & 0 \\
+F4 & 30 & 3 & 1 \\
+F4 s.d. & 28 & 6 & 0 \\
+H1*--H2* & 18 & 15 & 1 \\
+H1*--H2* s.d. & 32 & 2 & 0 \\
+H2*--H4* & 25 & 9 & 0 \\
+H2*--H4* s.d. & 31 & 3 & 0 \\
+H4*--2kHz* & 25 & 8 & 1 \\
+H4*--2kHz* s.d. & 34 & 0 & 0 \\
+H2kHz*--5kHz* & 23 & 10 & 1 \\
+H2kHz*--5kHz* s.d. & 31 & 3 & 0 \\
+CPP & 21 & 10 & 3 \\
+CPP s.d. & 32 & 2 & 0 \\
+Energy & 17 & 14 & 3 \\
+Energy s.d. & 18 & 16 & 0 \\
+SHR & 31 & 3 & 0 \\
+SHR s.d. & 29 & 5 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.875\linewidth]{figures/3-non-trivial_counts_by_talker.png} 
+\caption{A summary of the number of non-trivial comparisons from Table~\ref{ch3:tab:cohend} across the 34 talkers.}
+\label{ch3:fig:ntcounts}
+\end{center}
+\end{figure}
+
+For the non-trivial comparisons, there were consistent patterns across languages for H1*--H2* and F0. For the remaining variables, while some talkers exhibited a difference in mean values, the direction of the difference varied, or relatively few talkers exhibited the difference. 
+
+H1*--H2* was significantly higher in Cantonese for a relatively large subset of the talkers (13/34), lower for a small number (3/34), but trivial for most (18/34). While based on a different measure than \citep{ng_2012_ltas}, this is consistent with the finding that Cantonese tends to be breathier, or English creakier---the current analysis does not distinguish between these interpretations.
+
+If there was a non-trivial difference in F0 across languages, then Cantonese had a lower mean F0 than English (13/34; Female = 7), though most talkers did not exhibit a difference (21/34). This is consistent with prior findings that when a difference between English and Cantonese was found, Cantonese had a lower mean F0 for females \citep{ng_2012_ltas,altenberg_2006_f0}. We also observe this difference for a small number of males. 
+
+\subsection{PCA results}\label{ch3:sec:pca_results} 
+The PCAs across both languages for all 34 talkers resulted in 10--15 components and accounted for 74.6--85.8\% of the total variation. To assess whether talkers exhibit the same structure in voice variability across their languages, we first consider the patterns present across the different PCAs, as this provides context for understating what unique structural characteristics in talkers' voices looks like. To this end, we briefly summarize common patterns across PCA components, regardless of how much variance they account for, as the difference is often quite small. Figure~\ref{ch3:fig:VF32A} shows the first four components of a single talker's Cantonese and English PCAs, illustrating some examples of how components can vary (or not) across languages. 
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.875\linewidth]{figures/3-VF32A_pretty.png} 
+\caption{In the first four components of a talker's Cantonese and English PCAs, loadings are represented by bar height and are labelled with the variable name; color represents conceptual groupings; and, the component's variance is superimposed.}
+\label{ch3:fig:VF32A}
+\end{center}
+\end{figure}
+
+Broadly speaking, there were a lot of similarities in component composition across both talkers and languages, with the eight most commonly occurring components summarized in Table~\ref{ch3:tab:components}. For context, recall that PCAs had anywhere from 10--15 components total. These eight components consisted of source spectral shape, spectral noise, as well as formant variables. On the other hand, F0 co-occurred with a wide variety of variables (often Energy), but in a manner that was less consistent across talkers. There were additional components (not reported here) that were shared by less than half of talkers. In summary, despite the greater amount of shared structure across PCAs than found in \citet{lee_2019_acoustic-paper}, there is still ample room for idiosyncratic variation, both in terms of which variables co-occur, as well as in how much variance different components account for. 
+
+\begin{table}[th]
+\caption{A summary of the most commonly occurring components across all PCAs. Variables are only included if $|$Loading$|>$ 0.32. Italics indicate additional variables that were present on a component for a subset of talkers (i.e., an alternative but related configuration). \textit{N} indicates the number of times a component occurred (out of 34), and \textit{Var. \%} gives the range of percent variance accounted for by the component.}
+\label{ch3:tab:components}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Cantonese}} & \multicolumn{2}{c}{\textbf{English}} \\
+\textbf{Variables} & \textbf{N}  & \textbf{Var. \%}  & \textbf{N}  & \textbf{Var. \%} \\
+\midrule
+\begin{tabular}[c]{@{}l@{}}H4*--H2kHz*,\\ H2kHz*--H5kHz*, F2, \\\textit{F3}, \textit{F4}\end{tabular} & 34 & 9.3--15.5 & 32 & 9.2--16.7 \\
+\midrule
+\begin{tabular}[c]{@{}l@{}}H4*--H2kHz* s.d.,\\ H2kHz*--H5kHz* s.d.\end{tabular} & 32 & 6.3--8.3  & 34 & 4.1--5.0  \\
+\midrule
+\begin{tabular}[c]{@{}l@{}}Energy, Energy s.d, \textit{F0}\end{tabular} & 31 & 5.8--9.4  & 33 & 6.3--9.1  \\
+\midrule
+CPP s.d. & 29 & 4.1--5.0  & 31 & 4.1--4.9  \\
+\midrule
+\begin{tabular}[c]{@{}l@{}}SHR, SHR s.d.\end{tabular} & 30 & 3.8--7.5  & 29 & 5.4--7.3  \\
+\midrule
+\begin{tabular}[c]{@{}l@{}}F3, F4, \textit{F2}\end{tabular} & 26 & 6.0--8.5  & 29 & 5.8--8.5  \\
+\midrule
+\begin{tabular}[c]{@{}l@{}}F3 s.d., F4 s.d., \textit{F2 s.d.}\end{tabular} & 26 & 5.3--8.6  & 29 & 4.7--8.6  \\
+\midrule
+\begin{tabular}[c]{@{}l@{}}H2*--H4* s.d., \\H1*--H2* s.d.\end{tabular} & 26 & 4.2--6.5  & 28 & 4.2--6.8  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Within-talker analysis} 
+
+A slight majority of talkers had the same number of components for each of their languages (18/34). Of the remainder, most talkers had a difference of one in the number components (14/34), and far fewer differed by two (2/34). Redundancy indices for within-talker comparisons ranged from 0.82 to 0.99, (\textit{Mdn} = 0.93, \textit{M} = 0.92, \textit{SD} = 0.04), and are displayed in Figure~\ref{ch3:fig:redundancy}, with the two redundancy indices for a given pair plotted against one another. Comparisons across talkers within-language (range: 0.63--0.98, \textit{Mdn} = 0.84, \textit{M} = 0.84, \textit{SD} = 0.6) and across-language (range: 0.66--0.98, \textit{Mdn} = 0.83, \textit{M} = 0.84, \textit{SD} = 0.6) are generally lower, but still relatively high. Within-talker values were confirmed to be higher than across-talker comparisons [\textit{Welch's t}(71.36) = --17.83, \textit{p} $<$ 0.001, d = 1.76]. 
+
+The high values are not unexpected. As PCA is a dimensionality reduction technique, the discarded components almost certainly contain idiosyncratic variation. Moreover, and following from Section~\ref{ch3:sec:pca_results}, there were a substantial number of commonly occurring patterns across talkers and languages. 
+
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.875\linewidth]{figures/3-reds_pretty.png} 
+\caption{The relationship between the two redundancy indices for three different types of comparisons. Within-talker comparisons are clustered at the top right.}
+\label{ch3:fig:redundancy}
+\end{center}
+\end{figure}
+
+\section{Discussion and conclusion}\label{ch3:sec:discussion}
+
+This study examines spectral properties and structural similarities in an individual's voice in two languages. A clear result is that most of the bilinguals studied here exhibit similar spectral properties, and similar lower-dimensional structure in voice variation, despite substantial segmental and suprasegmental differences across English and Cantonese \citep{matthews_2013_cantonese}. In this sense, a majority appear to have the same ``voice'' across languages, which renders voice-as-an-auditory-face an apt comparison.
+
+The comparison of these 34 Cantonese-English bilinguals' voices across languages suggest more similarity for an individual across languages than found within a more tightly controlled group of monolingual English speakers \citep{lee_2019_acoustic-paper}---several analysis decisions may have contributed to this. We compared similar components independent of order, which ignores the fact that similar components may account for different amounts of variance, but ensures that any comparisons made are among like items. Any downside to this methodological decision is mitigated by the fact that most components made relatively small contributions, accounting for 4.2--10.3\% (95\% highest density interval) of the PCA's total variance. 
+
+While statistical choices may have affected these results, the data differences between the current and previous studies are also important to note. This study uses substantially longer passages than the short samples in \citet{lee_2019_acoustic-paper}. The larger speech sample may allow for a more stable underlying structure to showcase itself, as opposed to the potential for ephemeral variation in a shorter sample. This possibility is easily testable by manipulating the length of the speech sample in the analysis.
+
+Ultimately, the goal is to understand how the acoustic variability and structure of talkers' voices maps onto listeners' organization of a voice space for use in talker recognition and discrimination. Turning to listener and behavioural data will help in deciphering what is meaningful variation within a voice from low level noise that cannot be attributed to a particular vocal signature. Verification from listener performance will help adjudicate which statistical choices present an acoustic voice space that matches listener organization. 
+
+\section{Acknowledgments}
+
+This project draws on research supported by the Social Sciences and Humanities Research Council of Canada (SSHRC), the Natural Sciences and Engineering Research Council of Canada (NSERC), and the University of British Columbia Public Scholars Initiative. KAJ led conceptualization, design, analysis, interpretation, and writing. MB contributed to each of these areas. RAF contributed to analysis and interpretation. 
+
+
+
+\endinput % -------------------------------------------------------- %
