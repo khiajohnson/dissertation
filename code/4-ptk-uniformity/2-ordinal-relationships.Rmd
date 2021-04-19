@@ -1,0 +1,186 @@
+---
+title: "2. /ptk/ uniformity - ordinal relationships"
+author: "Khia A Johnson"
+date: "4/1/2021"
+output: html_document
+---
+
+## setup
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(ggthemes)
+
+theme_set(
+  theme_clean() + 
+  theme(
+      legend.title = element_blank(),
+      legend.text = element_text(size=8),
+      legend.position = 'bottom',
+      axis.title.x = element_text(size = 8, face='bold'),
+      axis.title.y = element_text(size = 8, face='bold'),
+      axis.text.x = element_text(size = 8),
+      axis.text.y = element_text(size = 8),
+      strip.text = element_text(size = 8, face='bold'),
+      )
+  )
+```
+
+
+      legend.position = 'bottom',
+      strip.text = element_text(size = 8, face='bold'),
+      axis.text = element_text(size = 8),
+      axis.title = element_text(size = 8),
+
+```{r}
+df <- read_csv('ptk_clean_20210331.csv')
+head(df)
+```
+
+
+## Oridnal relationship proportions
+Proportion of talkers adhering to expected ptk duration relationships (more posterior --> longer) given prior work on connected (but not spontaneous) speech. These numbers are all over the map, though if we take the estimates for /p/ with a grain of salt (some individuals have very few tokens), the t-k comparison more or less follows expectations.
+```{r}
+df %>%
+  group_by(talker, segment, language) %>%
+  summarise(mv = mean(vot_ms)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = 'segment', values_from = 'mv') %>%
+  ungroup() %>%
+  drop_na() %>%
+  group_by(language) %>%
+  summarise(
+    pt = sum(p<t)/n(), 
+    tk = sum(t<k)/n(), 
+    pk = sum(p<k)/n(),
+    n=n()
+    )
+```
+
+But... looking at just the talkers who produce more /p/ tokens doesn't really change those proportions in ways that better reflect expected ordinal relationships. Takeaway? These might be differences between spontaneous and read speech. 
+```{r}
+df %>%
+  group_by(talker, segment, language) %>%
+  summarise(mv = mean(vot_ms), n=n()) %>%
+  filter(n>=10) %>%
+  select(talker, segment, language, mv) %>%
+  ungroup() %>%
+  pivot_wider(names_from = 'segment', values_from = 'mv') %>%
+  ungroup() %>%
+  drop_na() %>%
+  group_by(language) %>%
+  summarise(
+    pt = sum(p<t)/n(), 
+    tk = sum(t<k)/n(), 
+    pk = sum(p<k)/n(),
+    n=n()
+    )
+```
+
+Range of counts that the means are based on -- far fewer per talker for /p/
+```{r}
+df %>%
+  group_by(talker, segment, language) %>%
+  summarise(n = n()) %>%
+  ungroup() %>%
+  group_by(language, segment) %>%
+  summarise(min(n), mean(n), max(n))
+```
+
+## Visualizing ordinal relationships
+Ordinal relationships within talker by language, in graphical form -- probably wont include this in the paper
+```{r fig.width=7, fig.height=3}
+df %>%
+  group_by(talker, language, segment) %>%
+  summarise(mean_vot = mean(vot_ms), sd_vot = sd(vot_ms), n=n()) %>%
+  ungroup() %>%
+  ggplot(aes(y=mean_vot, x=talker, color=language, label=segment)) +
+    geom_text(fontface='bold', position=position_dodge(width = 0.33)) +
+    geom_line(alpha=0.5, position=position_dodge(width = 0.33)) +
+    scale_color_viridis_d(option = 'inferno', begin = 0.1, end = 0.8) +
+    theme(
+      axis.text = element_text(angle=90)
+    )
+
+# ggsave('ordrel.png', height=10, width = 5, units='in')
+```
+
+
+
+
+## Visualizing within talker segment relationships
+```{r fig.width=7, fig.height=3.5}
+std.error <- function(x, na.rm = T) {
+  sqrt(var(x, na.rm = na.rm)/length(x[complete.cases(x)]))
+}
+
+df$segment <- as_factor(df$segment)
+df$segment <- forcats::fct_relevel(df$segment, 'p','t','k')
+levels(df$segment)
+```
+
+```{r}
+df %>%
+  group_by(talker, language, segment) %>%
+  summarise(mean_vot = mean(vot_ms), se_vot = std.error(vot_ms), n=n()) %>%
+  ungroup() %>%
+  ggplot(aes(y=language, x=mean_vot, shape=segment, color=segment)) +
+    geom_point() +
+    geom_errorbar(position = "identity", width = .25, aes(xmin = mean_vot-se_vot, xmax = mean_vot+se_vot)) +
+    geom_line(aes(group=segment)) +
+    scale_color_viridis_d(option = 'inferno', begin = 0.1, end = 0.8) +
+    facet_wrap(~talker, ncol=7)+
+    labs(y="",  x="VOT (ms)") + 
+    theme(
+      strip.text = element_text(size=6),
+      legend.position = 'right'
+    )
+
+ggsave('ptk_vot_individuals2.png', height = 3, width = 8, units='in')
+```
+
+
+```{r}
+rdf %>%
+  group_by(talker, language, segment) %>%
+  summarise(mean_vot = mean(residual_vot_ms), se_vot = std.error(residual_vot_ms), n=n()) %>%
+  ungroup() %>%
+  ggplot(aes(y=language, x=mean_vot, shape=segment, color=segment)) +
+    geom_point() +
+    geom_errorbar(position = "identity", width = .25, aes(xmin = mean_vot-se_vot, xmax = mean_vot+se_vot)) +
+    geom_line(aes(group=segment)) +
+    scale_color_viridis_d(option =, begin = 0.1, end = 0.8) +
+    facet_wrap(~talker, ncol=6)+
+    labs(y="",  x="VOT (ms)") + 
+    theme(
+      strip.text = element_text(size=6)
+    )
+
+```
+
+
+
+
+```{r}
+rdf %>%
+  group_by(talker, segment, language) %>%
+  summarise(mv = mean(residual_vot_ms)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = 'segment', values_from = 'mv') %>%
+  ungroup() %>%
+  drop_na() %>%
+  group_by(language) %>%
+  summarise(
+    pt = sum(p<t)/n(), 
+    tk = sum(t<k)/n(), 
+    pk = sum(p<k)/n(),
+    n=n()
+    )
+```
+
+
+
+

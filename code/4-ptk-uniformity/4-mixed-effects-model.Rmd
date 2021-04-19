@@ -1,0 +1,72 @@
+---
+title: "2. /ptk/ uniformity - ordinal relationships"
+author: "Khia A Johnson"
+date: "4/1/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(brms)
+```
+
+```{r}
+df <- read_csv('ptk_clean_20210331.csv')
+head(df)
+```
+
+## model
+```{r}
+df$vot_z <- scale(df$vot_ms)
+df$avg_phone_dur_z <- scale(df$avg_phone_dur_ms)
+df$is_post_pausal <- as_factor(df$is_post_pausal)
+contrasts(df$is_post_pausal) <- contrasts(df$is_post_pausal)-0.5
+contrasts(df$is_post_pausal)
+```
+
+## model
+```{r}
+df$segment <- as_factor(df$segment)
+contrasts(df$segment) <- contr.wec(x=df$segment, omitted = 'p')
+contrasts(df$segment)
+```
+
+```{r}
+df$language <- as_factor(df$language)
+contrasts(df$language) <- contrasts(df$language)-0.5
+contrasts(df$language)
+```
+
+```{r}
+df$is_post_pausal <- as_factor(df$is_post_pausal)
+contrasts(df$is_post_pausal) <- contrasts(df$is_post_pausal)
+contrasts(df$is_post_pausal)
+```
+
+
+
+```{r}
+mod <- lmer(
+  formula = vot_z ~ 1 + segment * language + avg_phone_dur_z + (segment * language | talker),
+  data = df
+  )
+summary(mod)
+```
+
+
+
+
+
+ran on science.local
+
+
+
+
+
+
+
+

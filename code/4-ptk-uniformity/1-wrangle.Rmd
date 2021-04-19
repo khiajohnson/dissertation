@@ -1,0 +1,162 @@
+---
+title: "1. /ptk/ uniformity - wrangle"
+author: "Khia A Johnson"
+date: "3/31/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r import}
+library(tidyverse)
+library(tidylog, warn.conflicts = FALSE)
+```
+
+Load the ptk dataframe extracted from spice.db with both forced alignment and autovot tables
+```{r}
+df <- read_csv('ptk_20210324.csv')
+```
+
+Load pronunciation dictionary data (saved outside of repo, available with SpiCE corpus), combine into a single dictionary and clean up.
+```{r eval=FALSE}
+cantodict <- read_tsv('/Users/khia/SpiCE/Dictionaries/canto20210305.dict', col_names = c('word', 'pronunciation'))
+
+librespeech <- read_csv('/Users/khia/SpiCE/Dictionaries/librispeech-lexicon.dict', col_names = c('item'))
+librespeech <- librespeech %>%
+  mutate(item = str_replace_all(item, '\\s+', ' ')) %>%
+  mutate(item = str_replace(item, ' ', '#')) %>%
+  separate(item, into = c('word', 'pronunciation'), sep = '#') %>%
+  mutate(word = str_to_lower(word))
+
+pd <- rbind(cantodict, librespeech)
+rm(cantodict, librespeech)
+```
+
+Keep only the longest entry for each unique word and get segment count
+```{r}
+pd <- pd %>%
+  mutate(spaces = str_count(pronunciation, ' ')) %>%
+  arrange(desc(spaces)) %>%
+  distinct(word, .keep_all = TRUE) %>%
+  arrange(pronunciation) %>% 
+  mutate(n_phones_canonical = spaces+1) %>% 
+  select(word, pronunciation, n_phones_canonical)
+```
+
+Fold in pronunciation and number of segments in canonical production
+```{r}
+df <- df %>%
+  left_join(pd, by='word') 
+```
+
+```{r}
+interview_onset_times <- read_csv('/Users/khia/Nextcloud/SpiCE_Corpus/corpus_info/spice_interview_onset_timestamps.csv') %>%
+  select(talker=speaker, language, interview_onset_s)
+```
+
+
+
+Calculate variables of interest, ditch any pre-interview tokens, and word fragments -- things that shouldn't have made it into the list to begin with
+```{r}
+df <- df %>%
+  separate(file, into = c('talker', 'language', 'order', 'date'), sep = '_') %>%
+  left_join(interview_onset_times, by=c('talker','language')) %>%
+  filter(avot_onset > interview_onset_s) %>%
+  filter(!word %in% c('th', 't', 'p', 'k', 'ta', 'ca', 'co', 'cu', 'kee', 'pa', 'ti', 'ts', 'com', 'commu', 'cou', 'coul', 'countr', 'ki', 'kok', 'kur', 'pir', 'tak', 'tal', 'tol', 'tuh', 'typic')) %>%
+  mutate(vot_ms = as.integer(round(1000*(avot_offset-avot_onset)))) %>%
+  mutate(avg_phone_dur_ms = as.integer(round(1000*(word_offset-avot_onset)/n_phones_canonical))) %>%
+  mutate(is_post_pausal = prev_phone %in% c('sp','sil')) %>%
+  select(talker, language, segment=avot_phone, vot_ms, is_post_pausal, following_vowel=next_phone, avg_phone_dur_ms, prev_word, word)
+```
+
+```{r}
+df %>%
+  group_by(language) %>%
+  summarise(n=n()) %>%
+  pivot_wider(names_from=language, values_from=n) %>%
+  mutate(prop_Canto = Cantonese / (Cantonese+English))
+```
+
+Filter out likely errors and keep track of info to report
+```{r}
+initial_count <- nrow(df)
+message('Starting at: ', initial_count)
+
+df <- df %>%
+  tidylog::filter(!is.na(prev_word)) %>%
+  tidylog::filter(prev_word != '<unk>') %>%
+  tidylog::filter(vot_ms > 15) %>%
+  tidylog::mutate(upper_threshold = mean(vot_ms) + 2.5*sd(vot_ms) ) %>%
+  tidylog::filter(vot_ms <= upper_threshold) %>%
+  tidylog::filter(word!='to') # Chodroff & Wilson (2017) do this
+
+message('upper_threshold value is: ', unique(df$upper_threshold))
+message('total proportion removed: ', 1-(nrow(df)/initial_count))
+```
+
+```{r}
+df %>%
+  group_by(language) %>%
+  summarise(n=n()) %>%
+  pivot_wider(names_from=language, values_from=n) %>%
+  mutate(prop_Canto = Cantonese / (Cantonese+English+2295)) #fold back in 'to' tokens here
+```
+
+Check for rows with NAs
+```{r}
+df %>%
+  filter_all(is.na)
+```
+
+Count ptk by language
+```{r}
+df %>%
+  group_by(language, segment) %>%
+  summarise(n=n()) %>%
+  ungroup() %>%
+  pivot_wider(names_from = 'segment', values_from='n') %>%
+  select(language, p, t, k)
+```
+
+why are Cantonese /p/ counts lower?
+```{r}
+df %>%
+  group_by(language, segment, word) %>%
+  summarise(n=n()) %>%
+  filter(segment=='p') %>%
+  group_by(language) %>%
+  summarise(word_types=n(), min(n), median(n),mean(n),max(n))
+```
+
+Why are English /k/'s higher?
+```{r}
+df %>%
+  group_by(language, segment, word) %>%
+  summarise(n=n()) %>%
+  arrange(desc(n)) 
+```
+
+Range of stop counts by talker
+```{r}
+df %>%
+  group_by(talker, language) %>%
+  summarise(n=n())  %>%
+  ungroup() %>%
+  group_by(language) %>%
+  summarise(min(n), median(n), mean(n), max(n))
+
+```
+
+
+Select columns to keep and output clean data frame
+```{r}
+df %>%
+  select(talker, language, segment, following_vowel, vot_ms, is_post_pausal, avg_phone_dur_ms, word) %>%
+  write_csv('ptk_clean_20210331.csv')
+```
+
+
+
+
