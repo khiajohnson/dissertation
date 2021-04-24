@@ -4,6 +4,7 @@
 *.Rproj.user
 *.RData
 *.Rhistory
+dissertation.code-workspace
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
