@@ -1,0 +1,146 @@
+---
+title: "SpiCE Descriptive Statistics"
+author: "Khia A. Johnson"
+date: "5/21/2021"
+output: html_document
+---
+
+# Chapter 2: The SpiCE Corpus
+
+This file accompanies chapter 2 of my dissertation. It includes descriptive statistics and data visualization summarizing the participants and contents of the corpus in broad strokes.
+
+---
+## Setup
+Import packages
+```{r message=FALSE}
+library(tidyverse)
+library(ggthemes)
+library(GGally)
+library(tidylog)
+library(DBI)
+library(viridis)
+```
+
+Set visualization defaults
+```{r}
+theme_set(theme_clean() + theme(
+      legend.title = element_text(face = 'bold', size=10),
+      legend.text = element_text(size=10),
+      legend.position = 'right',
+      axis.title.x = element_text(size = 10, face='bold'),
+      axis.title.y = element_text(size = 10, face='bold')
+    ))
+
+ggplot <- function(...) ggplot2::ggplot(...) + 
+    scale_color_colorblind() +
+    scale_fill_colorblind()
+```
+
+Connect to SpiCE SQLite database
+```{r}
+db <- dbConnect(RSQLite::SQLite(), "../1-general/spice.db")
+dbListTables(db)
+```
+
+Load the words and tasks tables, and join
+```{r}
+words <- dbReadTable(db, "words")
+tasks <- dbReadTable(db, "tasks")
+
+tasks
+```
+
+Query the full word table merged with task by time stamps
+```{r}
+results <- dbSendQuery(
+    db,
+    "SELECT word,
+	       word_onset,
+	       word_offset,
+	       task,
+	       task_onset,
+	       task_offset,
+	       words.file
+	FROM words
+	LEFT JOIN tasks ON (tasks.file = words.file
+	                    AND word_onset BETWEEN task_onset AND task_offset)"
+    )
+words <- fetch(results)
+
+words <- words %>%
+    separate(file, into = c('talker','language','order','date'), remove = FALSE)
+```
+
+## Corpus Summary
+Plot log word frequency for both languages, excluding instances of <unk>
+```{r fig.width=6, fig.height=3}
+words %>%
+    filter(word != '<unk>') %>%
+    group_by(language, word) %>%
+    summarise(frequency = n()) %>%
+    ungroup() %>%
+    mutate(log_frequency = log(frequency)) %>%
+    ggplot(aes(x=log_frequency)) + 
+        geom_histogram(binwidth = 0.5) + 
+        facet_wrap(~language)
+```
+
+Hours of actual participant speech production -- excludes all pauses as this number is based purely on where the forced aligner identified words
+```{r}
+words %>%
+    mutate(word_dur = word_offset - word_onset) %>%
+    group_by(language) %>%
+    summarise(sum(word_dur)/60/60)
+```
+
+Proportion of unknown words by talkers; an estimate of code-switching, as unknown words are almost always words in a different language.
+The first plots shows the proportion based on a count, and the second based on duration.
+```{r}
+unk_count <- words %>%
+    mutate(is_unknown = word == '<unk>') %>%
+    group_by(talker, language, is_unknown) %>%
+    summarise(count_words = n()) %>%
+    pivot_wider(names_from = is_unknown, values_from=count_words) %>%
+    mutate(proportion_unknown = `TRUE`/(`TRUE`+`FALSE`)) %>%
+    select(talker, language, proportion_unknown) %>%
+    pivot_wider(names_from=language, values_from=proportion_unknown) 
+
+ggparcoord(unk_count, columns = 2:3,
+    scale="globalminmax",
+    showPoints = TRUE,
+    alphaLines = 0.5, 
+    )
+
+unk_duration <- words %>%
+    mutate(is_unknown = word == '<unk>', word_dur = word_offset-word_onset) %>%
+    group_by(talker, language, is_unknown) %>%
+    summarise(duration = sum(word_dur)) %>%
+    pivot_wider(names_from = is_unknown, values_from=duration) %>%
+    mutate(proportion_unknown = `TRUE`/(`TRUE`+`FALSE`)) %>%
+    select(talker, language, proportion_unknown) %>%
+    pivot_wider(names_from=language, values_from=proportion_unknown) 
+
+ggparcoord(unk_duration, columns = 2:3,
+    scale="globalminmax",
+    showPoints = TRUE,
+    alphaLines = 0.5, 
+    )
+```
+
+```{r}
+dbClearResult(results)
+dbDisconnect(db)
+```
+
+
+## Participant summary
+
+```{r}
+lbq <- read_csv('~/Corpora/spice/info/participants/spice-lbq-summary.csv')
+lbq
+```
+
+
+
+
+---
