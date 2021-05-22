@@ -1,9 +1,11 @@
 ## Local folders to ignore
 *.DS_Store
 /ubcdiss
+/old
 *.Rproj.user
 *.RData
 *.Rhistory
+*.Rproj
 dissertation.code-workspace
 
 ## Core latex/pdflatex auxiliary files:
@@ -282,3 +284,4 @@ TSWLatexianTemp*
 
 # Makeindex log files
 *.lpz
+.Rproj.user
