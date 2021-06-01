@@ -16,7 +16,7 @@ Import packages
 library(tidyverse)
 library(ggthemes)
 library(GGally)
-library(tidylog)
+# library(tidylog)
 library(DBI)
 library(viridis)
 ```
@@ -31,9 +31,9 @@ theme_set(theme_clean() + theme(
       axis.title.y = element_text(size = 10, face='bold')
     ))
 
-ggplot <- function(...) ggplot2::ggplot(...) + 
-    scale_color_colorblind() +
-    scale_fill_colorblind()
+# ggplot <- function(...) ggplot2::ggplot(...) + 
+#     scale_color_colorblind() +
+#     scale_fill_colorblind()
 ```
 
 Connect to SpiCE SQLite database
@@ -127,18 +127,84 @@ ggparcoord(unk_duration, columns = 2:3,
     )
 ```
 
+Clear and close the database
 ```{r}
 dbClearResult(results)
 dbDisconnect(db)
+rm(db, results)
 ```
-
 
 ## Participant summary
 
-```{r}
-lbq <- read_csv('~/Corpora/spice/info/participants/spice-lbq-summary.csv')
-lbq
+Load the data
+```{r message=FALSE, warning=FALSE}
+lbq_summary <- read_csv('~/Corpora/spice/info/participants/spice-lbq-summary.csv')
+lbq_raw <- read_csv('~/Corpora/spice/info/participants/spice-lbq-detailed.csv')
 ```
+
+```{r}
+demographics <- lbq_raw %>% 
+    select(!matches("language"), -X253) 
+```
+
+```{r}
+lang_nums <- lbq_raw %>% 
+    select(id, matches("^Language [0-9]$")) %>%
+    pivot_longer(`Language 1`:`Language 9`, names_to = "lang_num", values_to = "language") %>%
+    drop_na()
+
+tidy_languages <- lbq_raw %>% 
+    select(id, matches("- Language [0-9]$")) %>%
+    mutate(across(where(is.character), ~recode(.,`Excellent` = '4', 
+                                               `Good` = '3',
+                                               `Fair` = '2',
+                                               `Elementary` = '1',
+                                               `No proficiency` = NULL,
+                                               `Daily` = '365',
+                                               `Weekly` = '52',
+                                               `Monthly` = '12',
+                                               `Yearly` = '1',
+                                               `Less than once a year` = '0.5',
+                                               `Never` = NULL,
+                                               `n/a` = NULL
+                                               ))) %>%
+    mutate(across(-id, as.numeric)) %>%
+    pivot_longer(-id) %>%
+    separate(name, into = c('question','lang_num'), sep = -10 , extra = 'merge') %>%
+    drop_na() %>%
+    left_join(lang_nums, by = c('id','lang_num')) %>%
+    select(id, question, language, value) %>%
+    mutate(question = str_replace(question, ' - $', ''),
+           question = str_replace(question, '/', 'or'))
+
+rm(lang_nums)
+```
+
+Visualize the age that each participant started learning each of their languages
+```{r fig.height=9, fig.width=7}
+tidy_languages %>%
+    filter(question=='Age Started') %>%
+    select(Participant=id, Language=language,Age=value) %>%
+    mutate(Age = if_else(Age>=20, 20, Age)) %>%
+    arrange(Language, Age) %>%
+    ggplot(aes(y=Age, x='', color = Age, label=Language)) +
+        geom_point(size=1.5) +
+        ggrepel::geom_text_repel(label.padding=0.1, max.iter=100000, min.segment.length = 0.25,
+                                 force = 2, force_pull=2, size=2.25) +
+        scale_y_continuous(limits = c(-4,22), breaks = c(0,5,10,15,20), 
+                           labels = c('Birth', '5', '10','15', '20+'))+
+        scale_color_viridis_c(option='magma', begin = 0, end = 0.9) + 
+        facet_wrap(~Participant, ncol = 6) +
+        xlab('')+
+        ylab('Age Started Learning Language (Year)') +
+        theme(panel.border = element_rect(fill=NA), 
+              legend.position = 'bottom',
+              strip.text = element_text(size = 8, face = 'bold'))
+
+# ggsave('figs/age_started_learning.png', width = 7, height = 9.5, units = 'in', dpi=300)
+```
+
+
 
 
 
