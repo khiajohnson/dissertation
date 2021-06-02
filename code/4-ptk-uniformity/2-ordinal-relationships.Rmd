@@ -120,23 +120,24 @@ df$segment <- forcats::fct_relevel(df$segment, 'p','t','k')
 levels(df$segment)
 ```
 
-```{r}
+```{r fig.height=8, fig.width=3.5}
 df %>%
   group_by(talker, language, segment) %>%
   summarise(mean_vot = mean(vot_ms), se_vot = std.error(vot_ms), n=n()) %>%
   ungroup() %>%
+  mutate(language = if_else(language=='Cantonese', 'C','E')) %>%
   ggplot(aes(y=language, x=mean_vot, shape=segment, color=segment)) +
-    geom_point() +
-    geom_errorbar(position = "identity", width = .25, aes(xmin = mean_vot-se_vot, xmax = mean_vot+se_vot)) +
-    geom_line(aes(group=segment)) +
+    geom_point(shape=5) +
+    geom_errorbar(position = "identity", size=.5,width = .25, aes(xmin = mean_vot-se_vot, xmax = mean_vot+se_vot)) +
+    geom_line(aes(group=segment), size=.75) +
     scale_color_viridis_d(option = 'inferno', begin = 0.1, end = 0.8) +
-    facet_wrap(~talker, ncol=7)+
-    labs(y="",  x="VOT (ms)") + 
+    facet_wrap(~talker, ncol=3)+
+    labs(y="",  x="VOT (ms)") +
     theme(
       strip.text = element_text(size=6),
-      legend.position = 'right'
+      legend.position = 'bottom'
     )
 
-# ggsave('ptk_vot_individuals.png', height = 3, width = 8, units='in') # Used in interspeech paper with manually moved legend - don't re-run; different sizes for paper and poster
+# ggsave('ptk_vot_individuals_vert.png', height = 8.5, width = 3.5, units='in') # Used in interspeech paper with manually moved legend - don't re-run; different sizes for paper and poster
 ```
 
