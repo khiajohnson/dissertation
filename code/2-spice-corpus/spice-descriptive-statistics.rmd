@@ -148,6 +148,49 @@ demographics <- lbq_raw %>%
 ```
 
 ```{r}
+demographics %>%
+    select(id, starts_with('Places')) %>%
+    mutate(across(where(is.character), 
+                  ~ str_replace_all(., 'BC |AB |ON |Quebec|CA |London |Macau|Kansai |Kanto ', ''))) %>%
+    pivot_longer(-id, names_to = 'Ages') %>%
+    mutate(Ages = as_factor(str_replace(Ages, 'Places lived ages', 'Ages'))) %>%
+    separate(value, into = c('a','b','c'), sep = ' - ') %>%
+    pivot_longer(cols = a:c, values_to = 'Place') %>%
+    select(id, Place, Ages) %>%
+    arrange(Place) %>%
+    drop_na() %>%
+    ggplot(aes(y=fct_rev(Place), fill=Ages)) +
+        geom_bar() +
+        facet_wrap(~Ages) +
+        ylab('Country Lived In') +
+        xlab('Count') +
+        theme(legend.position = 'none')
+    
+```
+
+```{r}
+demographics %>%
+    select(id, contains('Caretaker')) %>%
+    pivot_longer(-id, values_to = 'Place') %>%
+    mutate(name = str_replace(name, 'Caretakers - Region ','')) %>%
+    separate(name, into = c('Question', 'Caretaker'), sep = ' - ') %>%
+    pivot_wider(names_from = 'Question', values_from = 'Place') %>%
+    drop_na() %>%
+    mutate(born = str_replace(born,'Manila|Ilocos ', '')) %>%
+    mutate(born = str_replace(born,'[A-Za-z]+ China', 'China')) %>%
+    group_by(born) %>%
+    summarise(n=n()) %>%
+    arrange(born) %>%
+    
+    ggplot(aes(x=n, y=reorder(born, n))) +
+        geom_col() +
+        xlab('Count') +
+        ylab('Caretaker(s) born in')
+
+```
+
+
+```{r}
 lang_nums <- lbq_raw %>% 
     select(id, matches("^Language [0-9]$")) %>%
     pivot_longer(`Language 1`:`Language 9`, names_to = "lang_num", values_to = "language") %>%
