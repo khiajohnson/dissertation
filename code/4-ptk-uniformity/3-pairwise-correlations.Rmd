@@ -33,7 +33,7 @@ theme_set(
 ```
 
 ```{r}
-df <- read_csv('ptk_clean_20210331.csv')
+df <- read_csv('ptk_clean_20210331.csv') # this version used in Interspeech paper
 head(df)
 ```
 
@@ -45,7 +45,28 @@ means <- df %>%
   pivot_wider(names_from = 'segment', values_from = 'mean_vot_ms') 
 ```
 
-## Visualize (raw) VOT relationships
+## Raw VOT 
+### Correlations: Mean VOT
+
+Prep wide format data frame
+```{r}
+dfsummary <- df %>%
+  group_by(talker, language, segment) %>%
+  summarise(mvot = mean(vot_ms)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = c('language','segment'), values_from = 'mvot') %>%
+  select(CanP=Cantonese_p, CanT=Cantonese_t, CanK=Cantonese_k, EngP=English_p, EngT=English_t, EngK=English_k)
+ 
+dfsummary
+```
+
+Run correlations with adjusted p-values
+```{r}
+output <- corr.test(dfsummary, method='pearson', adjust = 'holm')
+output
+```
+
+### Data Viz: Mean VOT
 
 Set up within-language plots
 ```{r fig.width=9, fig.height=3}
@@ -108,25 +129,13 @@ kk <- means %>%
 kk <- kk + ggtitle('/k/')
 ```
 
-
-Show the plots
-```{r}
+Show the plots; legends are annoying but oh well
+```{r fig.width=9, fig.height=6}
 grid.arrange(pt, pk, tk, pp, tt, kk, nrow=2)
-#ggsave('winl_relationships.png',plot= grid.arrange(pt, pk, tk, nrow=1), height=3.5, width = 9, units='in')
-# grid.arrange(pp, tt, kk, nrow
-#   nrow=1
-# )
-# ggsave('acrl_relationships.png',plot= grid.arrange(p+ggtitle('/p/'), t+ggtitle('/t/'), k+ggtitle('/k/'), nrow=1), height=3.5, width = 9, units='in')
 ```
 
-
-## Correlations
-
-
-Mean-SD correlations -- same structured relationship 
-
-English p vs Cantonese p magnitude comparisons
-
+### Data Viz: Mean vs. SDs
+Mean vs. SD correlations -- same structured relationship across languages and categories; This part isn't particularly interesting to current purposes, and isn't included in Interspeech paper
 ```{r fig.width=8, fig.height=3}
  df %>%
   group_by(talker, language, segment) %>%
@@ -138,33 +147,23 @@ English p vs Cantonese p magnitude comparisons
     scale_color_colorblind()+
   scale_fill_colorblind()+
     facet_wrap(~segment)
-  
 ```
 
 
-```{r}
-dfsummary <- df %>%
-  group_by(talker, language, segment) %>%
-  summarise(mvot = mean(vot_ms)) %>%
-  ungroup() %>%
-  pivot_wider(names_from = c('language','segment'), values_from = 'mvot') %>%
-  select(CanP=Cantonese_p, CanT=Cantonese_t, CanK=Cantonese_k, EngP=English_p, EngT=English_t, EngK=English_k)
- 
-dfsummary
-```
-
-```{r}
-output <- corr.test(dfsummary, method='pearson', adjust = 'holm')
-
-output
-```
 
 
+
+## Residual VOT (accounting for rate)
+
+Compute residual VOT via simple VOT ~ rate regression, and add to data frame
 ```{r}
 rdf <- df
 resmodel <- lm(vot_ms ~ avg_phone_dur_ms, data = rdf)
 rdf$residual_vot_ms <- resid(resmodel)
+```
 
+Prep wide summary data frame and run correlation
+```{r}
 rdfsummary <- rdf %>%
   group_by(talker, language, segment) %>%
   summarise(mvot = mean(residual_vot_ms)) %>%
@@ -173,272 +172,131 @@ rdfsummary <- rdf %>%
   select(rCanP=Cantonese_p, rCanT=Cantonese_t, rCanK=Cantonese_k, rEngP=English_p, rEngT=English_t, rEngK=English_k)
  
 rdfout <- corr.test(rdfsummary, method='pearson', adjust = 'holm')
-
 round(rdfout$p,4)
 ```
 
-
-      rCanP  rCanT          rCanK          rEngP          rEngT          rEngK
-rCanP  ----  0.59 (p=0.004) 0.54 (p=0.009) 0.57 (p=0.006) 0.23 (p=0.33)  0.35 (p=0.29)
-rCanT  ----  ----           0.33 (p=0.28)  0.43 (p=0.08)  0.31 (p=0.29)  0.31 (p=0.29)
-rCanK  ----  ----  ---        -            0.56 (p=0.006) 0.24 (p=0.33)  0.55 (p=0.006)
-rEngP  ----  ----  ----  ----                             0.58 (p=0.004) 0.75 (p<0.001)
-rEngT  ----  ----  ----  ----  ----                                      0.57 (p=0.005)
-rEngK  ----  ----  ----  ----  ----  ----  
-
+**Writing out for easier reference and copying**
 CanP~CanT 0.59 (p=0.004)
 CanP~CanK 0.54 (p=0.009)
 CanT~CanK 0.33 (p=0.28)
-
 EngP~EngT 0.58 (p=0.004)
 EngP~EngK 0.75 (p<0.001)
 EngT~EngK 0.57 (p=0.005)
-
 CanP~EngP 0.57 (p=0.006) 
 CanP~EngT 0.23 (p=0.33)
 CanP~EngK 0.35 (p=0.29)
-
 CanT~EngP 0.43 (p=0.08)
 CanT~EngT 0.31 (p=0.29)
 CanT~EngK 0.31 (p=0.29)
-
 CanK~EngP 0.56 (p=0.006)
 CanK~EngT 0.24 (p=0.33)
 CanK~EngK 0.55 (p=0.006)
 
+## Visualize (residual) VOT relationships
 
-
-
-
-
-```{r}
-summary(lm(mvot_English_k ~ mvot_Cantonese_k, data = dfsummary))
-```
-
-
-```{r}
-msd_cp <- cor.test(x=dfsummary$mvot_Cantonese_p, y=dfsummary$sdvot_Cantonese_p)
-msd_ct <- cor.test(x=dfsummary$mvot_Cantonese_t, y=dfsummary$sdvot_Cantonese_t)
-msd_ck <- cor.test(x=dfsummary$mvot_Cantonese_k, y=dfsummary$sdvot_Cantonese_k)
-
-msd_ep <- cor.test(x=dfsummary$mvot_English_p, y=dfsummary$sdvot_English_p)
-msd_et <- cor.test(x=dfsummary$mvot_English_t, y=dfsummary$sdvot_English_t)
-msd_ek <- cor.test(x=dfsummary$mvot_English_k, y=dfsummary$sdvot_English_k)
-
-m_cpep <- cor.test(x=dfsummary$mvot_Cantonese_p, y=dfsummary$mvot_English_p)
-m_ctet <- cor.test(x=dfsummary$mvot_Cantonese_t, y=dfsummary$mvot_English_t)
-m_ckek <- cor.test(x=dfsummary$mvot_Cantonese_k, y=dfsummary$mvot_English_k)
-
-m_epet <- cor.test(x=dfsummary$mvot_English_p, y=dfsummary$mvot_English_t)
-m_etek <- cor.test(x=dfsummary$mvot_English_t, y=dfsummary$mvot_English_k)
-m_epek <- cor.test(x=dfsummary$mvot_English_p, y=dfsummary$mvot_English_k)
-
-m_cpct <- cor.test(x=dfsummary$mvot_Cantonese_p, y=dfsummary$mvot_Cantonese_t)
-m_ctck <- cor.test(x=dfsummary$mvot_Cantonese_t, y=dfsummary$mvot_Cantonese_k)
-m_cpck <- cor.test(x=dfsummary$mvot_Cantonese_p, y=dfsummary$mvot_Cantonese_k)
-
-msd_corr <- data.frame(
-  comparison = c(
-    'can m-sd /p/', 'can m-sd /t/', 'can m-sd /k/', 
-    'eng m-sd /p/', 'eng m-sd /t/', 'eng m-sd /k/',
-    'can-eng m /p/', 'can-eng m /t/', 'can-eng m /k/',
-    'eng m p/t', 'eng m t/k', 'eng m p/k', 
-    'can m p/t', 'can m t/k', 'can m p/k'),
-  r = c(
-    msd_cp$estimate, msd_ct$estimate, msd_ck$estimate, 
-    msd_ep$estimate, msd_et$estimate, msd_et$estimate, 
-    m_cpep$estimate, m_ctet$estimate, m_ckek$estimate,
-    m_epet$estimate, m_etek$estimate, m_epek$estimate, 
-    m_cpct$estimate, m_ctck$estimate, m_cpck$estimate
-    ),
-  p = c(
-  msd_cp$p.value, msd_ct$p.value, msd_ck$p.value, 
-  msd_ep$p.value, msd_et$p.value, msd_et$p.value, 
-  m_cpep$p.value, m_ctet$p.value, m_ckek$p.value, 
-  m_epet$p.value, m_etek$p.value, m_epek$p.value, 
-  m_cpct$p.value, m_ctck$p.value, m_cpck$p.value)
-  )
-
-msd_corr  %>%
-  mutate(p, p.holm=p.adjust(msd_corr$p, method='holm'))%>%
-  mutate(across(2:4, round, 3)) %>%
-  select(comparison, r, p.holm) %>%
-  kable()
-```
-
-```{r}
-0.01/6
-```
-
-
-
-
-Correlation plot?
-```{r fig.width=6, fig.height=5}
-tocor <-df %>%
-  group_by(talker, language, segment) %>%
-  summarise(mean_vot_ms = mean(vot_ms)) %>%
-  ungroup() %>%
-  pivot_wider(names_from = c('language','segment'), values_from = 'mean_vot_ms') %>%
-  select(Cantonese_p, Cantonese_t, Cantonese_k, English_p, English_t, English_k) 
-tocor
-```
-
-```{r fig.width=10}
-outcor <- corr.test(tocor)
-print(outcor, short = FALSE)
-```
-
-
-
-
-
-
-
-
-```{r fig.width=6}
-outcor2 <- cor.ci(tocor, method='pearson')
-
-cor.plot.upperLowerCi(outcor2, show.legend=FALSE, scale=FALSE)
-
-outcor2$means
-
-options(scipen=999)
-
-
-outcor2$ci %>%
-  mutate(mean=outcor2$means, comparison=rownames(outcor$ci)) %>%
-  select(comparison, lower, mean, upper, p) %>%
-  mutate(across(2:5, round, 3)) %>%
-  kable()
-
-
-
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Residual vot (accounting for rate/pause)
-
-```{r}
-rdf <- df
-
-rdf$avg_phone_dur_z <- scale(rdf$avg_phone_dur_ms)
-rdf$vot_z <- scale(rdf$vot_ms)
-
-model <- lm(vot_z ~ avg_phone_dur_z + is_post_pausal, data = rdf)
-rdf$residual_vot_z <- resid(model)
-
-rdf
-```
-
+Wrangle data frame for plotting
 ```{r}
 resid_means <- rdf %>%
   group_by(talker, language, segment) %>%
-  summarise(mean_resid_vot_z = mean(residual_vot_z)) %>%
+  summarise(mean_resid_vot = mean(residual_vot_ms)) %>%
   ungroup() %>%
-  pivot_wider(names_from = 'segment', values_from = 'mean_resid_vot_z') 
+  pivot_wider(names_from = 'segment', values_from = 'mean_resid_vot') 
+
+wide_means <- resid_means %>%
+  pivot_wider(id_cols = talker, names_from = language, values_from = c('p','t','k')) %>%
+  select(`Cantonese /p/` = p_Cantonese, `Cantonese /t/` = t_Cantonese, `Cantonese /k/` = k_Cantonese, 
+         `English /p/` = p_English, `English /t/` = t_English, `English /k/` = k_English)
 ```
 
-
-## Visualize (residual) VOT relationships
-
-### Within-English uniformity plots
-
+Build each panel individually with selected pairwise correlations: within-language English and Cantonese, and cross-language homorganic comparisons
 ```{r fig.width=9, fig.height=3}
-pt <- ggplot(resid_means, aes(x=p, y=t, color=language, fill=language)) +
-        geom_point() +
-        geom_smooth(method='lm', formula = 'y ~ x') +
-        scale_color_viridis_d(option = 'inferno', begin = 0.1, end = 0.8) +
-        scale_fill_viridis_d(option = 'inferno', begin = 0.1, end = 0.8)
+app <- ggplot(wide_means, aes(x=`Cantonese /p/`, y=`English /p/`)) + 
+  geom_point(color='orange') +
+  geom_smooth(method='lm', formula = 'y ~ x', color='orange', fill='orange') +
+  scale_x_continuous(limits = c(-27,27)) + 
+  scale_y_continuous(limits = c(-27,27)) 
+app <- app + 
+  annotate("text", x = 18, y = -20, label = 'r = 0.57\np = 0.006*') + 
+  ggtitle('Cantonese /p/ ~ English /p/')
 
-pk <- ggplot(resid_means, aes(x=p, y=k, color=language, fill=language)) +
-        geom_point() +
-        geom_smooth(method='lm', formula = 'y ~ x') +
-        scale_color_viridis_d(option = 'inferno', begin = 0.1, end = 0.8) +
-        scale_fill_viridis_d(option = 'inferno', begin = 0.1, end = 0.8)
+att <- ggplot(wide_means, aes(x=`Cantonese /t/`, y=`English /t/`)) + 
+  geom_point(color='orange') +
+  geom_smooth(method='lm', formula = 'y ~ x', color='orange', fill='orange')+
+  scale_x_continuous(limits = c(-27,27)) + 
+  scale_y_continuous(limits = c(-27,27)) 
 
-tk <- ggplot(resid_means, aes(x=t, y=k, color=language, fill=language)) +
-        geom_point() +
-        geom_smooth(method='lm', formula = 'y ~ x') +
-        scale_color_viridis_d(option = 'inferno', begin = 0.1, end = 0.8) +
-        scale_fill_viridis_d(option = 'inferno', begin = 0.1, end = 0.8)
+att <- att + 
+  annotate("text", x = 18, y = -20, label = 'r = 0.31\np = 0.29') + 
+  ggtitle('Cantonese /t/ ~ English /t/')
 
-grid.arrange(pt, pk, tk, nrow=1)
+akk <- ggplot(wide_means, aes(x=`Cantonese /k/`, y=`English /k/`)) + 
+  geom_point(color='orange') +
+  geom_smooth(method='lm', formula = 'y ~ x', color='orange', fill='orange')+
+  scale_x_continuous(limits = c(-27,27)) + 
+  scale_y_continuous(limits = c(-27,27)) 
 
+akk <- akk + 
+  annotate("text", x = 18, y = -20, label = 'r = 0.55\np = 0.006*') + 
+  ggtitle('Cantonese /k/ ~ English /k/')
+
+ept <- ggplot(wide_means, aes(x=`English /p/`, y=`English /t/`)) + 
+  geom_point(color='skyblue') +
+  geom_smooth(method='lm', formula = 'y ~ x', color='skyblue', fill='skyblue')+
+  scale_x_continuous(limits = c(-27,27)) + 
+  scale_y_continuous(limits = c(-27,27)) 
+ept <- ept + 
+  annotate("text", x = 18, y = -20, label = 'r = 0.58\np = 0.004*') + 
+  ggtitle('English /p/ ~ English /t/')
+
+epk <- ggplot(wide_means, aes(x=`English /p/`, y=`English /k/`)) + 
+  geom_point(color='skyblue') +
+  geom_smooth(method='lm', formula = 'y ~ x', color='skyblue', fill='skyblue') +
+  scale_x_continuous(limits = c(-27,27)) + 
+  scale_y_continuous(limits = c(-27,27)) 
+epk <- epk + 
+  annotate("text", x = 18, y = -20, label = 'r = 0.75\np <0.001*') + 
+  ggtitle('English /p/ ~ English /k/')
+
+etk <- ggplot(wide_means, aes(x=`English /t/`, y=`English /k/`)) + 
+  geom_point(color='skyblue') +
+  geom_smooth(method='lm', formula = 'y ~ x', color='skyblue', fill='skyblue') +
+  scale_x_continuous(limits = c(-27,27)) + 
+  scale_y_continuous(limits = c(-27,27)) 
+etk <- etk + 
+  annotate("text", x = 18, y = -20, label = 'r = 0.57\np = 0.005*') + 
+  ggtitle('English /t/ ~ English /k/')
+
+cpt <- ggplot(wide_means, aes(x=`Cantonese /p/`, y=`Cantonese /t/`)) + 
+  geom_point(color='darkolivegreen') +
+  geom_smooth(method='lm', formula = 'y ~ x', color='darkolivegreen', fill='darkolivegreen') +
+  scale_x_continuous(limits = c(-27,27)) + 
+  scale_y_continuous(limits = c(-27,27)) 
+cpt <- cpt + 
+  annotate("text", x = 18, y = -20, label = 'r = 0.59\np = 0.004*') + 
+  ggtitle('Cantonese /p/ ~ Cantonese /t/')
+
+cpk <- ggplot(wide_means, aes(x=`Cantonese /p/`, y=`Cantonese /k/`)) + 
+  geom_point(color='darkolivegreen') +
+  geom_smooth(method='lm', formula = 'y ~ x', color='darkolivegreen', fill='darkolivegreen') +
+  scale_x_continuous(limits = c(-27,27)) + 
+  scale_y_continuous(limits = c(-27,27)) 
+cpk <- cpk + 
+  annotate("text", x = 18, y = -20, label = 'r = 0.54\np = 0.009') + 
+  ggtitle('Cantonese /p/ ~ Cantonese /k/')
+
+ctk <- ggplot(wide_means, aes(x=`Cantonese /t/`, y=`Cantonese /k/`)) + 
+  geom_point(color='darkolivegreen') +
+  geom_smooth(method='lm', formula = 'y ~ x', color='darkolivegreen', fill='darkolivegreen') +
+  scale_x_continuous(limits = c(-27,27)) +
+  scale_y_continuous(limits = c(-27,27))
+ctk <- ctk + 
+  annotate("text", x = 18, y = -20, label = 'r = 0.33\np = 0.28') + 
+  ggtitle('Cantonese /t/ ~ Cantonese /k/')
 ```
 
-### Across-language uniformity plots
-```{r fig.width=9, fig.height=3}
-p <- resid_means %>%
-  select(talker, language, p) %>%
-  pivot_wider(names_from = 'language', values_from = 'p') %>%
-  ggplot(aes(x=Cantonese, y=English)) +
-      geom_point() +
-      geom_smooth(method='lm', formula = 'y ~ x', color='black') +
-      scale_x_continuous(limits = c(-1,1)) + 
-      scale_y_continuous(limits = c(-1,1)) 
-
-t <- resid_means %>%
-  select(talker, language, t) %>%
-  pivot_wider(names_from = 'language', values_from = 't') %>%
-  ggplot(aes(x=Cantonese, y=English)) +
-      geom_point() +
-      geom_smooth(method='lm', formula = 'y ~ x', color='black') +
-      scale_x_continuous(limits = c(-1,1)) + 
-      scale_y_continuous(limits = c(-1,1)) 
-
-k <- resid_means %>%
-  select(talker, language, k) %>%
-  pivot_wider(names_from = 'language', values_from = 'k') %>%
-  ggplot(aes(x=Cantonese, y=English)) +
-      geom_point() +
-      geom_smooth(method='lm', formula = 'y ~ x', color='black') +
-      scale_x_continuous(limits = c(-1,1)) + 
-      scale_y_continuous(limits = c(-1,1)) 
-
-grid.arrange(
-  p + ggtitle('/p/'),
-  t + ggtitle('/t/'),
-  k + ggtitle('/k/'),
-  nrow=1
-)
-
+Arrange plots in a single big poster figure
+```{r fig.width=12, fig.height=10}
+all <- grid.arrange(cpt, cpk, ctk, ept, epk, etk, app, att, akk, nrow=3)
+ggsave('correlation_uniformity.png', plot=all, height = 10, width = 12, units='in') #used in ISBPAC poster
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
