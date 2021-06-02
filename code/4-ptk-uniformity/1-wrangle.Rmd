@@ -81,7 +81,7 @@ df <- df %>%
   mutate(vot_ms = as.integer(round(1000*(avot_offset-avot_onset)))) %>%
   mutate(avg_phone_dur_ms = as.integer(round(1000*(word_offset-avot_onset)/n_phones_canonical))) %>%
   mutate(is_post_pausal = prev_phone %in% c('sp','sil')) %>%
-  select(talker, language, segment=avot_phone, vot_ms, is_post_pausal, following_vowel=next_phone, avg_phone_dur_ms, prev_word, word)
+  select(talker, language, segment=avot_phone, vot_ms, is_post_pausal, following_vowel=next_phone, avg_phone_dur_ms, prev_word, word, pronunciation)
 ```
 
 What proportion of the sample is Cantonese before filtering?
@@ -152,6 +152,33 @@ df %>%
   summarise(n=n()) %>%
   arrange(desc(n)) 
 ```
+
+check stress
+```{r}
+df %>%
+  filter(language=='English') %>%
+  group_by(segment, word, pronunciation) %>%
+  summarise(n=n()) %>%
+  arrange(desc(n)) %>%
+  filter(str_detect(pronunciation, '^[A-Z]+ [A-Z]+0'))
+```
+
+cuz       419
+together  99
+toronto   39
+piano     30
+canadian  18
+career    17
+compared  14
+percent   12
+towards   12
+
+
+segment   sum(n)
+k	        661			
+p	        97			
+t	        167	
+total       925
 
 Range of stop counts by talker
 ```{r}
