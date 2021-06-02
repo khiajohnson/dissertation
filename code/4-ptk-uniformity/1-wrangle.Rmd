@@ -32,10 +32,12 @@ librespeech <- librespeech %>%
   mutate(item = str_replace_all(item, '\\s+', ' ')) %>%
   mutate(item = str_replace(item, ' ', '#')) %>%
   separate(item, into = c('word', 'pronunciation'), sep = '#') %>%
-  mutate(word = str_to_lower(word))
+  mutate(word = str_to_lower(word)) %>%
+  mutate(pronunciation = if_else(word=='cuz', 'K AH1 Z', pronunciation)) 
+  
 
 pd <- rbind(cantodict, librespeech)
-rm(cantodict, librespeech)
+#rm(cantodict, librespeech)
 ```
 
 Keep only the longest entry for each unique word and get segment count
@@ -71,13 +73,14 @@ interview_onset_times <- tasks %>%
   select(talker, language, interview_onset_s=task_onset)
 ```
 
-Calculate variables of interest, ditch any pre-interview tokens, and word fragments -- things that shouldn't have made it into the list to begin with
+Calculate variables of interest, ditch any pre-interview tokens, and word fragments -- things that shouldn't have made it into the list to begin with, including items that don't have initial stress
 ```{r}
 df <- df %>%
   separate(file, into = c('talker', 'language', 'order', 'date'), sep = '_') %>%
   left_join(interview_onset_times, by=c('talker','language')) %>%
   filter(avot_onset > interview_onset_s) %>%
   filter(!word %in% c('th', 't', 'p', 'k', 'ta', 'ca', 'co', 'cu', 'kee', 'pa', 'ti', 'ts', 'com', 'commu', 'cou', 'coul', 'countr', 'ki', 'kok', 'kur', 'pir', 'tak', 'tal', 'tol', 'tuh', 'typic')) %>%
+  filter(str_detect(pronunciation, '^[A-Z]+ [A-Z]+0', negate = TRUE)) %>%
   mutate(vot_ms = as.integer(round(1000*(avot_offset-avot_onset)))) %>%
   mutate(avg_phone_dur_ms = as.integer(round(1000*(word_offset-avot_onset)/n_phones_canonical))) %>%
   mutate(is_post_pausal = prev_phone %in% c('sp','sil')) %>%
@@ -103,8 +106,8 @@ df <- df %>%
   tidylog::filter(prev_word != '<unk>') %>%
   tidylog::filter(vot_ms > 15) %>%
   tidylog::mutate(upper_threshold = mean(vot_ms) + 2.5*sd(vot_ms) ) %>%
-  tidylog::filter(vot_ms <= upper_threshold) %>%
-  tidylog::filter(word!='to') # Chodroff & Wilson (2017) do this
+  tidylog::filter(vot_ms <= upper_threshold) 
+#  tidylog::filter(word!='to') # Chodroff & Wilson (2017) do this; already excluded with stress
 
 message('upper_threshold value is: ', unique(df$upper_threshold))
 message('total proportion removed: ', 1-(nrow(df)/initial_count))
@@ -116,7 +119,7 @@ df %>%
   group_by(language) %>%
   summarise(n=n()) %>%
   pivot_wider(names_from=language, values_from=n) %>%
-  mutate(prop_Canto = Cantonese / (Cantonese+English+2295)) #fold back in 'to' tokens here
+  mutate(prop_Canto = Cantonese / (Cantonese+English)) #fold back in 'to' tokens here
 ```
 
 Check for rows with NAs
@@ -135,7 +138,7 @@ df %>%
   select(language, p, t, k)
 ```
 
-Explora why Cantonese /p/ counts are lower
+Explore why Cantonese /p/ counts are lower
 ```{r}
 df %>%
   group_by(language, segment, word) %>%
@@ -153,33 +156,6 @@ df %>%
   arrange(desc(n)) 
 ```
 
-check stress
-```{r}
-df %>%
-  filter(language=='English') %>%
-  group_by(segment, word, pronunciation) %>%
-  summarise(n=n()) %>%
-  arrange(desc(n)) %>%
-  filter(str_detect(pronunciation, '^[A-Z]+ [A-Z]+0'))
-```
-
-cuz       419
-together  99
-toronto   39
-piano     30
-canadian  18
-career    17
-compared  14
-percent   12
-towards   12
-
-
-segment   sum(n)
-k	        661			
-p	        97			
-t	        167	
-total       925
-
 Range of stop counts by talker
 ```{r}
 df %>%
@@ -188,18 +164,11 @@ df %>%
   ungroup() %>%
   group_by(language) %>%
   summarise(min(n), median(n), mean(n), max(n))
-
 ```
-
 
 Select columns to keep and output clean data frame
 ```{r}
 df %>%
   select(talker, language, segment, following_vowel, vot_ms, is_post_pausal, avg_phone_dur_ms, word) %>%
-  # write_csv('ptk_clean_20210331.csv')
-  write_csv('ptk_clean_20210601.csv')
+  write_csv('ptk_clean_20210602.csv')
 ```
-
-
-
-
