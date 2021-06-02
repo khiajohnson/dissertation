@@ -29,14 +29,8 @@ theme_set(
   )
 ```
 
-
-      legend.position = 'bottom',
-      strip.text = element_text(size = 8, face='bold'),
-      axis.text = element_text(size = 8),
-      axis.title = element_text(size = 8),
-
 ```{r}
-df <- read_csv('ptk_clean_20210331.csv')
+df <- read_csv('ptk_clean_20210331.csv') # this version used for interspeech
 head(df)
 ```
 
@@ -92,24 +86,28 @@ df %>%
 
 ## Visualizing ordinal relationships
 Ordinal relationships within talker by language, in graphical form -- probably wont include this in the paper
-```{r fig.width=7, fig.height=3}
+```{r fig.width=12, fig.height=3}
 df %>%
   group_by(talker, language, segment) %>%
   summarise(mean_vot = mean(vot_ms), sd_vot = sd(vot_ms), n=n()) %>%
   ungroup() %>%
+  mutate(segment = str_to_upper(segment)) %>%
   ggplot(aes(y=mean_vot, x=talker, color=language, label=segment)) +
-    geom_text(fontface='bold', position=position_dodge(width = 0.33)) +
-    geom_line(alpha=0.5, position=position_dodge(width = 0.33)) +
-    scale_color_viridis_d(option = 'inferno', begin = 0.1, end = 0.8) +
+    geom_text(fontface='bold', size=5, position=position_dodge(width = 0.75)) +
+    geom_line(alpha=0.5, position=position_dodge(width = 0.75)) +
+    # scale_color_viridis_d(option = 'inferno', begin = 0.1, end = 0.8) +
+    scale_color_manual(values = c('darkolivegreen','skyblue')) +
+  ylab('Mean VOT (ms)') +
+  xlab('Talker') +
+  scale_y_continuous(limits = c(15, 85))+
     theme(
-      axis.text = element_text(angle=90)
+      axis.text = element_text(angle=90),
+      panel.grid.major.x = element_line(color = 'gray', linetype='dotted'),
+      legend.position = 'right'
     )
 
-# ggsave('ordrel.png', height=10, width = 5, units='in')
+ggsave('ordrel.png', height=3.5, width = 12, units='in') # This used in ISBPAC poster
 ```
-
-
-
 
 ## Visualizing within talker segment relationships
 ```{r fig.width=7, fig.height=3.5}
@@ -139,48 +137,6 @@ df %>%
       legend.position = 'right'
     )
 
-ggsave('ptk_vot_individuals2.png', height = 3, width = 8, units='in')
+# ggsave('ptk_vot_individuals2.png', height = 3, width = 8, units='in') # Used in interspeech paper with manually moved legend - don't re-run
 ```
-
-
-```{r}
-rdf %>%
-  group_by(talker, language, segment) %>%
-  summarise(mean_vot = mean(residual_vot_ms), se_vot = std.error(residual_vot_ms), n=n()) %>%
-  ungroup() %>%
-  ggplot(aes(y=language, x=mean_vot, shape=segment, color=segment)) +
-    geom_point() +
-    geom_errorbar(position = "identity", width = .25, aes(xmin = mean_vot-se_vot, xmax = mean_vot+se_vot)) +
-    geom_line(aes(group=segment)) +
-    scale_color_viridis_d(option =, begin = 0.1, end = 0.8) +
-    facet_wrap(~talker, ncol=6)+
-    labs(y="",  x="VOT (ms)") + 
-    theme(
-      strip.text = element_text(size=6)
-    )
-
-```
-
-
-
-
-```{r}
-rdf %>%
-  group_by(talker, segment, language) %>%
-  summarise(mv = mean(residual_vot_ms)) %>%
-  ungroup() %>%
-  pivot_wider(names_from = 'segment', values_from = 'mv') %>%
-  ungroup() %>%
-  drop_na() %>%
-  group_by(language) %>%
-  summarise(
-    pt = sum(p<t)/n(), 
-    tk = sum(t<k)/n(), 
-    pk = sum(p<k)/n(),
-    n=n()
-    )
-```
-
-
-
 
