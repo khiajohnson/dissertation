@@ -33,7 +33,7 @@ theme_set(
 ```
 
 ```{r}
-df <- read_csv('ptk_clean_20210331.csv') # this version used in Interspeech paper
+df <- read_csv('dfs/ptk_clean_20210602.csv') # this version used in Interspeech paper
 head(df)
 ```
 
@@ -150,9 +150,6 @@ Mean vs. SD correlations -- same structured relationship across languages and ca
 ```
 
 
-
-
-
 ## Residual VOT (accounting for rate)
 
 Compute residual VOT via simple VOT ~ rate regression, and add to data frame
@@ -172,25 +169,22 @@ rdfsummary <- rdf %>%
   select(rCanP=Cantonese_p, rCanT=Cantonese_t, rCanK=Cantonese_k, rEngP=English_p, rEngT=English_t, rEngK=English_k)
  
 rdfout <- corr.test(rdfsummary, method='pearson', adjust = 'holm')
-round(rdfout$p,4)
 ```
 
-**Writing out for easier reference and copying**
-CanP~CanT 0.59 (p=0.004)
-CanP~CanK 0.54 (p=0.009)
-CanT~CanK 0.33 (p=0.28)
-EngP~EngT 0.58 (p=0.004)
-EngP~EngK 0.75 (p<0.001)
-EngT~EngK 0.57 (p=0.005)
-CanP~EngP 0.57 (p=0.006) 
-CanP~EngT 0.23 (p=0.33)
-CanP~EngK 0.35 (p=0.29)
-CanT~EngP 0.43 (p=0.08)
-CanT~EngT 0.31 (p=0.29)
-CanT~EngK 0.31 (p=0.29)
-CanK~EngP 0.56 (p=0.006)
-CanK~EngT 0.24 (p=0.33)
-CanK~EngK 0.55 (p=0.006)
+```{r}
+options(scipen = 999)
+
+rdfout$ci %>%
+  rownames_to_column(var = 'comparison') %>%
+  left_join(rdfout$ci2, by=c('r','p')) %>%
+  select(comparison, r, p.adj) %>%
+  mutate(comparison = str_replace_all(comparison, 'r','')) %>%
+  separate(comparison, into = c('a', 'b'), sep='-') %>%
+  separate(a, into = c('a_lang', 'a_seg'), sep = -1) %>%
+  separate(b, into = c('b_lang', 'b_seg'), sep = -1) %>%
+  arrange(a_lang, b_lang, a_seg, b_seg) %>%
+  mutate(r = round(r, 2), p.adj = round(p.adj, 4))
+```
 
 ## Visualize (residual) VOT relationships
 
@@ -209,6 +203,8 @@ wide_means <- resid_means %>%
 ```
 
 Build each panel individually with selected pairwise correlations: within-language English and Cantonese, and cross-language homorganic comparisons
+
+**NOTE** that the 3x3 set of figures here has annotations with the r and p values from before I removed words without initial stress from the sample, and will need to be updated for dissertation
 ```{r fig.width=9, fig.height=3}
 app <- ggplot(wide_means, aes(x=`Cantonese /p/`, y=`English /p/`)) + 
   geom_point(color='orange') +
@@ -297,6 +293,5 @@ ctk <- ctk +
 Arrange plots in a single big poster figure
 ```{r fig.width=12, fig.height=10}
 all <- grid.arrange(cpt, cpk, ctk, ept, epk, etk, app, att, akk, nrow=3)
-ggsave('correlation_uniformity.png', plot=all, height = 10, width = 12, units='in') #used in ISBPAC poster
+# ggsave('figs/correlation_uniformity.png', plot=all, height = 10, width = 12, units='in') #used in ISBPAC poster
 ```
-

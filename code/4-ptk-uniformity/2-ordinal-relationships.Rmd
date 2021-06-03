@@ -30,10 +30,9 @@ theme_set(
 ```
 
 ```{r}
-df <- read_csv('ptk_clean_20210331.csv') # this version used for interspeech
+df <- read_csv('dfs/ptk_clean_20210602.csv') # this version used for interspeech revisions
 head(df)
 ```
-
 
 ## Oridnal relationship proportions
 Proportion of talkers adhering to expected ptk duration relationships (more posterior --> longer) given prior work on connected (but not spontaneous) speech. These numbers are all over the map, though if we take the estimates for /p/ with a grain of salt (some individuals have very few tokens), the t-k comparison more or less follows expectations.
@@ -106,7 +105,7 @@ df %>%
       legend.position = 'right'
     )
 
-ggsave('ordrel.png', height=3.5, width = 12, units='in') # This used in ISBPAC poster
+# ggsave('figs/ordrel.png', height=3.5, width = 12, units='in') # This used in ISBPAC poster
 ```
 
 ## Visualizing within talker segment relationships
@@ -138,6 +137,6 @@ df %>%
       legend.position = 'bottom'
     )
 
-# ggsave('ptk_vot_individuals_vert.png', height = 8.5, width = 3.5, units='in') # Used in interspeech paper with manually moved legend - don't re-run; different sizes for paper and poster
+# ggsave('figs/ptk_vot_individuals_vert.png', height = 8.5, width = 3.5, units='in') # Used in interspeech paper with manually moved legend - don't re-run; different sizes for paper and poster
 ```
 

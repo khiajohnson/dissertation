@@ -19,14 +19,14 @@ library(emmeans)
 ```
 
 ```{r}
-df <- read_csv('ptk_clean_20210331.csv')
-head(df)
+df <- read_csv('dfs/ptk_clean_20210602.csv')
+df
 ```
 
 Center VOT and standardize average phone duration
 ```{r}
-df$vot_centered <- scale(df$vot_ms, center=TRUE, scale=FALSE)
-df$avg_phone_dur_z <- scale(df$avg_phone_dur_ms)
+df$vot_z <- scale(df$vot_ms, center=TRUE, scale=TRUE)
+df$avg_phone_dur_z <- scale(df$avg_phone_dur_ms, center=TRUE, scale=TRUE)
 ```
 
 Set up and inspect weighted effect coding
@@ -56,69 +56,30 @@ options(scipen=999)
 
 ```{r}
 mod <- lmer(
-  formula = vot_centered ~ 1 + segment * language + avg_phone_dur_z + is_post_pausal + (segment * language | talker) + (1 | word),
+  formula = vot_z ~ 1 + segment * language + avg_phone_dur_z + is_post_pausal + (segment * language | talker) + (1 | word),
   data = df,
   control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE))
   )
-
-saveRDS(mod, 'vot_uniformity_model.rds')
-mod
 ```
 
-Try without centering VOT - basically identical, except for intercept (as expected)
+control = lmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5))
+
+
 ```{r}
-mod_raw <- lmer(
-  formula = vot_ms ~ 1 + segment * language + avg_phone_dur_z + is_post_pausal + (segment * language | talker) + (1 | word),
-  data = df,
-  control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE))
-  )
+#AF1 <- allFit(mod, verbose=TRUE, parallel = "multicore")
+#saveRDS(AF1, 'fits/allFit_vot_uniformity.rds')
+AF1 <- readRDS('fits/allFit_vot_uniformity.rds')
+```
 
-saveRDS(mod_raw, 'raw-vot_uniformity_model.rds')
-
-mod_raw
+There were no warnings or convergence issues with the bobyqa optimizer (or: optimx.L-BFGS-B; nloptwrap.NLOPT_LN_BOBYQA); others had "Model failed to converge with 1 negative eigenvalue" like errors
+```{r}
+mod_r1 <- AF1$bobyqa
+mod_r1
 ```
 
 Ran the pairwise comparisons on the science computer, since it takes a long time (output pasted below)
 ```{r}
-emm <- emmeans(mod_raw, pairwise ~ language | segment)#, pbkrtest.limit = 9458)
+# emm <- emmeans(mod_r1, pairwise ~ language | segment, pbkrtest.limit = 8961)
+emm <- readRDS('fits/emm_vot_uniformity.rds')
 summary(emm)
 ```
-
-**Results from centered VOT run**
-
-$emmeans
-segment = k:
- language  emmean   SE    df lower.CL upper.CL
- Cantonese  -2.61 2.44 226.1   -7.416     2.19
- English     7.05 1.56  77.5    3.942    10.15
-
-segment = t:
- language  emmean   SE    df lower.CL upper.CL
- Cantonese   1.46 1.60 194.8   -1.683     4.61
- English     9.43 1.82 107.6    5.825    13.03
-
-segment = p:
- language  emmean   SE    df lower.CL upper.CL
- Cantonese   4.14 2.52 170.8   -0.828     9.12
- English     4.96 1.91  73.4    1.144     8.77
-
-Results are averaged over the levels of: is_post_pausal 
-Degrees-of-freedom method: kenward-roger 
-Confidence level used: 0.95 
-
-$contrasts
-segment = k:
- contrast            estimate   SE  df t.ratio p.value
- Cantonese - English   -9.656 2.43 427 -3.972  0.0001 
-
-segment = t:
- contrast            estimate   SE  df t.ratio p.value
- Cantonese - English   -7.962 2.25 183 -3.536  0.0005 
-
-segment = p:
- contrast            estimate   SE  df t.ratio p.value
- Cantonese - English   -0.813 2.78 215 -0.293  0.7699 
-
-Results are averaged over the levels of: is_post_pausal 
-Degrees-of-freedom method: kenward-roger 
-
