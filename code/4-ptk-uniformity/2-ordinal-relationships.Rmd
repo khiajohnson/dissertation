@@ -125,10 +125,10 @@ df %>%
   summarise(mean_vot = mean(vot_ms), se_vot = std.error(vot_ms), n=n()) %>%
   ungroup() %>%
   mutate(language = if_else(language=='Cantonese', 'C','E')) %>%
-  ggplot(aes(y=language, x=mean_vot, shape=segment, color=segment)) +
-    geom_point(shape=5) +
-    geom_errorbar(position = "identity", size=.5,width = .25, aes(xmin = mean_vot-se_vot, xmax = mean_vot+se_vot)) +
-    geom_line(aes(group=segment), size=.75) +
+  ggplot(aes(y=language, x=mean_vot, shape=segment, color=segment, group=segment)) +
+    geom_point(shape=5, position = position_dodge(width = .5)) +
+    geom_errorbar(position = position_dodge(width = .5), size=.5,width = .25, aes(xmin = mean_vot-se_vot, xmax = mean_vot+se_vot)) +
+    geom_line(size=.75, position = position_dodge(width = .5),) +
     scale_color_viridis_d(option = 'inferno', begin = 0.1, end = 0.8) +
     facet_wrap(~talker, ncol=3)+
     labs(y="",  x="VOT (ms)") +
