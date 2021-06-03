@@ -119,24 +119,30 @@ df$segment <- forcats::fct_relevel(df$segment, 'p','t','k')
 levels(df$segment)
 ```
 
-```{r fig.height=8, fig.width=3.5}
+
+```{r fig.height=4, fig.width=7.5}
 df %>%
   group_by(talker, language, segment) %>%
   summarise(mean_vot = mean(vot_ms), se_vot = std.error(vot_ms), n=n()) %>%
   ungroup() %>%
-  mutate(language = if_else(language=='Cantonese', 'C','E')) %>%
-  ggplot(aes(y=language, x=mean_vot, shape=segment, color=segment, group=segment)) +
-    geom_point(shape=5, position = position_dodge(width = .5)) +
-    geom_errorbar(position = position_dodge(width = .5), size=.5,width = .25, aes(xmin = mean_vot-se_vot, xmax = mean_vot+se_vot)) +
-    geom_line(size=.75, position = position_dodge(width = .5),) +
-    scale_color_viridis_d(option = 'inferno', begin = 0.1, end = 0.8) +
-    facet_wrap(~talker, ncol=3)+
+  mutate(language.dodged = if_else(language=='Cantonese', 1, 0),
+         language.dodged = if_else(segment=='p', language.dodged+0.2, language.dodged),
+         language.dodged = if_else(segment=='k', language.dodged-0.2, language.dodged)
+         ) %>%
+  ggplot(aes(y=language.dodged, x=mean_vot, shape=segment, color=segment, group=segment)) +
+    geom_point(size=1) +
+    geom_errorbar(alpha=0.85, size=.5, width = .2, aes(xmin = mean_vot-se_vot, xmax = mean_vot+se_vot)) +
+    geom_line(alpha=0.5, size=.5) +
+    scale_color_viridis_d(option = 'inferno', begin = 0.1, end = 0.75) +
+    scale_y_continuous(breaks = c(0,1), labels = c('E', 'C')) +
+    facet_wrap(~talker, ncol=7)+
     labs(y="",  x="VOT (ms)") +
     theme(
       strip.text = element_text(size=6),
-      legend.position = 'bottom'
+      legend.position = 'bottom',
+      legend.spacing.y = unit(0, 'cm')
     )
-
+# ggsave('figs/ptk_vot_individuals.png', height = 4.5, width = 7.5, units='in')
 # ggsave('figs/ptk_vot_individuals_vert.png', height = 8.5, width = 3.5, units='in') # Used in interspeech paper with manually moved legend - don't re-run; different sizes for paper and poster
 ```
 
