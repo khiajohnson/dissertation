@@ -30,7 +30,8 @@ theme_set(theme_clean() + theme(
       legend.position = 'bottom',
       axis.title.x = element_text(size = 10, face='bold'),
       axis.title.y = element_text(size = 10, face='bold'),
-      strip.text = element_text(size=10, face='bold')
+      strip.text = element_text(size=10, face='bold'),
+      plot.background = element_blank()
     ))
 
 # ggplot <- function(...) ggplot2::ggplot(...) + 
@@ -88,7 +89,7 @@ words %>%
         xlab('Log frequency') +
         ylab('Count')
 
-ggsave('../../text/figures/ch2_wordfrequency_6in.png', width = 6, height = 3)
+ggsave('../../text/figures/ch2_wordfrequency_5in.png', width = 5, height = 3)
 ```
 
 Hours of actual participant speech production -- excludes all pauses as this number is based purely on where the forced aligner identified words
@@ -133,7 +134,7 @@ ggparcoord(unk_duration, columns = 2:3,
     ) + xlab('Language') + ylab('Proportion') +
     scale_y_continuous(limits = c(0,.3),breaks = c(0,0.05,0.1,.15,.2,.25,.3))
 
-ggsave('../../text/figures/ch2_wordfrequency_4in.png', width = 4, height = 3)
+ggsave('../../text/figures/ch2_switchfrequency_4in.png', width = 4, height = 3)
 ```
 
 Clear and close the database
@@ -156,7 +157,7 @@ demographics <- lbq_raw %>%
     select(!matches("language"), -X253) 
 ```
 
-```{r fig.width=7, fig.height=3}
+```{r fig.width=5, fig.height=4}
 demographics %>%
     select(id, starts_with('Places')) %>%
     mutate(across(where(is.character), 
@@ -170,12 +171,12 @@ demographics %>%
     drop_na() %>%
     ggplot(aes(y=fct_rev(Place))) +
         geom_bar() +
-        facet_wrap(~Ages, ncol=4) +
+        facet_wrap(~Ages, ncol=2) +
         ylab('Country Lived In') +
         xlab('Count') +
         theme(legend.position = 'none')
 
-ggsave('../../text/figures/ch2_placeslived_7in.png', width = 7, height = 3)
+ggsave('../../text/figures/ch2_placeslived_5in.png', width = 5, height = 4)
 ```
 
 ```{r}
@@ -197,7 +198,7 @@ demographics %>%
         xlab('Count') +
         ylab('Caretaker(s) born in')
 
-ggsave('../../text/figures/ch2_caretakers_4in.png', width = 4, height = 4)
+ggsave('../../text/figures/ch2_caretakers_3in.png', width = 3, height = 3)
 
 ```
 
@@ -236,7 +237,7 @@ rm(lang_nums)
 ```
 
 Visualize the age that each participant started learning each of their languages
-```{r fig.height=9, fig.width=7}
+```{r fig.height=9, fig.width=5}
 tidy_languages %>%
     filter(question=='Age Started', language!='French (Quebec)') %>%
     select(Participant=id, Language=language,Age=value) %>%
@@ -246,21 +247,23 @@ tidy_languages %>%
     mutate(Language = if_else(Language=='Hokkien Taiwanese', 'Hokkien', Language)) %>% 
     mutate(Language = if_else(Language=='French (France)', 'French', Language)) %>%
     arrange(Language, Age) %>%
+    filter(str_starts(Participant,'VF')) %>%
     ggplot(aes(y=Age, x='', color = Age, label=Language)) +
-        geom_point(size=1.5, shape=18, alpha=0.75) +
+        geom_point(size=2, shape=18) +
         geom_text_repel(max.iter=100000, min.segment.length = 0,
-                        box.padding = 0.35, force=2, size=2, max.overlaps = 10) +
+                        box.padding = 0.4, force=2, size=2.5, max.overlaps = 10) +
         scale_y_continuous(limits = c(-4,22), breaks = c(0,5,10,15,20), 
-                           labels = c('Birth', '5', '10','15', '20+'))+
-        scale_color_viridis_c(option='magma', begin = 0, end = 0.9) + 
-        facet_wrap(~Participant, ncol = 5) +
+                           labels = c('0', '5', '10','15', '20+'))+
+        scale_color_viridis_c(option='magma', begin = 0, end = 0.8) + 
+        facet_wrap(~Participant, ncol = 3) +
         xlab('')+
         ylab('Age Started Learning Language (Year)') +
         theme(panel.border = element_rect(fill=NA), 
               legend.position = 'right',
               strip.text = element_text(size = 8, face = 'bold'))
 
-# ggsave('../../text/figures/ch2_multilingualism_7.png', width = 7, height = 9)
+# ggsave('../../text/figures/ch2_multilingualism_vm_5in.png', width = 5, height = 7)
+ggsave('../../text/figures/ch2_multilingualism_vf_5in.png', width = 5, height = 7)
 ```
 
 
