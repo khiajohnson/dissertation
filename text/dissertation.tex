@@ -3,9 +3,10 @@
 % At the minimum, you will need to change the information found
 % after the "Document meta-data"
 %
-%!TEX TS-program = pdflatex
+%!TEX TS-program = xelatex
 %!TEX encoding = UTF-8 Unicode
-
+%!BIB program = bibtex
+%
 %% The ubcdiss class provides several options:
 %%   gpscopy (aka fogscopy)
 %%       set parameters to exactly how GPS specifies
@@ -52,9 +53,8 @@
 %%
 
 %% NFSS font specification (New Font Selection Scheme)
-\usepackage{times,mathptmx,courier}
-\usepackage[scaled=.92]{helvet}
-\usepackage{tipa} % added by KAJ!
+% \usepackage{times,mathptmx,courier}
+% \usepackage[scaled=.92]{helvet}
 
 %% Math or theory people may want to include the handy AMS macros
 %\usepackage{amssymb}
@@ -77,8 +77,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Configure fonts for XeTeX / XeLaTeX using the fontspec package.
 %% Be sure to check out the fontspec documentation.
-% \usepackage{fontspec,xltxtra,xunicode}	% required
-%\defaultfontfeatures{Mapping=tex-text}	% recommended
+\usepackage{fontspec,xltxtra,xunicode}	% required
+\defaultfontfeatures{Mapping=tex-text}	% recommended
 %% Minion Pro and Myriad Pro are shipped with some versions of
 %% Adobe Reader.  Adobe representatives have commented that these
 %% fonts can be used outside of Adobe Reader.
@@ -87,16 +87,24 @@
 %\setmonofont[Scale=MatchLowercase]{Andale Mono}
 
 %% Other alternatives:
-%\setromanfont[Mapping=tex-text]{Adobe Caslon}
-%\setsansfont[Scale=MatchLowercase]{Gill Sans}
-%\setsansfont[Scale=MatchLowercase,Mapping=tex-text]{Futura}
-%\setmonofont[Scale=MatchLowercase]{Andale Mono}
+\setromanfont[Mapping=tex-text]{Times New Roman}
+\setsansfont[Scale=MatchLowercase]{Helvetica}
+% \setsansfont[Scale=MatchLowercase,Mapping=tex-text]{Futura}
+% \setmonofont[Scale=MatchLowercase]{Mo}
 %\newfontfamily{\SYM}[Scale=0.9]{Zapf Dingbats}
+
+%% Khia additions
+% \usepackage{tipa}
+\usepackage{xeCJK}
+\setCJKmainfont{Noto Serif CJK TC}
+\setCJKsansfont{Noto Sans CJK TC}
+\setCJKmonofont{Noto Sans Mono CJK SC}
+
 %% END FONTS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+\usepackage{rerunfilecheck}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
