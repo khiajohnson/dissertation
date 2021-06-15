@@ -259,7 +259,7 @@ tidy_languages %>%
         xlab('')+
         ylab('Age Started Learning Language (Year)') +
         theme(panel.border = element_rect(fill=NA), 
-              legend.position = 'right',
+              legend.position = 'none',
               strip.text = element_text(size = 8, face = 'bold'))
 
 # ggsave('../../text/figures/ch2_multilingualism_vm_5in.png', width = 5, height = 7)
