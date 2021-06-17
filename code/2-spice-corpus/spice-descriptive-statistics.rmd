@@ -74,6 +74,125 @@ words <- words %>%
     separate(file, into = c('talker','language','order','date'), remove = FALSE)
 ```
 
+
+# Assess code-switching from utterances level
+```{r}
+
+results <- dbSendQuery(
+    db,
+    "SELECT utterance,
+	       utterance_onset,
+	       utterance_offset,
+	       task,
+	       task_onset,
+	       task_offset,
+	       utterances.file
+	FROM utterances
+	LEFT JOIN tasks ON (tasks.file = utterances.file
+	                    AND utterance_onset BETWEEN task_onset AND task_offset)"
+    )
+utts <- fetch(results)
+
+utts <- utts %>%
+    separate(file, into = c('talker','language','order','date'), remove = FALSE)
+
+utts
+```
+
+```{r}
+utts %>%
+    filter(task == 'interview') %>%
+    select(utterance, talker, language, task) %>%
+    filter(str_detect(utterance, '@'))
+```
+
+```{r}
+test <- data.frame(utt=c(
+    "my husband likes the traditional ones 蓮蓉 the lotus paste one",
+    "ja3 鹹蛋 好食 【 吖 啲 】 蛋黃 幾好 呀",
+    "oh yeah 端午節 okay so &th i guess the other two that we would",
+    "but then and then xxx i'll like go to like this one dinner with my mom's side",
+    "what they called it in chinese like 糭 子@m",
+    "um tsk 去過 【 第二度 】 【 姐係 】 ",
+    "countryside 同埋 嗰啲 um お ん せ ん@j 嗰啲 地方 yeah",
+    "我係 小即 kinder gar ten 開始 做 讀法 文@m 【 嘅 已 】 經"
+))
+test
+```
+
+```{r}
+wordtcs <- utts %>%
+    filter(task == 'interview') %>%
+    select(utt=utterance, talker, interview=language) %>%
+    mutate(
+        utt = str_replace_all(utt, '[】 【]', ' '),
+        utt = str_replace_all(utt, '\\s+', ' '),
+        utt = str_replace(utt, '^\\s+', ''),
+        utt = str_replace(utt, '\\s+$', '')
+        ) %>%
+    separate_rows(utt, sep = '\\s+') %>%
+    group_by(utt, talker, interview) %>%
+    summarise(n=n()) %>%
+    mutate(
+        utt = str_replace_all(utt, '[\\?}@＠]$', ''),
+        type = if_else(str_starts(utt, '&'), 'Fragment', NULL),
+        type = if_else(str_detect(utt, '@'), 'Other Language', type), 
+        type = if_else(str_starts(utt, '[a-z]') & str_ends(utt, '[0-9]'), 'Cantonese', type), 
+        type = if_else(str_detect(utt, "^[a-z'-]+$"), 'English', type), 
+        type = if_else(utt == 'xxx', 'Unintelligible', type),
+        type = if_else(is.na(type), 'Cantonese', type)
+    ) %>%
+    filter(utt != '') %>%
+    select(word = utt, talker, interview, n, type)
+```
+
+
+```{r}
+wordtypecounts <- wordtcs %>%
+    group_by(interview, talker, type) %>%
+    summarise(n=sum(n)) %>%
+    ungroup()
+```
+
+```{r, fig.width=5, fig.height=7}
+wordtypecounts %>%
+    filter(interview=='Cantonese') %>%
+    ggplot(aes(fill=type, x=talker, y=n)) + 
+    geom_col() + 
+    scale_fill_viridis_d(option='magma', begin = 0.9, end = 0,
+                         limits = c('Cantonese','English','Other Language', 'Fragment', 'Unintelligible')) + 
+    xlab('Talker') +
+    ylab('Number of words') +
+    theme(axis.text.x = element_text(angle = 90),
+          legend.position="bottom",
+          legend.title = element_blank(),
+          legend.text = element_text(size=6)) 
+
+ggsave('../../text/figures/ch2_cantonesetypecounts_5in.png', width = 5, height = 7)
+
+```
+
+```{r, fig.width=5, fig.height=7}
+wordtypecounts %>%
+    filter(interview=='English') %>%
+    ggplot(aes(fill=type, x=talker, y=n)) + 
+    geom_col() + 
+    scale_fill_viridis_d(option='magma', begin = 0.9, end = 0,
+                         limits = c('Cantonese','English','Other Language', 'Fragment', 'Unintelligible')) + 
+    xlab('Talker') +
+    ylab('Number of words') +
+    theme(axis.text.x = element_text(angle = 90),
+          legend.position="bottom",
+          legend.title = element_blank(),
+          legend.text = element_text(size=6)) 
+
+ggsave('../../text/figures/ch2_englishtypecounts_5in.png', width = 5, height = 7)
+
+```
+
+
+
+
 ## Corpus Summary
 Plot log word frequency for both languages, excluding instances of <unk>
 ```{r fig.width=6, fig.height=3}
