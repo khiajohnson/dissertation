@@ -75,7 +75,8 @@ words <- words %>%
 ```
 
 
-# Assess code-switching from utterances level
+## Corpus Summary
+### Assess code-switching from utterances level
 ```{r}
 
 results <- dbSendQuery(
@@ -100,31 +101,11 @@ utts
 ```
 
 ```{r}
-utts %>%
-    filter(task == 'interview') %>%
-    select(utterance, talker, language, task) %>%
-    filter(str_detect(utterance, '@'))
-```
-
-```{r}
-test <- data.frame(utt=c(
-    "my husband likes the traditional ones 蓮蓉 the lotus paste one",
-    "ja3 鹹蛋 好食 【 吖 啲 】 蛋黃 幾好 呀",
-    "oh yeah 端午節 okay so &th i guess the other two that we would",
-    "but then and then xxx i'll like go to like this one dinner with my mom's side",
-    "what they called it in chinese like 糭 子@m",
-    "um tsk 去過 【 第二度 】 【 姐係 】 ",
-    "countryside 同埋 嗰啲 um お ん せ ん@j 嗰啲 地方 yeah",
-    "我係 小即 kinder gar ten 開始 做 讀法 文@m 【 嘅 已 】 經"
-))
-test
-```
-
-```{r}
 wordtcs <- utts %>%
     filter(task == 'interview') %>%
     select(utt=utterance, talker, interview=language) %>%
     mutate(
+        utt = str_replace_all(utt, '\\s*[@＠]\\s*', '@'),
         utt = str_replace_all(utt, '[】 【]', ' '),
         utt = str_replace_all(utt, '\\s+', ' '),
         utt = str_replace(utt, '^\\s+', ''),
@@ -142,7 +123,7 @@ wordtcs <- utts %>%
         type = if_else(utt == 'xxx', 'Unintelligible', type),
         type = if_else(is.na(type), 'Cantonese', type)
     ) %>%
-    filter(utt != '') %>%
+    filter(utt != '', str_starts(utt, '@', negate = TRUE)) %>%
     select(word = utt, talker, interview, n, type)
 ```
 
@@ -169,7 +150,6 @@ wordtypecounts %>%
           legend.text = element_text(size=6)) 
 
 ggsave('../../text/figures/ch2_cantonesetypecounts_5in.png', width = 5, height = 7)
-
 ```
 
 ```{r, fig.width=5, fig.height=7}
@@ -187,13 +167,76 @@ wordtypecounts %>%
           legend.text = element_text(size=6)) 
 
 ggsave('../../text/figures/ch2_englishtypecounts_5in.png', width = 5, height = 7)
+```
+
+```{r}
+wordtcs %>%
+    ungroup() %>%
+    select(word,interview) %>%
+    unique() %>%
+    group_by(interview) %>%
+    summarise(n()) 
+```
+
+```{r}
+wordtcs %>%
+    group_by(interview, talker) %>%
+    summarise(tokens = sum(n), types = n()) %>%
+    group_by(interview) %>%
+    summarise(sum(tokens),mean(tokens),sd(tokens), min(tokens),max(tokens), 
+             mean(types),sd(types), min(types),max(types))
+```
+
+
+```{r}
+wordtcs %>%
+    group_by(talker, interview, type) %>%
+    summarise(n=sum(n)) %>%
+    pivot_wider(names_from = 'type', values_from = 'n') %>%
+    filter(Cantonese<10)
+```
+
+English and Canto token frequency in the English sessions
+
+```{r}
+wordtcs %>%
+    filter(type =='English' | type == 'Cantonese', interview=='Cantonese') %>%
+    mutate(type = if_else(type=='Cantonese', 'Cantonese in\nCantonese interview', 'English in\nCantonese interview')) %>%
+    group_by(word, interview, type) %>%
+    summarise(n = sum(n)) %>%
+    ungroup() %>%
+    mutate(log_frequency = log(n)) %>%
+    ggplot(aes(x=log_frequency)) + 
+        geom_histogram(binwidth = 0.5) + 
+        facet_wrap(~type) +
+        xlab('Log Frequency') + 
+        ylab('Count')
+
+ggsave('../../text/figures/ch2_cantonesewordfrequency_5in.png', width = 5, height = 3)
+
+wordtcs %>%
+    filter(type =='English' | type == 'Cantonese', interview=='English') %>%
+    mutate(type = if_else(type=='Cantonese', 'Cantonese in\nEnglish interview', 'English in\nEnglish interview')) %>%
+    group_by(word, interview, type) %>%
+    summarise(n = sum(n)) %>%
+    ungroup() %>%
+    mutate(log_frequency = log(n)) %>%
+    ggplot(aes(x=log_frequency)) + 
+        geom_histogram(binwidth = 0.5) + 
+        facet_wrap(~type) +
+        xlab('Log Frequency') + 
+        ylab('Count')
+
+ggsave('../../text/figures/ch2_englishwordfrequency_5in.png', width = 5, height = 3)
 
 ```
 
 
 
 
-## Corpus Summary
+
+
+
 Plot log word frequency for both languages, excluding instances of <unk>
 ```{r fig.width=6, fig.height=3}
 words %>%
