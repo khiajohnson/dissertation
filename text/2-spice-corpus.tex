@@ -47,8 +47,8 @@ There were a handful of additional individuals who participated in the study but
 
 \begin{table}[!htbp]
   \begin{center}
-    \small
-  \begin{tabular}{ccccccc}
+    \footnotesize
+      \begin{tabular}{ccccccc}
   \toprule
     & & & &                & \multicolumn{2}{c}{\textbf{Age Began Learning}} \\
   \textbf{No.} & \textbf{ID} & \textbf{Order} & \textbf{Age} & \textbf{Gender} & \textbf{English} & \textbf{Cantonese} \\
@@ -150,7 +150,7 @@ In practice, the utility of these sentences may be somewhat limited, as sentence
 
 \begin{table}[!htbp]
 \begin{center}
-
+  \footnotesize
 \begin{tabular}{c c}
 \toprule
 \textbf{No.}  & \textbf{English} \\
@@ -266,49 +266,71 @@ English-specific conventions include:
 \subsection{Forced Alignment}\label{ch2:subsec:alignment}
 Force-aligned transcripts were produced with the Montreal Forced Aligner \citep{mcauliffe_2017_mfa}, using the hand-corrected orthographic transcripts. 
 
-In Cantonese, forced alignment was completed with the Train-and-Align option, as there was no pretrained model available for Cantonese. As Cantonese orthpgraphy does not separate words with spaces, words segmentation was done using the \textit{jieba} Python library \citep{sun_2020_jieba}, along with a Cantonese dictionary.\footnote{The Cantonese Word Segmentation GitHub page: \url{https://github.com/wchan757/Cantonese_Word_Segmentation}.} The Cantonese pronunciation dictionary was generated using the \textit{PyCantonese} Python library \citep{lee_2018_pycantonese}. Pronunciations were identified by getting the Jyutping romanization from each character (or using the Jyutping transcribed), separating it into segments, and appending the tone number to the syllable nucleus (i.e., vowel or syllabic nasal). Research assistants supplemented the dictionary with alternative pronunciations for words that participated in syllable fusion. This approach bears some similarity to that of \citet{tse_2019_heritage}, but differs in that it also includes tonal information---which has been shown to improve forced alignment as long as there are not too many tone-nucleus combinations \citep{cavar_2016_endangered, yuan_2014_automatic}. %maybe add a DiCanio reference, see Matt Faytak's email
+In Cantonese, forced alignment was completed with the Train-and-Align option, as there was no pretrained model available for Cantonese. As Cantonese orthpgraphy does not separate words with spaces, words segmentation was done using the \textit{jieba} Python library \citep{sun_2020_jieba}, along with a Cantonese dictionary.\footnote{The Cantonese Word Segmentation GitHub page: \url{https://github.com/wchan757/Cantonese_Word_Segmentation}.} While using an automated tool such as this is likely an imperfect solution, it has the benefit of reproducibility and consistency. This is important, as it can be difficult to define wordhood in Cantonese \citep[e.g., see][]{wong_2006_fusion}.
+
+The Cantonese pronunciation dictionary was generated using the \textit{PyCantonese} Python library \citep{lee_2018_pycantonese}. Pronunciations were identified by getting the Jyutping romanization from each character (or using the Jyutping transcribed), separating it into segments, and appending the tone number to the syllable nucleus (i.e., vowel or syllabic nasal). Research assistants supplemented the dictionary with alternative pronunciations for words that participated in syllable fusion. This approach bears some similarity to that of \citet{tse_2019_heritage}, but differs in that it also includes tonal information---which has been shown to improve forced alignment as long as there are not too many tone-nucleus combinations \citep{cavar_2016_endangered, yuan_2014_automatic}. %maybe add a DiCanio reference, see Matt Faytak's email
 
 Forced alignment in English took advantage of the Montreal Forced Aligner's pretrained English model and pronunciation dictionary, which broadly reflects North American English varieties. The dictionary was supplemented with manual additions, in order to minimize the number of out-of-vocabulary items.
 
 The word and phone output of the forced alignment process was included in a TextGrid for each audio recording, along with annotation tiers for task (sentences, storyboard, or interview), utterance (the short chunks). In both sessions, any material not in the main language of the session was not force aligned, and appears as ``<unk>'' for unknown in the word tier and ``spn'' in the phone tier. The force-aligned transcripts were not manually corrected or checked. This means that any short chunk with code-switching or unintelligible speech will likely have poorer alignment. As a result, it is advisable to use stringent exclusionary criteria or perform checks prior to analyzing data from the corpus. 
 
 \section{Descriptive Statistics}\label{ch2:sec:statistics}
-As hand-correction is currently underway, the descriptive statistics reported in the section are based on the Google Cloud Speech-to-Text transcripts of all three tasks (sentence reading, storyboard narration, interview) for the 27 participants listed in Table~\ref{ch2:tab:participants}. 
+The descriptive statistics in this section are intended to give a general sense of the quantity and quality of the data in the corpus. They are based on the transcript data as described in the previous section, specifically the hand-corrected utterance tier, and the force-aligned phone tier. Additionally, this section only reports on participant speech, though the interviewer's speech is included in its own channel in the stero audio files.
 
 \subsection{Cantonese Interviews}\label{ch2:subsec:cantonese_descriptive}
-The Cantonese interviews include approximately 9.43 hours of participant speech.\footnote{Note that this excludes the duration of the interviewer questions, as well as pauses in the participant's speech. Furthermore, with the addition of the remaining seven male participants, this will increase to approximately 12 hours} There were a total of 1,836 character types, and 98,401 character tokens. The number of characters varies somewhat drastically by participant, with a mean of 3,514 characters per interview (SD$=$734, min$=$2,171, max$=$5,410). The overall distribution of character frequency in the Cantonese interviews is depicted in Figure~\ref{ch2:fig:wordfrequency}. As expected, there are a relatively small number of characters occurring frequently (e.g. pronouns, function words, etc.), while a majority are mid and low frequency. 
 
-The decision to report descriptive statistics for Cantonese in characters rather than words arises from the difficulty of defining wordhood in Cantonese \citep{wong_2006_fusion}, a lack of tools for parsing written Cantonese,\footnote{The \textit{PyCantonese} package is a notable exception to this \citep{lee_2018_pycantonese}, though it does not include tools for splitting sentences into words.} and because written Cantonese does not include spaces between words. An approximation of the word count can be devised by calculating the average word length from the Hong Kong Cantonese Corpus \citep{luke_2015_hkc}\textemdash 1.3 characters. By this estimation, the Cantonese interviews here include approximately 75,115 words.
-
-While Google Cloud Speech-to-Text primarily transcribes Cantonese in characters, it also inserts English text.\footnote{It is unclear at this point how accurate the English text in the Cantonese interviews is, though anecdotally speaking, it is accurate at least some of the time.} As a result, it is possible to get a rough idea of how much code-switching there is in the Cantonese interviews. There were 1,321 English word types in the Cantonese interviews, and 2,858 word tokens. This does not necessarily indicate the number of switches, as participants may have produced more than one English word in a row for a given switch. Nonetheless, it demonstrates that there is a substantial amount of code-switching from Cantonese to English. The mean number of English words in the Cantonese interviews is 102 (s.d.$=$46, min$=$30, max$=$198). 
+The Cantonese recordings include 8.3 hours of speech: 13.6 minutes of sentences, 44.0 minutes of storyboard narration, and 7.4 hours of conversational interview. These estimates are calculated from the summed duration of all non-silent intervals in the phone tier of the transcripts, and as such, do not include interviewer questions or any pauses in the participant's speech. 
 
 \begin{figure}[!htbp]
   \begin{center}
-  \includegraphics[width=4in]{figures/ch2_switchfrequency_4in.png} 
-  \caption{Estimated proportion of switched language based on duration.}
-  \label{ch2:fig:codeswitch}
+  \includegraphics[width=4.9in]{figures/ch2_cantonesetypecounts_5in.png} 
+  \caption{The total word count for each participant's Cantonese interview task is represented by bar height. Color indicates the kind of item counted. }
+  \label{ch2:fig:cantonesetypecounts}
   \end{center}
 \end{figure}
 
-\subsection{English Interviews}\label{ch2:subsec:english_descriptive}
-The English interviews include a total of 5,494 word types and 91,828 word tokens in 9.89 hours of participant speech.\footnote{As with the Cantonese interviews, this will increase to approximately 12 hours with the remaining participants.} As in the Cantonese interviews, the number of words varies substantially by participant, with a mean word count of 3,729 (s.d.$=$701, min$=$2,113, max$=$4,518). The distribution of log word frequency in the English interviews is portrayed in Figure~\ref{ch2:fig:wordfrequency}. Word frequency follows a similar pattern to Cantonese character frequency, with most words occurring infrequently, and a smaller proportion occurring very frequently.
+In the Cantonese interview sessions, there were a total of 8,112 word types, and 90,512 word tokens. The number of words varies substantially by participant, with a mean of 2,662 word tokens per interview (SD$=$637, minimum$=$1,654, maximum$=$4,212), and 749 word types (SD$=$157, minimum$=$483, maximum$=$1081). The numbers reported here include all types of ``words''---Cantonese words, English words, words in other languages, phonological fragments, and unintelligible stretches of speech. Figure \ref{ch2:fig:cantonesetypecounts} shows split of these categories on a by-participant basis within the Cantonese interview sessions. Figure \ref{ch2:fig:cantonesetypecounts} indicates that all participants switch into English during the Cantonese interview sessions. The amount of switching varies across participants, with VF19D producing an especially large number of English words. While the other three categories also vary, they are comparatively small in number. 
 
-Unlike for the Cantonese interviews, it is not possible to get a sense of code-switching in the English interviews, as Google Cloud Speech-to-Text for Canadian English does not insert Cantonese characters. Anecdotally, the interviewers reported that while most of the English interviews contained some code-switches, there was overall less English-to-Cantonese code-switching. This remains to be quantified when the orthographic hand-correction is completed.
+The overall distribution of word frequency in the Cantonese interviews is depicted in Figure~\ref{ch2:fig:cantonesewordfrequency}. As expected, there are a relatively small number of words occurring frequently (e.g. pronouns, function words, etc.), while a majority are mid and low frequency. This pattern follows what is expected in a word frequency distribution, and is reassuring given the automated method of segmenting the Cantonese transcripts into words. 
 
-\begin{figure}[!htbp]
+\begin{figure}[h]
   \begin{center}
-  \includegraphics[width=5in]{figures/ch2_wordfrequency_5in.png} 
-  \caption{The distribution of log word frequency in the English and Cantonese interviews.}
-  \label{ch2:fig:wordfrequency}
+  \includegraphics[width=4.9in]{figures/ch2_cantonesewordfrequency_5in.png} 
+  \caption{The distribution of log word frequency for English and Cantonese words in the Cantonese interviews.}
+  \label{ch2:fig:cantonesewordfrequency}
   \end{center}
   \end{figure}
 
-\section{SpiCE Corpus Releases}\label{ch2:sec:releases}
+\subsection{English Interviews}\label{ch2:subsec:english_descriptive}
 
-The SpiCE corpus will be made publicly available in a series of releases with increasing transcription accuracy and breadth of annotation. The first release is planned for mid-2020, and will include all audio files with accompanying Google Cloud Speech-to-Text transcriptions and a detailed language background questionnaire summary. The second release will include hand-corrected orthographic transcriptions, with force-aligned phonetic transcriptions. These files will be released as they are completed. Further releases will depend on resources, but would likely include phone-level hand correction and/or corrections for a particular subset of phones. All full releases will be described in the online documentation,\footnote{\url{https://spice-corpus.readthedocs.io/}} shared through the LRE Map,\footnote{\url{http://lremap.elra.info}} and announced on the first author's website.
+Using the same estimation technique as used for Cantonese, the English recordings include 8.9 hours of speech: 21.9 minutes of sentences, 45.7 minutes of storyboard narration, and 7.7 hours of conversational interview speech.
+
+The English interviews include a total of 4,972 word types and 104,618 word tokens. As in the Cantonese interviews, the number of words varies substantially by participant, with a mean word token count of 3,077 (SD$=$701, minimum$=$1,907, maximum$=$4,240), and word type count of 609 (SD$=$119, minimum$=$434, maximum$=$904). Figure \ref{ch2:fig:englishtypecounts} shows split of these categories on a by-participant basis within the English interview sessions. Unlike the Cantonese interviews, there were relatively few switches into Cantonese, with 12 of the 34 participants producing fewer than 10 Cantonese words during the English sessions.
+
+The distribution of log word frequency for both Cantonese and English words in the English interviews is portrayed in Figure~\ref{ch2:fig:englishwordfrequency}. Word frequency follows a similar pattern to Cantonese word frequency, with most words occurring infrequently, and a smaller proportion occurring very frequently.
+
+\begin{figure}[h]
+  \begin{center}
+  \includegraphics[width=4.9in]{figures/ch2_englishwordfrequency_5in.png} 
+  \caption{The distribution of log word frequency for English and Cantonese words in the Cantonese interviews.}
+  \label{ch2:fig:englishwordfrequency}
+  \end{center}
+\end{figure}
+
+\begin{figure}[!htbp]
+  \begin{center}
+  \includegraphics[width=4.9in]{figures/ch2_englishtypecounts_5in.png} 
+  \caption{The total word count for each participant's English interview task is represented by bar height. Color indicates the kind of item counted. }
+  \label{ch2:fig:englishtypecounts}
+  \end{center}
+\end{figure}
+
+\section{SpiCE Corpus Release}\label{ch2:sec:releases}
+
+The SpiCE corpus was publicly released in May 2021 through the Scholars Portal Dataverse platform under a Creative Commons Attribution 4.0 International License.\footnote{\url{https://creativecommons.org/licenses/by/4.0/}} In addition to the corpus itself, documentation is available online.\footnote{https://spice-corpus.readthedocs.io/}
 
 \section{Discussion \& Conclusion}\label{ch2:subsec:discussion}
 
-While various bilingual corpora exist, they lack in different ways. The SpiCE corpus described here enables within-speaker phonetic comparisons across languages. While this would be possible with some of the bilingual speakers in resources like the Bangor corpora \citep{deuchar_2014_corpora}, the recording quality limits the scope of phonetic queries. With the release of SpiCE and its high-quality recordings, scholars have the ability to ask and answer empirically and theoretically motivated research questions within the speech and language sciences using more sophisticated phonetic measurement techniques (e.g., spectral measures, in addition to temporal measures). This offers substantial potential for increasing our understanding of bilingual spoken language from both phonetic and psycholinguistic perspectives. While the recording quality of this corpus offers these particular advantages, SpiCE is also suitable for any other standard corpus-based inquiry with conversational speech, whether linguistic or paralinguistic in nature. The opportunities made available with SpiCE are especially important given the typological difference between the languages under consideration, and the fact that Cantonese is an understudied language. 
+While various bilingual corpora exist, they lack in different ways. The SpiCE corpus described here enables within-speaker phonetic comparisons across languages. While this would be possible with some of the bilingual speakers in resources like the Bangor corpora \citep{deuchar_2014_corpora}, the recording quality in such resources limits the scope of phonetic research. With the release of SpiCE and its high-quality recordings, scholars have the ability to ask and answer empirically and theoretically motivated research questions within the speech and language sciences using more sophisticated phonetic measurement techniques (e.g., spectral measures, in addition to temporal measures). This offers substantial potential for increasing our understanding of bilingual spoken language from both phonetic and psycholinguistic perspectives. While the recording quality of this corpus offers these particular advantages, SpiCE is also suitable for any other standard corpus-based inquiry with conversational speech, whether linguistic or paralinguistic in nature. The opportunities made available with SpiCE are especially important given the typological difference between the languages under consideration, and the fact that Cantonese is an understudied language. 
 
 \endinput % -------------------------------------------------------- %

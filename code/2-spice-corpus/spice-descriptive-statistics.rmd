@@ -49,8 +49,8 @@ Load the words and tasks tables, and join
 ```{r}
 words <- dbReadTable(db, "words")
 tasks <- dbReadTable(db, "tasks")
-
-tasks
+phones <- dbReadTable(db, "phones")
+phones
 ```
 
 Query the full word table merged with task by time stamps
@@ -149,7 +149,7 @@ wordtypecounts %>%
           legend.title = element_blank(),
           legend.text = element_text(size=6)) 
 
-ggsave('../../text/figures/ch2_cantonesetypecounts_5in.png', width = 5, height = 7)
+ggsave('../../text/figures/ch2_cantonesetypecounts_5in.png', width = 5, height = 6.5)
 ```
 
 ```{r, fig.width=5, fig.height=7}
@@ -166,7 +166,7 @@ wordtypecounts %>%
           legend.title = element_blank(),
           legend.text = element_text(size=6)) 
 
-ggsave('../../text/figures/ch2_englishtypecounts_5in.png', width = 5, height = 7)
+ggsave('../../text/figures/ch2_englishtypecounts_5in.png', width = 5, height = 6.5)
 ```
 
 ```{r}
@@ -298,6 +298,48 @@ ggparcoord(unk_duration, columns = 2:3,
 
 ggsave('../../text/figures/ch2_switchfrequency_4in.png', width = 4, height = 3)
 ```
+
+
+```{r}
+results <- dbSendQuery(
+    db,
+    "SELECT phone,
+	       phone_onset,
+	       phone_offset,
+	       task,
+	       task_onset,
+	       task_offset,
+	       phones.file
+	FROM phones
+	LEFT JOIN tasks ON (tasks.file = phones.file
+	                    AND phone_onset BETWEEN task_onset AND task_offset)"
+    )
+phones <- fetch(results)
+
+phones
+```
+
+```{r}
+phones %>%
+    filter(phone != 'sil', phone != 'sp') %>%
+    mutate(dur = phone_offset - phone_onset) %>%
+    group_by(file, task) %>%
+    summarise(minutes = sum(dur)/60) %>%
+    separate(file, into = c('talker','language')) %>%
+    mutate(task = if_else(task=='sentence', 'sentences', task)) %>%
+    group_by(language, task) %>%
+    summarise(total_hrs = sum(minutes)/60, total_min = sum(minutes))
+    #pivot_wider(names_from = task, values_from = minutes)
+```
+
+
+The Cantonese recordings include 8.3 hours of speech: 13.6 minutes of sentences, 44.0 minutes of storyboard narration, and 7.4 hours of conversational interview. These estimates are calculated from the summed duration of all non-silent intervals in the phone tier of the transcripts, and as such, do not include interviewer questions or any pauses in the participant's speech. 
+
+Using the same estimation technique as used for Cantonese, the English recordings include 8.9 hours of speech: 21.9 minutes of sentences, 45.7 minutes of storyboard narration, and 7.7 hours of conversational interview speech.
+
+
+
+
 
 Clear and close the database
 ```{r}
