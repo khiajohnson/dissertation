@@ -1,5 +1,5 @@
 #%% [markdown]
-# # Setting up a sqlite3 database for the 3-tiered SpiCE textgrids
+# # Setting up a sqlite3 database for the 4-tiered SpiCE textgrids
 
 #%%
 import os
