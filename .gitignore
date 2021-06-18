@@ -7,7 +7,7 @@
 *.Rhistory
 *.Rproj
 dissertation.code-workspace
-text/dissertation.pdf
+*dissertation.pdf
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
