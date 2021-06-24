@@ -406,6 +406,22 @@ ggsave('../../text/figures/ch2_caretakers_3in.png', width = 3, height = 3)
 
 ```
 
+```{r}
+demographics %>%
+    select(id, contains('Caretaker')) %>%
+    pivot_longer(-id, values_to = 'Place') %>%
+    mutate(name = str_replace(name, 'Caretakers - Region ','')) %>%
+    separate(name, into = c('Question', 'Caretaker'), sep = ' - ') %>%
+    pivot_wider(names_from = 'Question', values_from = 'Place') %>%
+    drop_na() %>%
+    mutate(born = str_replace(born,'Manila|Ilocos ', '')) %>%
+    mutate(born = str_replace(born,'[A-Za-z]+ China', 'China')) %>%
+    mutate(bornHK = as.numeric(born=='Hong Kong'), raisedHK = as.numeric(`primarily raised`=='Hong Kong') ) %>%
+    group_by(id) %>%
+    summarise(bornHK = sum(bornHK)/n(), raisedHK=sum(raisedHK)/n()) %>%
+    ungroup() %>%
+    summarise(sum(bornHK>0), sum(bornHK==1), sum(raisedHK>0), sum(raisedHK==1))
+```
 
 ```{r}
 lang_nums <- lbq_raw %>% 
@@ -451,7 +467,7 @@ tidy_languages %>%
     mutate(Language = if_else(Language=='Hokkien Taiwanese', 'Hokkien', Language)) %>% 
     mutate(Language = if_else(Language=='French (France)', 'French', Language)) %>%
     arrange(Language, Age) %>%
-    filter(str_starts(Participant,'VF')) %>%
+    filter(str_starts(Participant,'VM')) %>%
     ggplot(aes(y=Age, x='', color = Age, label=Language)) +
         geom_point(size=2, shape=18) +
         geom_text_repel(max.iter=100000, min.segment.length = 0,
@@ -466,8 +482,8 @@ tidy_languages %>%
               legend.position = 'none',
               strip.text = element_text(size = 8, face = 'bold'))
 
-# ggsave('../../text/figures/ch2_multilingualism_vm_5in.png', width = 5, height = 7)
-ggsave('../../text/figures/ch2_multilingualism_vf_5in.png', width = 5, height = 7)
+ggsave('../../text/figures/ch2_multilingualism_vm_5in.png', width = 5, height = 7)
+#ggsave('../../text/figures/ch2_multilingualism_vf_5in.png', width = 5, height = 7)
 ```
 
 
