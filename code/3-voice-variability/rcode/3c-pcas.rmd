@@ -1,0 +1,167 @@
+---
+title: 'Chapter 3: PCAs for varying passage lengths'
+author: "Khia A. Johnson"
+date: "7/23/2021"
+output: html_document
+---
+
+# Imports & load data
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(ggthemes)
+library(ggrepel)
+library(parameters)
+library(candisc)
+library(data.table)
+```
+
+```{r}
+df <- fread('../data/spice_voicesauce_processed.csv', sep = ',') 
+grouping_vars <- read_csv('../data/spice_grouping_vars.csv')
+```
+
+Summarize range of samples across interviews
+```{r}
+df %>%
+    group_by(File) %>%
+    summarise(n=n()) %>%
+    ungroup() %>%
+    summarise(min(n), median(n), max(n))
+```
+
+```{r}
+df_trunc <- df %>%
+    group_by(File) %>%
+    slice_head(n=22433)
+```
+
+```{r}
+test1 <- df %>%
+    filter(File=='VF19A_Cantonese_I2_20181114')
+```
+
+```{r}
+
+```
+
+
+Function to run PCA for a single talker with promax rotation/standardization and process the output
+```{r}
+run_pca <- function(one_talker_df, filename) {
+  
+  # First pass
+  tX <- one_talker_df[,10:33]
+  # tX_pca_all <- principal_components(tX, n='all', rotation = "promax", standardize = TRUE) 
+  # tX_var_all <- summary(tX_pca_all)
+  # tX_var_all <- rownames_to_column(setNames(data.frame(t(tX_var_all[,-1])), tX_var_all[,1]), 'Component')
+  # n_components <- nrow(filter(tX_var_all, Eigenvalues > mean(tX_var_all$Eigenvalues)*0.7))
+  # 
+  # Second pass
+  tX_pca <- principal_components(tX, n = 10, rotation = "promax", standardize = TRUE) 
+
+  # Add summary information and wrangle
+  tX_var <-summary(tX_pca)
+  tX_var <- rownames_to_column(setNames(data.frame(t(tX_var[,-1])), tX_var[,1]), 'Component')
+  tX_pca <- as_tibble(tX_pca) %>% 
+    pivot_longer(cols = starts_with('RC'), names_to = 'Component', values_to = "Loading") %>%
+    left_join(tX_var, by = 'Component') %>%
+    drop_na() %>%
+    mutate(File=filename) %>%
+    select(File, Variable, Component, Loading, Eigenvalues, Variance, Variance_Proportion, Complexity, Uniqueness, MSA)
+  rm(tX, tX_var)
+  # rm(tX, tX_pca_all, tX_var_all, tX_var)
+  return(tX_pca)
+}
+```
+
+Function to get the PCA loadings for a subset of the big dataframe
+```{r}
+get_pca_loadings_tibble_pl <- function(f) {
+  m <- pl_results %>%
+    filter(File==f) %>%
+    select(Variable, Var_Order, Loading) %>%
+    arrange(Var_Order, Variable) %>%
+    pivot_wider(names_from = Var_Order, values_from = Loading)
+  return(m[,2:ncol(m)]) 
+}
+```
+
+
+```{r}
+pl_list_results <- list()
+lengths <- seq(from=500, to=nrow(test1), by=2000)
+for (l in lengths) {
+    print(l)
+    this_length <- slice_head(test1, n=l)
+    this_pca <- run_pca(this_length, paste('vf19a',l,sep='_'))
+    pl_list_results[[l]] <- this_pca
+  }
+
+pl_results <- bind_rows(pl_list_results)
+
+pl_variance_orders <- pl_results %>%
+  group_by(File, Component, Variance) %>%
+  summarize() %>%
+  group_by(File) %>%
+  arrange(desc(Variance)) %>%
+  mutate(number=1, Var_Order=cumsum(number)) %>%
+  arrange(File) %>%
+  select(File, Component, Var_Order)%>%
+  ungroup()
+
+pl_results <- left_join(pl_results, pl_variance_orders, by=c('File', 'Component'))
+
+all_pairs <- tibble(
+    V1 = unique(pl_results$File),
+    V2 = 'vf19a_60500'
+)
+
+# calc redundancy
+xs <- list()
+ys <- list()
+px <- list()
+py <- list()
+
+for (i in 1:nrow(all_pairs)) {
+
+  x_file <- all_pairs[[i, 1]]
+  y_file <- all_pairs[[i, 2]]
+  this_CCA <- cancor(
+    x=get_pca_loadings_tibble_pl(x_file),
+    y=get_pca_loadings_tibble_pl(y_file))
+  this_red <- redundancy(this_CCA)
+
+  px[[i]] <- x_file
+  py[[i]] <- y_file
+  xs[[i]] <- this_red$X.redun
+  ys[[i]] <- this_red$Y.redun
+  }
+
+all_redundancy <- as_tibble(cbind(px,py,xs,ys)) %>% 
+  unnest(c(px,py,xs,ys))
+
+rm(px,py,xs,ys, x_file, y_file, this_CCA, this_red)
+```
+
+
+```{r}
+all_redundancy %>%
+    mutate(size=lengths) %>%
+    pivot_longer(cols = xs:ys) %>%
+    ggplot(aes(x=size, y=value, color=name)) +
+    geom_point() +
+    geom_line() +
+    scale_color_colorblind()+
+    theme_clean() +
+    geom_vline(xintercept = 22433) +
+    geom_vline(xintercept = 5150)
+
+# %>%
+#     ggplot(aes(x=xs,y=ys,label=px)) +
+#     geom_text() +
+#     geom_line()+
+#     theme_clean()
+```
+
+
+---

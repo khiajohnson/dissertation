@@ -1,0 +1,98 @@
+---
+title: "Chapter 3: Data Wrangling"
+author: "Khia A. Johnson"
+date: "7/23/2021"
+output: html_document
+---
+
+```{r message=FALSE}
+library(data.table)
+library(tidyverse)
+library(tsibble)
+library(ggthemes)
+library(zoo)
+```
+
+Import the voicesauce output (here, for a two talkers), grab information from the filename, and inspect the tibble
+```{r}
+df <- fread('../data/spice_voicesauce_raw.csv', sep = ',') 
+```
+
+Wrangle columns
+```{r}
+df <- df %>% 
+    mutate(i = t_ms/5) %>%
+    separate(File, into = c('Talker','Language','Order'), remove = FALSE) %>%
+    select(
+      File, # the filename, but left as manipulated above
+      Talker, 
+      Language,
+      Order,
+      i, # index helper column
+      seg_Start, # onset of voiced chunk
+      seg_End, # offset of voiced chunk
+      t_ms, # file timestamp in ms
+      H5Ku, # H5kHz uncorrected for filtering
+      F0=strF0, # F0 measured by straight
+      F1=sF1, # F1 measured by snack
+      F2=sF2, # F2 measured by snack
+      F3=sF3, # F3 measured by snack
+      F4=sF4, # F4 measured by snack
+      H1H2c, # H1-H2 corrected
+      H2H4c, # H2-H4 corrected
+      H42Kc, # H4-H2kHz corrected
+      H2KH5Kc, # H2kHz-H5kHz corrected
+      CPP, # Cepstral peak prominence
+      Energy, # RMS energy
+      SHR # Subharmonic-to-harmonic ratio 
+      )
+```
+
+Filter likely errors
+```{r}
+df <- df %>% 
+  tidylog::filter(F0>0, CPP>0, F1>0, F2>0, F3>0, F4>0, CPP!=0.0, H5Ku!=0.0) 
+
+```
+OUT: filter: removed 2,376,082 rows (36%), 4,184,321 rows remaining
+
+
+```{r}
+df <- as_tsibble(df, key = c(File, seg_Start, seg_End), index = i)
+
+df <- df %>%
+
+  # Set up the time series data for calculating rolling averages
+  group_by_key() %>%
+  fill_gaps() %>%
+  
+  # Calculate the rolling sds using the built-in function
+  mutate(F0_sd = rollapply(F0, 10, sd, align='center', by.column=FALSE, fill=NA), 
+         F1_sd = rollapply(F1, 10, sd, align='center', by.column=FALSE, fill=NA),
+         F2_sd = rollapply(F2, 10, sd, align='center', by.column=FALSE, fill=NA),
+         F3_sd = rollapply(F3, 10, sd, align='center', by.column=FALSE, fill=NA),
+         F4_sd = rollapply(F4, 10, sd, align='center', by.column=FALSE, fill=NA),
+         H1H2c_sd = rollapply(H1H2c, 10, sd, align='center', by.column=FALSE, fill=NA),
+         H2H4c_sd = rollapply(H2H4c, 10, sd, align='center', by.column=FALSE, fill=NA),
+         H42Kc_sd = rollapply(H42Kc, 10, sd, align='center', by.column=FALSE, fill=NA),
+         H2KH5Kc_sd = rollapply(H2KH5Kc, 10, sd, align='center', by.column=FALSE, fill=NA),
+         CPP_sd = rollapply(CPP, 10, sd, align='center', by.column=FALSE, fill=NA),
+         Energy_sd = rollapply(Energy, 10, sd, align='center', by.column=FALSE, fill=NA),
+         SHR_sd = rollapply(SHR, 10, sd, align='center', by.column=FALSE, fill=NA)
+         ) %>%
+  tidylog::drop_na() 
+```
+OUT: drop_na (grouped): removed 1,058,054 rows (25%), 3,126,267 rows remaining
+
+Ungroup and inspect
+```{r}
+df <- ungroup(df)
+
+head(df)
+```
+
+write processed data file
+```{r}
+fwrite(df, '../data/spice_voicesauce_processed.csv', sep = ',')
+```
+

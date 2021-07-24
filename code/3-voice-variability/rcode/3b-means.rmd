@@ -1,0 +1,75 @@
+---
+title: 'Chapter 3: Compare means'
+author: "Khia A. Johnson"
+date: "7/23/2021"
+output: html_document
+---
+
+```{r}
+library(data.table)
+library(tidyverse)
+library(ggthemes)
+library(lsr)
+library(broom)
+```
+
+```{r}
+df <- fread('../data/spice_voicesauce_processed.csv', sep = ',') 
+```
+
+Pivot longer to prep for getting t-test and cohen's d results
+```{r}
+long_df <- df %>%
+  select(Talker, Language, F0:SHR_sd) %>%
+  pivot_longer(F0:SHR_sd, names_to = 'Variable', values_to = 'Value')
+```
+
+Do all the t-tests and cohen's d calculations
+```{r}
+# ttest_results <- long_df %>%
+#   group_by(Talker, Variable) %>%
+#   summarise(
+#     cohen_d = cohensD(Value ~ Language, method='pooled'),
+#     t_test = list(t.test(Value ~ Language,  var.equal = TRUE, conf.level = 0.95))
+#     ) %>%
+#   mutate(tidied=map(t_test,tidy)) %>%
+#   unnest(tidied) %>%
+#   select(Talker:cohen_d, estimate1:conf.high)
+
+# fwrite(ttest_results,'../data/spice_voicesauce_ttests.csv')
+ttest_results <- fread('../data/spice_voicesauce_ttests.csv')
+
+```
+
+
+Display the non-trivial comparisons
+```{r fig.width=6, fig.height=12}
+ttest_results %>%
+  mutate(Difference = estimate1-estimate2,
+         Significant = p.value < 0.01,
+         CohenD = if_else(cohen_d<0.2, 'Trivial', 
+                          if_else(cohen_d<0.5, 'Small', 
+                                  if_else(cohen_d<0.8, 'Medium', 'Large')))
+         ) %>%
+  
+  select(Talker, Variable, Difference, Significant, CohenD) %>%
+  group_by(Talker, Variable, CohenD) %>%
+  summarise(mean(Difference), n()) %>%
+  filter(CohenD!='Trivial')
+```
+
+SHR and Energy should probably be logged?? MAybe do this as a Bayesian model instead?
+Measure ~ Language + (Language | Talker)
+```{r fig.width=7, fig.height=8}
+long_df %>%
+    filter(str_detect(Variable, 'sd', negate=TRUE)) %>%
+  select(Talker, Language, Variable, Value) %>%
+  ggplot(aes(x=Value, color=Language)) +
+    geom_density() +
+    scale_color_colorblind() +
+    facet_wrap(~Variable, scales = 'free') +
+    theme_clean() +
+    theme(legend.position = 'bottom')
+```
+
+
