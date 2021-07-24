@@ -7,7 +7,7 @@
 *.Rhistory
 *.Rproj
 dissertation.code-workspace
-*/code/3-voice-variability/data/
+/code/3-voice-variability/data
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
