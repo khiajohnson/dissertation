@@ -7,6 +7,7 @@
 *.Rhistory
 *.Rproj
 dissertation.code-workspace
+*/code/3-voice-variability/data/spice_voicesauce_output.txt
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
