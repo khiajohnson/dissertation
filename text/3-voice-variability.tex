@@ -53,7 +53,7 @@ Together, these bodies of literature raise the question of whether bilingual tal
 
 This work builds on \citet{lee_2019_acoustic} in a handful of ways: it extends the methods to the case of bilinguals, considers longer samples, and addresses the role of sample duration both within and across talkers and languages. 
 
-\section{Methods}\label{ch3:sec:methods}
+\section{Methods \& Results}\label{ch3:sec:methods_results}
 \subsection{Data}\label{ch3:sec:data}
 The data used in this analysis come from the conversational interviews in the SpiCE corpus---both Cantonese and English are considered. As noted before, the 34 talkers studied here are all early Cantonese-English bilinguals. For additional information about the participant, please refer to sections \ref{ch2:subsec:participants} and \ref{ch2:sec:statistics} in the previous chapter. 
 
@@ -92,25 +92,14 @@ Given the nature of the corpus and methods thus far, there is reason to suspect 
 
 Moving standard deviations were calculated for each of the 12 measures using a centered 50 ms window, such that each window includes approximately ten observations. The moving standard deviations capture dynamic changes for each of the voice quality measures, which is important as they may better reflect what listeners attend to in talker identification and discrimination tasks \citep{lee_2019_acoustic}. This analysis uses moving standard deviations, as opposed to the coefficients of variation used by \citet{lee_2019_acoustic}. This should not have any undue effect on the outcome, as all variables were scaled prior to inclusion in the principal components analysis described in the next section. The last round of exclusionary criteria uses these moving standard deviations. If an observation was missing a moving standard deviation value, it was removed. This means that obsevations falling extremely close to a voicing boundary were not included. 
 
-Overall, there were 24 total measures, with a measured value and a moving standard deviation for each of the acoustic measurements listed above. These 24 measures are used in the analyses described in the following sections. Across the 34 talkers, there were 3,126,267 observations after winnowing the data. These observations were not evenly distributed across talkers and langauges. \hl{NEW not implemented yet:} In order to control for the impact of passage length in the analysis, the number of samples for each talker was capped only the first XXX samples were considered for each interview. This value was selected as it represents the interview with the fewest number of samples across all talkers and languages. Following this last winnowing step, there were XXX total observations. 
+Overall, there were 24 total measures, with a measured value and a moving standard deviation for each of the acoustic measurements listed above. These 24 measures are used in the analyses described in the following sections. Across the 34 talkers, there were 3,126,267 observations after winnowing the data. These observations were not evenly distributed across talkers and langauges. \hl{NEW not implemented yet:} In order to control for the impact of passage length in the analysis, the number of samples for each talker was capped to include only the first 22,433 samples were considered for each interview. This value was selected as it represents the interview with the fewest number of samples across all talkers and languages. Following this last winnowing step, there were 1,525,444 total observations. While the winnowing process removed a lot of data, the number of samples here is still substantially larger than used in \citet{lee_2019_acoustic}, where the per-talker sample count was closer to 5,000. Further, a later section in this chapter directly tackles the issue of passage length, and (spoiler) indicates that 20,000 is sufficient for stabilization.
 
-\subsection{Principal components analysis}\label{ch3:sec:pca}
+\subsection{Crosslinguistic comparison of acoustic measurements} %% need to re-do the numbers in this section or decide not to
 
-Principal components analysis (PCA) is a dimensionality reduction technique appropriate for data that include a large number of (potentially) correlated variables. The distillation into components helps identify and facilitate describing the internal structure, in this case, of a voice. I adapt methods from work on voices \citep{lee_2019_acoustic} and faces \citep{burton_2016_faces,turk_1991_eigenfaces}. The goal is to the capture similarities or differences for each talker's voice across languages. As such, I conducted PCAs separately for each talker-language pair, and compared the results of each talker's English and Cantonese PCAs. All 24 measures were normalized (z-scored) on by-PCA basis for the analysis. PCAs were implemented with the \textit{parameters} package \citep{makowski_2019_parameters} in R \citep{r_2021}, using an oblique \textit{promax} rotation to simplify the factor structure, as the measurements reported in the previous section were expected to be somewhat correlated \citep{lee_2019_acoustic}.
+Following from prior work, the first step in this analysis is a crosslinguistic comparison for each talker and measure. As discussed in the introduction to this chapter, there are some often (but not always) found differences for Cantonese and English. \hl{ADD 1-SENTENCE SUMMARY}
 
-Each PCA included the number of components for which all resulting eigenvalues were greater than 0.7 times the mean eigenvalue, following Jolliffe's \citep{jolliffe_2002_pca} recommended adjustment to the Kaiser-Guttman rule. I used this rule, rather than a more sophisticated test (e.g., broken sticks), as it is not detrimental to our exploratory analysis to err on the side of including marginal components. Additionally, across each of the components, only loadings with an absolute value of 0.32 or higher were interpreted \citep{lee_2019_acoustic,tabachnick_2013_statistics}; however, all loadings were retained for the canonical redundancy analysis described in the next section.
+Figure XX depicts the distribution of values for each of the measurments across languages. Given the highly skewed shape of 
 
-\subsection{Canonical redundancy analysis}
-
-In order to assess whether variation in a talker's voice is structurally similar across both languages, I compare the PCA output from English and Cantonese by calculating redundancy indices from a canonical correlation analysis (CCA) \citep{stewart_1968_canonical,jolliffe_2002_pca}. CCA is a statistical method used to explore how groups of variables are related to one another. The two sets of variables are transformed such that the correlation between the rotated versions is maximized. This is useful here, as a talker may have similar components in their English PCA and Cantonese PCA, but these components might not necessarily be in the same order, even if they account for comparable amounts of variance. 
-
-Redundancy is a relatively simple way to characterize the relationship between the loadings matrices of two PCAs---the two sets of variables under consideration here. The two indices represent the amount of variation in a talker's Cantonese PCA output that can be accounted for via canonical variates by their English PCA output, and vice versa. Notably, the two redundancy indices are not symmetrical \citep{stewart_1968_canonical}.
-
-I computed redundancy indices for all pairwise combinations, including cases where similar values were expected (same talker, different language), and cases where I expected dissimilarity (different talker and language). Considering that the PCA analyses retain the lower-dimensional structure within each language, these redundancy indices effectively reflect the degree to which the lower-dimensional structure of the voice variability is retained across a talker's two languages.
-
-\section{Results}\label{ch3:sec:results}
-
-\subsection{Crosslinguistic comparison of acoustic measurements}
 
 For each acoustic measurement and talker, I conducted a Student's \textit{t}-test and calculated Cohen's \textit{d}, in order to give a high-level assessment of whether variable means differed across the two languages. These comparisons have no bearing on how a given variable \textit{varies}. Table~\ref{ch3:tab:cohend} reports counts of talkers by effect size. Notably, across all talkers and variables, only 21.1\% yielded non-trivial Cohen's \textit{d} values. Most talkers (32/34) had at least one non-trivial comparison. The distribution of these counts is depicted in Figure~\ref{ch3:fig:ntcounts}. 
 
@@ -166,8 +155,21 @@ H1*--H2* was significantly higher in Cantonese for a relatively large subset of 
 
 If there was a non-trivial difference in F0 across languages, then Cantonese had a lower mean F0 than English (13/34; Female = 7), though most talkers did not exhibit a difference (21/34). This is consistent with prior findings that when a difference between English and Cantonese was found, Cantonese had a lower mean F0 for females \citep{ng_2012_ltas,altenberg_2006_f0}. I also observe this difference for a small number of males. 
 
+
+\subsection{Principal components analysis}\label{ch3:sec:pca}
+\subsubsection{Methods}
+Principal components analysis (PCA) is a dimensionality reduction technique appropriate for data that include a large number of (potentially) correlated variables. The distillation into components helps identify and facilitate describing the internal structure, in this case, of a voice. While the typical goal in analyses that use PCA is to identify a smaller number of components to use in modeling, the focus here is instead on understanding the internal structure. In this light, the components themselves will be examined.
+
+I adapt methods from work on voices \citep{lee_2019_acoustic,lee_2020_language} and faces \citep{burton_2016_faces,turk_1991_eigenfaces}. The goal is to the capture similarities or differences in the structure of each talker's voice across languages. As such, I conducted PCAs separately for each talker-language pair, and compared the results of each talker's English and Cantonese PCAs. All 24 measures were normalized (z-scored) on by-PCA basis prior to the analysis. PCAs were implemented with the \textit{parameters} package \citep{makowski_2019_parameters} in R \citep{r_2021}, using an oblique \textit{promax} rotation to simplify the factor structure, as the measurements reported in the previous section were expected to be somewhat correlated given prior findings \citep{lee_2019_acoustic}, and a broader undesttanding of how different acoustic measures align with one another \citep{kreiman_2014_theory, kreiman_2021_validating}.
+
+Each PCA included the number of components for which all resulting eigenvalues were greater than 0.7 times the mean eigenvalue, following Jolliffe's \citep{jolliffe_2002_pca} recommended adjustment to the Kaiser-Guttman rule. I used this rule, rather than a more sophisticated test (e.g., broken sticks), as it is not detrimental to our exploratory analysis to err on the side of including marginal components. Additionally, across each of the components, only loadings with an absolute value of 0.32 or higher were interpreted \citep{lee_2019_acoustic,tabachnick_2013_statistics}.
+
 \subsection{PCA results}\label{ch3:sec:pca_results} 
-The PCAs across both languages for all 34 talkers resulted in 10--15 components and accounted for 74.6--85.8\% of the total variation. To assess whether talkers exhibit the same structure in voice variability across their languages, I first consider the patterns present across the different PCAs, as this provides context for understating what unique structural characteristics in talkers' voices looks like. To this end, I briefly summarize common patterns across PCA components, regardless of how much variance they account for, as the difference is often quite small. Figure~\ref{ch3:fig:VF32A} shows the first four components of a single talker's Cantonese and English PCAs, illustrating some examples of how components can vary (or not) across languages. 
+The PCAs across both languages for all 34 talkers resulted in 10--15 components and accounted for 74.6--85.8\% of the total variation. A slight majority of talkers had the same number of components for each of their languages (18/34). Of the remainder, most talkers had a difference of one in the number components (14/34), and far fewer differed by two (2/34). Table XX details the number of components and variance accounted for across all talkers and languages. 
+
+\hl{TABLE HERE}
+
+To assess whether talkers exhibit the same structure in voice variability across their languages, I first consider the patterns present across the different PCAs, as this provides context for understating what unique structural characteristics in talkers' voices looks like. To this end, I briefly summarize common patterns across PCA components, regardless of how much variance they account for, as the difference is often quite small. Figure~\ref{ch3:fig:VF32A} shows the first four components of a single talker's Cantonese and English PCAs, illustrating some examples of how components can vary (or not) across languages. It also highlights the importance of not attributing to much value to the ordering of components, but rather to their composition and variance accounted for.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -207,9 +209,19 @@ CPP s.d. & 29 & 4.1--5.0  & 31 & 4.1--4.9  \\
 \end{tabular}
 \end{table}
 
-\subsection{Within-talker analysis} 
 
-A slight majority of talkers had the same number of components for each of their languages (18/34). Of the remainder, most talkers had a difference of one in the number components (14/34), and far fewer differed by two (2/34). Redundancy indices for within-talker comparisons ranged from 0.82 to 0.99, (\textit{Mdn} = 0.93, \textit{M} = 0.92, \textit{SD} = 0.04), and are displayed in Figure~\ref{ch3:fig:redundancy}, with the two redundancy indices for a given pair plotted against one another. Comparisons across talkers within-language (range: 0.63--0.98, \textit{Mdn} = 0.84, \textit{M} = 0.84, \textit{SD} = 0.6) and across-language (range: 0.66--0.98, \textit{Mdn} = 0.83, \textit{M} = 0.84, \textit{SD} = 0.6) are generally lower, but still relatively high. Within-talker values were confirmed to be higher than across-talker comparisons [\textit{Welch's t}(71.36) = --17.83, \textit{p} $<$ 0.001, d = 1.76]. 
+\subsection{Canonical redundancy analysis}
+\subsubsection{Methods}
+In order to assess whether variation in a talker's voice is structurally similar across both languages, I compare PCA output from both languages by calculating redundancy indices in a canonical correlation analysis \citep[CCA][]{stewart_1968_canonical, jolliffe_2002_pca}.  CCA is a statistical method used to explore how groups of variables are related to one another. The two sets of variables are transformed such that the correlation between the rotated versions is maximized. This is useful here, as a talker may have similar components in their English PCA and Cantonese PCA, but these components might not necessarily be in the same order, even if they account for comparable amounts of variance.
+
+Redundancy is a relatively simple way to characterize the relationship between the loadings matrices of two PCAs---the two sets of variables under consideration here. For example, the two indices represent the amount of variation in a talker's Cantonese PCA output that can be accounted for via canonical variates by their English PCA output, and vice versa. Notably, the two redundancy indices are not symmetrical \citep{stewart_1968_canonical}. This is particularly relevant in cases where the PCAs comprise different numbers of components, as determined by the stopping rule described above.
+
+I computed redundancy indices for all pairwise combinations, including cases where similar values were expected (same talker, different language), and cases where I expected dissimilarity (different talker and language). Considering that the PCA analyses retain the lower-dimensional structure within each language, these redundancy indices effectively reflect the degree to which the lower-dimensional structure of the voice variability is retained across a talker's two languages.
+
+\subsubsection{Results}
+
+
+Redundancy indices for within-talker comparisons ranged from 0.82 to 0.99, (\textit{Mdn} = 0.93, \textit{M} = 0.92, \textit{SD} = 0.04), and are displayed in Figure~\ref{ch3:fig:redundancy}, with the two redundancy indices for a given pair plotted against one another. Comparisons across talkers within-language (range: 0.63--0.98, \textit{Mdn} = 0.84, \textit{M} = 0.84, \textit{SD} = 0.6) and across-language (range: 0.66--0.98, \textit{Mdn} = 0.83, \textit{M} = 0.84, \textit{SD} = 0.6) are generally lower, but still relatively high. Within-talker values were confirmed to be higher than across-talker comparisons [\textit{Welch's t}(71.36) = --17.83, \textit{p} $<$ 0.001, d = 1.76]. 
 
 The high values are not unexpected. As PCA is a dimensionality reduction technique, the discarded components almost certainly contain idiosyncratic variation. Moreover, and following from Section~\ref{ch3:sec:pca_results}, there were a substantial number of commonly occurring patterns across talkers and languages. 
 
@@ -220,6 +232,11 @@ The high values are not unexpected. As PCA is a dimensionality reduction techniq
 \label{ch3:fig:redundancy}
 \end{center}
 \end{figure}
+
+
+
+
+
 
 \section{Discussion and conclusion}\label{ch3:sec:discussion}
 

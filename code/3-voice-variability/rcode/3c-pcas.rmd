@@ -15,6 +15,20 @@ library(candisc)
 library(data.table)
 ```
 
+Set visualization defaults
+```{r}
+theme_set(theme_clean() + theme(
+      legend.title = element_text(face = 'bold', size=10),
+      legend.text = element_text(size=10),
+      legend.position = 'bottom',
+      axis.title.x = element_text(size = 10, face='bold'),
+      axis.title.y = element_text(size = 10, face='bold'),
+      strip.text = element_text(size=10, face='bold'),
+      plot.background = element_blank()
+    ))
+```
+
+Load the data
 ```{r}
 df <- fread('../data/spice_voicesauce_processed.csv', sep = ',') 
 grouping_vars <- read_csv('../data/spice_grouping_vars.csv')
@@ -35,31 +49,26 @@ df_trunc <- df %>%
     slice_head(n=22433)
 ```
 
-```{r}
-test1 <- df %>%
-    filter(File=='VF19A_Cantonese_I2_20181114')
-```
 
-```{r}
-
-```
 
 
 Function to run PCA for a single talker with promax rotation/standardization and process the output
 ```{r}
-run_pca <- function(one_talker_df, filename) {
-  
-  # First pass
-  tX <- one_talker_df[,10:33]
-  # tX_pca_all <- principal_components(tX, n='all', rotation = "promax", standardize = TRUE) 
-  # tX_var_all <- summary(tX_pca_all)
-  # tX_var_all <- rownames_to_column(setNames(data.frame(t(tX_var_all[,-1])), tX_var_all[,1]), 'Component')
-  # n_components <- nrow(filter(tX_var_all, Eigenvalues > mean(tX_var_all$Eigenvalues)*0.7))
-  # 
-  # Second pass
-  tX_pca <- principal_components(tX, n = 10, rotation = "promax", standardize = TRUE) 
+run_pca <- function(one_talker_df, filename, n=0) {
 
-  # Add summary information and wrangle
+  # run the pca
+  tX <- one_talker_df[,10:33]
+  if (n>0) {
+    n_components <- n
+  } else {
+    tX_pca_all <- principal_components(tX, n='all', rotation = "promax", standardize = TRUE)
+    tX_var_all <- summary(tX_pca_all)
+    tX_var_all <- rownames_to_column(setNames(data.frame(t(tX_var_all[,-1])), tX_var_all[,1]), 'Component')
+    n_components <- nrow(filter(tX_var_all, Eigenvalues > mean(tX_var_all$Eigenvalues)*0.7))
+  }
+  tX_pca <- principal_components(tX, n = n_components, rotation = "promax", standardize = TRUE) 
+
+  # add summary information and wrangle
   tX_var <-summary(tX_pca)
   tX_var <- rownames_to_column(setNames(data.frame(t(tX_var[,-1])), tX_var[,1]), 'Component')
   tX_pca <- as_tibble(tX_pca) %>% 
@@ -68,11 +77,86 @@ run_pca <- function(one_talker_df, filename) {
     drop_na() %>%
     mutate(File=filename) %>%
     select(File, Variable, Component, Loading, Eigenvalues, Variance, Variance_Proportion, Complexity, Uniqueness, MSA)
-  rm(tX, tX_var)
-  # rm(tX, tX_pca_all, tX_var_all, tX_var)
+  
+  # clean up
+  if (n>0) {
+    rm(tX, tX_var)    
+  } else {
+    rm(tX, tX_pca_all, tX_var_all, tX_var)
+  }
+
   return(tX_pca)
 }
 ```
+
+```{r}
+df_trunc
+```
+
+Using the function `run_pca()` function defined above, does PCA separately for each Talker/Language combo, and saves to `list_results`. *Note: prints file names as they finish running.*
+```{r fig.height=4, fig.width=4}
+list_results <- list()
+files <- unique(df_trunc$File)
+
+for (f in files) {
+  this_file <- df_trunc %>% filter(File==f)
+  this_pca <- run_pca(this_file, f)
+  list_results[[f]] <- this_pca
+  print(f)
+}
+```
+
+```{r}
+saveRDS(list_results, file='../data/pca_results_truncated.rds')
+```
+
+
+Wrangle the `list_results` object into a more useable dataframe, and save it.  
+```{r message=FALSE, warning=FALSE}
+results <- bind_rows(list_results)
+
+results <- results %>%
+  separate(File, into = c('Talker', 'Language', 'Order'), remove=FALSE) %>%
+  left_join(grouping_vars, by='Variable') %>%
+  group_by(File, Component) %>%
+  arrange(desc(abs(Loading))) %>%
+  mutate(number = 1, Bar_Order = cumsum(number)) %>%
+  ungroup
+
+variance_orders <- results %>%
+  group_by(File, Component, Variance) %>%
+  summarize() %>%
+  group_by(File) %>%
+  arrange(desc(Variance)) %>%
+  mutate(number=1, Var_Order=cumsum(number)) %>%
+  arrange(File) %>%
+  select(File, Component, Var_Order)%>%
+  ungroup
+
+results <-left_join(results, variance_orders, by=c('File', 'Component'))
+write_csv(results, '../data/pca_results_truncated.csv')
+```
+
+Clean up intermediate and auxiliary things
+```{r}
+rm(this_file, this_pca, f,variance_orders, grouping_vars)
+```
+
+
+
+
+**cleaned up code until here**
+
+
+
+
+
+
+
+
+
+
+### Variable passage length stuff
 
 Function to get the PCA loadings for a subset of the big dataframe
 ```{r}
