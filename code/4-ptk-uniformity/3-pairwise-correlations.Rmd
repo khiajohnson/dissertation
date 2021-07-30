@@ -66,6 +66,11 @@ output <- corr.test(dfsummary, method='pearson', adjust = 'holm')
 output
 ```
 
+```{r fig.width=8}
+cor.plot(output$r, show.legend = FALSE, pval=output$p.adj, stars =TRUE, diag=TRUE, upper=FALSE)
+```
+
+
 ### Data Viz: Mean VOT
 
 Set up within-language plots
