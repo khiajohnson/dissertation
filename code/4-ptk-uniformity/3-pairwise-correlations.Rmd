@@ -66,10 +66,6 @@ output <- corr.test(dfsummary, method='pearson', adjust = 'holm')
 output
 ```
 
-```{r fig.width=8}
-cor.plot(output$r, show.legend = FALSE, pval=output$p.adj, stars =TRUE, diag=TRUE, upper=FALSE)
-```
-
 
 ### Data Viz: Mean VOT
 
@@ -171,7 +167,13 @@ rdfsummary <- rdf %>%
   summarise(mvot = mean(residual_vot_ms)) %>%
   ungroup() %>%
   pivot_wider(names_from = c('language','segment'), values_from = 'mvot') %>%
-  select(rCanP=Cantonese_p, rCanT=Cantonese_t, rCanK=Cantonese_k, rEngP=English_p, rEngT=English_t, rEngK=English_k)
+  select(
+    `Cantonese P`=Cantonese_p, 
+    `Cantonese T`=Cantonese_t, 
+    `Cantonese K`=Cantonese_k, 
+    `English P`=English_p, 
+    `English T`=English_t, 
+    `English K`=English_k)
  
 rdfout <- corr.test(rdfsummary, method='pearson', adjust = 'holm')
 ```
@@ -183,13 +185,20 @@ rdfout$ci %>%
   rownames_to_column(var = 'comparison') %>%
   left_join(rdfout$ci2, by=c('r','p')) %>%
   select(comparison, r, p.adj) %>%
-  mutate(comparison = str_replace_all(comparison, 'r','')) %>%
   separate(comparison, into = c('a', 'b'), sep='-') %>%
-  separate(a, into = c('a_lang', 'a_seg'), sep = -1) %>%
-  separate(b, into = c('b_lang', 'b_seg'), sep = -1) %>%
-  arrange(a_lang, b_lang, a_seg, b_seg) %>%
   mutate(r = round(r, 2), p.adj = round(p.adj, 4))
+    
 ```
+
+```{r}
+ggcorr(data=NULL, cor_matrix=rdfout$r, label=TRUE, nbreaks = 10, label_round = 2, low = "white", mid='white', high='#e6550d')
+```
+
+
+```{r fig.width=6}
+cor.plot(rdfout$r, show.legend = FALSE, stars =FALSE, diag=TRUE, upper=FALSE)
+```
+
 
 ## Visualize (residual) VOT relationships
 
