@@ -16,6 +16,7 @@ library(zoo)
 Import the voicesauce output (here, for a two talkers), grab information from the filename, and inspect the tibble
 ```{r}
 df <- fread('../data/spice_voicesauce_raw.csv', sep = ',') 
+nrow(df)
 ```
 
 Wrangle columns
@@ -48,13 +49,20 @@ df <- df %>%
       )
 ```
 
+```{r}
+df %>%
+  select(Energy) %>%
+  arrange(desc(Energy)) %>%
+  summarise(mean(Energy)+ 3*sd(Energy))
+```
+
 Filter likely errors
 ```{r}
 df <- df %>% 
-  tidylog::filter(F0>0, CPP>0, F1>0, F2>0, F3>0, F4>0, CPP!=0.0, H5Ku!=0.0) 
+  tidylog::filter(F0>0, CPP>0, F1>0, F2>0, F3>0, F4>0, CPP!=0.0, H5Ku!=0.0, Energy<11.54119) 
 
 ```
-OUT: filter: removed 2,376,082 rows (36%), 4,184,321 rows remaining
+filter: removed 2,417,994 rows (37%), 4,142,409 rows remaining
 
 
 ```{r}
@@ -82,7 +90,8 @@ df <- df %>%
          ) %>%
   tidylog::drop_na() 
 ```
-OUT: drop_na (grouped): removed 1,058,054 rows (25%), 3,126,267 rows remaining
+OUT: drop_na (grouped): removed 1,094,453 rows (26%), 3,071,736 rows remaining
+
 
 Ungroup and inspect
 ```{r}

@@ -46,7 +46,8 @@ df %>%
 ```{r}
 df_trunc <- df %>%
     group_by(File) %>%
-    slice_head(n=22433)
+    slice_head(n=20124)
+nrow(df_trunc)
 ```
 
 

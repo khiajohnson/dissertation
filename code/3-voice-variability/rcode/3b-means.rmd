@@ -24,6 +24,23 @@ long_df <- df %>%
   pivot_longer(F0:SHR_sd, names_to = 'Variable', values_to = 'Value')
 ```
 
+## Visualize
+SHR and Energy should probably be logged?? MAybe do this as a Bayesian model instead?
+Measure ~ Language + (Language | Talker)
+```{r}
+long_df %>%
+    filter(str_detect(Variable, 'sd', negate=TRUE)) %>%
+  select(Talker, Language, Variable, Value) %>%
+  ggplot(aes(x=Value, color=Language)) +
+    geom_density() +
+    scale_color_colorblind() +
+    facet_wrap(~Variable, scales = 'free') +
+    theme_clean() +
+    theme(legend.position = 'bottom')
+```
+
+
+
 Do all the t-tests and cohen's d calculations
 ```{r}
 # ttest_results <- long_df %>%
@@ -57,19 +74,4 @@ ttest_results %>%
   summarise(mean(Difference), n()) %>%
   filter(CohenD!='Trivial')
 ```
-
-SHR and Energy should probably be logged?? MAybe do this as a Bayesian model instead?
-Measure ~ Language + (Language | Talker)
-```{r fig.width=7, fig.height=8}
-long_df %>%
-    filter(str_detect(Variable, 'sd', negate=TRUE)) %>%
-  select(Talker, Language, Variable, Value) %>%
-  ggplot(aes(x=Value, color=Language)) +
-    geom_density() +
-    scale_color_colorblind() +
-    facet_wrap(~Variable, scales = 'free') +
-    theme_clean() +
-    theme(legend.position = 'bottom')
-```
-
 
