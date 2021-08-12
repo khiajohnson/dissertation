@@ -13,6 +13,20 @@ library(lsr)
 library(broom)
 ```
 
+visualization defaults
+```{r}
+theme_set(theme_clean() + theme(
+      legend.title = element_blank(),
+      legend.text = element_text(size=6),
+      legend.position = 'bottom',
+      axis.title.x = element_text(size = 10, face='bold'),
+      axis.title.y = element_text(size = 10, face='bold'),
+      strip.text = element_text(size=10, face='bold'),
+      plot.background = element_blank()
+    ))
+```
+
+
 ```{r}
 df <- fread('../data/spice_voicesauce_processed.csv', sep = ',') 
 ```
@@ -25,20 +39,87 @@ long_df <- df %>%
 ```
 
 ## Visualize
-SHR and Energy should probably be logged?? MAybe do this as a Bayesian model instead?
-Measure ~ Language + (Language | Talker)
-```{r}
+
+```{r fig.width=5, fig.height=6.5}
 long_df %>%
     filter(str_detect(Variable, 'sd', negate=TRUE)) %>%
   select(Talker, Language, Variable, Value) %>%
   ggplot(aes(x=Value, color=Language)) +
     geom_density() +
-    scale_color_colorblind() +
-    facet_wrap(~Variable, scales = 'free') +
-    theme_clean() +
-    theme(legend.position = 'bottom')
+    scale_color_viridis_d(option='magma', begin = 0.75, end = 0)+
+    facet_wrap(~Variable, scales = 'free', ncol = 3) +
+    ylab('Density') +
+    xlab('')
+
+ggsave('../../../text/figures/ch3_allmeasuresdensity_5in.png', width = 5, height = 6.5)
+
 ```
 
+ggsave('../../text/figures/ch2_cantonesetypecounts_5in.png', width = 5, height = 6.5)
+
+## Bayesian estimation
+```{r}
+library(brms)
+library(tidybayes)
+```
+
+```{r}
+df_cpp <- df %>%
+  select(Talker, Language, CPP) %>%
+  mutate(CPP_z = scale(CPP),
+         Language = as_factor(Language))
+
+vf19a_cpp <- df_cpp %>%
+  filter(Talker=='VF19A')
+```
+
+Setup according to https://mvuorre.github.io/posts/2017-01-02-how-to-compare-two-groups-with-robust-bayesian-estimation-using-r-stan-and-brms/
+```{r}
+best_cpp <- brm(
+  bf(CPP ~ Language, sigma ~ Language),
+  family = student,
+  data = vf19a_cpp,
+  cores = 4,
+  file = "best_vf19a_cpp"
+)
+```
+
+```{r}
+best_cpp
+```
+
+
+
+
+For each measure, use:
+
+- Formula: Measure ~ Language + (Language | Talker)
+
+```{r fig.width=5, fig.height=6.5}
+df %>%
+  select(Talker, Language, i, CPP) %>%
+  ggplot(aes(x=CPP, color=Language)) +
+    geom_density() +
+    scale_color_viridis_d(option='magma', begin = 0.75, end = 0)+
+    facet_wrap(~Talker, ncol = 5) +
+    ylab('Density') +
+    xlab('CPP (dB)') +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
+```
+
+```{r fig.width=5, fig.height=6.5}
+df %>%
+  select(Talker, Language, i, F0) %>%
+  ggplot(aes(x=F0, color=Language)) +
+    geom_density() +
+    scale_color_viridis_d(option='magma', begin = 0.75, end = 0)+
+    facet_wrap(~Talker, ncol = 5) +
+    ylab('Density') +
+    xlab('F0 (Hz)') +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
+```
 
 
 Do all the t-tests and cohen's d calculations

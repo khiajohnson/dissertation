@@ -75,7 +75,7 @@ As discussed in the previous chapter, the recordings are high-quality, with a 44
 All voiced segments were identified with the \textit{Point Process (periodic, cc)} and \textit{To TextGrid (vuv)} Praat algorithms \citep{boersma_2021_praat}, implemented with the Parselmouth Python package \citep{jadoul_2018_parselmouth}. The pitch range settings used with \textit{Point Process (periodic, cc)} were set to 100--500 Hz for female talkers, and to 75--300 for male talkers. While speech from the interviewer can occasionally be heard in the participant channel, it is quiet enough to have been largely ignored by the Praat algorithms, and likely exterted little to no influence on the results. This method of identifying voiced portions of the speech signal captures vowels, approximants, and some voiced obstruents. This differs slightly from the methods described in \citet{lee_2019_acoustic}, the paper on which the methods of this chapter were modeled. 
 
 \subsection{Acoustic measurements}\label{ch3:sec:acoustic}
-All voiced segments were subjected to the same set of acoustic measurements of voice quality made by \citet{lee_2019_acoustic}, except formant dispersion, which was excluded given its near-perfect correlation with the measured value of F4. The choice of measurements in \citet{lee_2019_acoustic} comes from the psychoacoustic voice quality model described in the introduction to this chapter \citep{kreiman_2014_theory}. Measurements were made every 5 ms during voiced segments, as in \citet{lee_2019_acoustic}, using VoiceSauce \citep{shue_2011_voicesauce}. The measurements are described below. Note that the shorthand name for each measurement is presented in boldface, and will be used throughout the rest of the chapter. 
+All voiced segments were subjected to the same set of acoustic measurements of voice quality made by \citet{lee_2019_acoustic}, except formant dispersion, which was excluded given its near-perfect correlation with the measured value of F4. The choice of measurements in \citet{lee_2019_acoustic} comes from the psychoacoustic voice quality model described in the introduction to this chapter \citep{kreiman_2014_theory}. Measurements were made every 5 ms during voiced segments, as in \citet{lee_2019_acoustic}, using VoiceSauce \hl{Version 1.28?} \citep{shue_2011_voicesauce}. The measurements are described below. Note that the shorthand name for each measurement is presented in boldface, and will be used throughout the rest of the chapter. 
 
 \begin{description}
     \item[F0] Fundamental frequency is a correlate of pitch and is associated with linguistic (e.g., lexical tone), prosodic, and talker characteristics. F0 was measured in Hertz using the STRAIGHT algorithm \citep{kawahara_2016_straight}, which is regarded to be more accurate that the alternative choices in VoiceSauce. It is one of the more widely studied variables on this list, as evidenced by the literature cited in the introduction \citep[e.g.,][]{cheng_2020_f0,ng_2012_ltas}.
@@ -106,15 +106,24 @@ There were 24 total measures, with a measured value and a moving standard deviat
 
 Passage length was expected to have an impact, given the variability in affect and style-shifting within a single conversation. Over time, individuals cover more of their range of variation, and as such, a regression to the mean is expected over time. To level the playing field in this first analysis, the sample size was controlled. At the end of this chapter, in Section \ref{ch3:sec:passagelength}, a follow-up analysis validates this assumption. To preview those results, 20,000 samples appear sufficient for the stabilization of the results.  
 
-Following this last winnowing step, there were 1,525,444 total observations. While the winnowing process removed a lot of data, the total number of samples per talker is still substantially larger than the approximate 5,000 used in \citet{lee_2019_acoustic}.
+Following this last winnowing step, there were 1,368,432 total observations. While the winnowing process removed a lot of data, the total number of samples per talker is still substantially larger than the approximate 5,000 used in \citet{lee_2019_acoustic}.
 
 \subsection{Crosslinguistic comparison of acoustic measurements}\label{ch3:sec:comparison} %% need to re-do the numbers in this section or decide not to
 
-Following from prior work, the first step in this analysis is a crosslinguistic comparison for each talker and measure. As discussed in the introduction to this chapter, there are some often (but not always) found differences for Cantonese and English. \hl{ADD 1-SENTENCE SUMMARY}
+Following from prior work, the first step in this analysis is a crosslinguistic comparison for each talker and measure. As discussed in the introduction to this chapter, there are some often (but not always) found differences for Cantonese and English. Prior work has found that speakers sometimes produce lower and more variable F0 in Cantonese \citep{altenberg_2006_f0,ng_2012_ltas,ng_2010_voice}. Additionally, \citet{ng_2012_ltas} also report on spectral measurements that indicate Cantonese has a generally more breathy (or less creaky) phonation quality compared to English. Other measures were either inconclusive, non-significant, or not considered by the researchers. Figure \ref{ch3:fig:allmeasures} depicts the distribution of values for each of the acoustic measurments across languages, with all talkers pooled together. 
 
-Figure XX depicts the distribution of values for each of the measurments across languages. Given the highly skewed shape of 
+\begin{figure}[htbp]
+    \begin{center}
+    \includegraphics[width=\linewidth]{figures/ch3_allmeasuresdensity_5in.png} 
+    \caption{Distribution of all acoustic measures by language after filtering.}
+    \label{ch3:fig:allmeasures}
+    \end{center}
+    \end{figure}
 
 
+Given the skewed shapes of various parameters, and lack of normality, languages were compared for each measure using Bayesian estimation instead of t-tests \hl{(cite Kruschke paper)... STILL DECIDING HOW TO GO ABOUT THIS}. 
+
+%old version
 For each acoustic measurement and talker, I conducted a Student's \textit{t}-test and calculated Cohen's \textit{d}, in order to give a high-level assessment of whether variable means differed across the two languages. These comparisons have no bearing on how a given variable \textit{varies}. Table~\ref{ch3:tab:cohend} reports counts of talkers by effect size. Notably, across all talkers and variables, only 21.1\% yielded non-trivial Cohen's \textit{d} values. Most talkers (32/34) had at least one non-trivial comparison. The distribution of these counts is depicted in Figure~\ref{ch3:fig:ntcounts}. 
 
 \begin{table}[htbp]
@@ -172,7 +181,9 @@ If there was a non-trivial difference in F0 across languages, then Cantonese had
 
 \subsection{Principal components analysis}\label{ch3:sec:pca}
 \subsubsection{Methods}
-Principal components analysis (PCA) is a dimensionality reduction technique appropriate for data that include a large number of (potentially) correlated variables. The distillation into components helps identify and facilitate describing the internal structure, in this case, of a voice. While the typical goal in analyses that use PCA is to identify a smaller number of components to use in modeling, the focus here is instead on understanding the internal structure. In this light, the components themselves will be examined.
+Principal components analysis (PCA) is a dimensionality reduction technique appropriate for data with many potentially correlated variables. In the case of voices, distilling numerous acoustic dimensions into a smaller number of components facilitates identifying and describing the structure of voice variability. PCA provides insight into how variables pattern together in a data set. This feature of PCA is especially relevant here, as voice perception research has made it clear that individual acoustic measurements may be necessary to capture and encode a voice but not be perceptually meaningful to listeners. What matters is how the different aspects conspire together to form a percept. %Revised this paragraph
+
+Often, the goal of PCA is to take a large number of dimensions and extract a much smaller set to use for some additional purpose, such as regression modeling. The focus in this chapter is on the internal structure of the components. That is, I examine what makes up components for different talkers and whether an individual's voice structure varies (or not) across languages.  %Revised this paragraph
 
 I adapt methods from work on voices \citep{lee_2019_acoustic,lee_2020_language} and faces \citep{burton_2016_faces,turk_1991_eigenfaces}. The goal is to the capture similarities or differences in the structure of each talker's voice across languages. As such, I conducted PCAs separately for each talker-language pair, and compared the results of each talker's English and Cantonese PCAs. All 24 measures were normalized (z-scored) on by-PCA basis prior to the analysis. PCAs were implemented with the \textit{parameters} package \citep{makowski_2019_parameters} in R \citep{r_2021}, using an oblique \textit{promax} rotation to simplify the factor structure, as the measurements reported in the previous section were expected to be somewhat correlated given prior findings \citep{lee_2019_acoustic}, and a broader undesttanding of how different acoustic measures align with one another \citep{kreiman_2014_theory, kreiman_2021_validating}.
 
