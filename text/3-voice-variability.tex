@@ -120,63 +120,86 @@ Following from prior work, the first step in this analysis is a crosslinguistic 
     \end{center}
     \end{figure}
 
+    For each of the 12 acoustic measurements (but not the moving standard deviations), a separate Bayesian mixed-effects model was used to compare the distribution of values by talkers across languages.  The models were implemented with \textit{brms} \citep{} in R \citep{}. The brms package offers a simple R-based interface for fitting Bayesian models with the Stan probabilistic programming language \citep{}. 
 
-Given the skewed shapes of various parameters, and lack of normality, languages were compared for each measure using Bayesian estimation instead of t-tests \hl{(cite Kruschke paper)... STILL DECIDING HOW TO GO ABOUT THIS}. 
+    Bayesian models provide many advantages... For more information, see Vasishth et al. (2018)
+    
+    A robust linear mixed-effects model was used for each standardized acoustic measure, with a Student's t distributed dependent variable. This decision was motivated by the strong possibility that outliers---real or erroneous---remained in the data. It also follows from Kruschke's (2013) paper arguing that robust Bayesian estimation provides better group comparison estimates. The exception to this was for SHR. As SHR is bounded by zero and one and contains many real and meaningful zero measurements, SHR was modeled as zero-inflated beta distribution. Apart from this, the models share structure and specifications. In all cases, the formula in \ref{ch3:num:formula} was used, where Measure refers to the particular standardized acoustic measure for the model. 
+    
+    \begin{equation}\label{ch3:num:formula}
+        \text{Measure} \sim 0 + \text{Language} + (0 + \text{Language }|\text{ Talker})
+    \end{equation}
+    
+    Weakly informative priors were used in all cases, following guidelines from Gelman for standardized data. For the robust linear regression models, they were as follows:
+    
+    Each model consisted of four chains with XXX iterations, half of which were warm-up iterations, for a total of XXX samples after warm-up.
+    
+    Divergent transitions, R-hat, ESS 
+    
+    These models give high-level insight into whether individuals differed for particular acoustic dimensions across language. The models also give insight into whether or not there is a common pattern across talkers. While this part of the analysis extends the work done primarily on F0 \citep[e.g., by][]{} to the present data set, it does not elucidate how the different acoustic dimensions vary. 
+    
+    Inference in Bayesian statistics is based on the posterior distributions, which reflect the range and probability of credible values for parameters... For each of the models, a difference can be computed between the posterior distributions of Cantonese and English for each participant. This provides a magnitude of difference between the two languages, as well as how it varies across individuals.  
+    
+    In the case of SHR... how to interpret
+    
+    
+    
+    
 
-%old version
-For each acoustic measurement and talker, I conducted a Student's \textit{t}-test and calculated Cohen's \textit{d}, in order to give a high-level assessment of whether variable means differed across the two languages. These comparisons have no bearing on how a given variable \textit{varies}. Table~\ref{ch3:tab:cohend} reports counts of talkers by effect size. Notably, across all talkers and variables, only 21.1\% yielded non-trivial Cohen's \textit{d} values. Most talkers (32/34) had at least one non-trivial comparison. The distribution of these counts is depicted in Figure~\ref{ch3:fig:ntcounts}. 
+% %old version
+% For each acoustic measurement and talker, I conducted a Student's \textit{t}-test and calculated Cohen's \textit{d}, in order to give a high-level assessment of whether variable means differed across the two languages. These comparisons have no bearing on how a given variable \textit{varies}. Table~\ref{ch3:tab:cohend} reports counts of talkers by effect size. Notably, across all talkers and variables, only 21.1\% yielded non-trivial Cohen's \textit{d} values. Most talkers (32/34) had at least one non-trivial comparison. The distribution of these counts is depicted in Figure~\ref{ch3:fig:ntcounts}. 
 
-\begin{table}[htbp]
-\caption{This table reports counts of Cohen's \textit{d} for crosslinguistic comparisons of each of the acoustic measurements by talker. Degrees of freedom ranged between 49,274--136,644 across t-tests. For most talkers and variables, the difference in means was trivial, which is reflected in that column's high counts.}
-\label{ch3:tab:cohend}
-\centering
-\begin{tabular}{lccc}
-\toprule
-         & \multicolumn{3}{c}{\textbf{Cohen's \textit{d}}} \\
-         & \textbf{Trivial} & \textbf{Small} & \textbf{Medium} \\
-\textbf{Variable} & \textbf{\textit{0.0--0.2}} & \textbf{\textit{0.2--0.5}} & \textbf{\textit{0.5--0.8}} \\ 
-\midrule
-F0 & 21 & 10 & 3 \\
-F0 s.d. & 34 & 0 & 0 \\
-F1 & 24 & 9 & 1 \\
-F1 s.d. & 29 & 5 & 0 \\
-F2 & 26 & 8 & 0 \\
-F2 s.d. & 32 & 2 & 0 \\
-F3 & 24 & 9 & 1 \\
-F3 s.d. & 29 & 5 & 0 \\
-F4 & 30 & 3 & 1 \\
-F4 s.d. & 28 & 6 & 0 \\
-H1*--H2* & 18 & 15 & 1 \\
-H1*--H2* s.d. & 32 & 2 & 0 \\
-H2*--H4* & 25 & 9 & 0 \\
-H2*--H4* s.d. & 31 & 3 & 0 \\
-H4*--2kHz* & 25 & 8 & 1 \\
-H4*--2kHz* s.d. & 34 & 0 & 0 \\
-H2kHz*--5kHz* & 23 & 10 & 1 \\
-H2kHz*--5kHz* s.d. & 31 & 3 & 0 \\
-CPP & 21 & 10 & 3 \\
-CPP s.d. & 32 & 2 & 0 \\
-Energy & 17 & 14 & 3 \\
-Energy s.d. & 18 & 16 & 0 \\
-SHR & 31 & 3 & 0 \\
-SHR s.d. & 29 & 5 & 0 \\
-\bottomrule
-\end{tabular}
-\end{table}
+% \begin{table}[htbp]
+% \caption{This table reports counts of Cohen's \textit{d} for crosslinguistic comparisons of each of the acoustic measurements by talker. Degrees of freedom ranged between 49,274--136,644 across t-tests. For most talkers and variables, the difference in means was trivial, which is reflected in that column's high counts.}
+% \label{ch3:tab:cohend}
+% \centering
+% \begin{tabular}{lccc}
+% \toprule
+%          & \multicolumn{3}{c}{\textbf{Cohen's \textit{d}}} \\
+%          & \textbf{Trivial} & \textbf{Small} & \textbf{Medium} \\
+% \textbf{Variable} & \textbf{\textit{0.0--0.2}} & \textbf{\textit{0.2--0.5}} & \textbf{\textit{0.5--0.8}} \\ 
+% \midrule
+% F0 & 21 & 10 & 3 \\
+% F0 s.d. & 34 & 0 & 0 \\
+% F1 & 24 & 9 & 1 \\
+% F1 s.d. & 29 & 5 & 0 \\
+% F2 & 26 & 8 & 0 \\
+% F2 s.d. & 32 & 2 & 0 \\
+% F3 & 24 & 9 & 1 \\
+% F3 s.d. & 29 & 5 & 0 \\
+% F4 & 30 & 3 & 1 \\
+% F4 s.d. & 28 & 6 & 0 \\
+% H1*--H2* & 18 & 15 & 1 \\
+% H1*--H2* s.d. & 32 & 2 & 0 \\
+% H2*--H4* & 25 & 9 & 0 \\
+% H2*--H4* s.d. & 31 & 3 & 0 \\
+% H4*--2kHz* & 25 & 8 & 1 \\
+% H4*--2kHz* s.d. & 34 & 0 & 0 \\
+% H2kHz*--5kHz* & 23 & 10 & 1 \\
+% H2kHz*--5kHz* s.d. & 31 & 3 & 0 \\
+% CPP & 21 & 10 & 3 \\
+% CPP s.d. & 32 & 2 & 0 \\
+% Energy & 17 & 14 & 3 \\
+% Energy s.d. & 18 & 16 & 0 \\
+% SHR & 31 & 3 & 0 \\
+% SHR s.d. & 29 & 5 & 0 \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
 
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[width=0.875\linewidth]{figures/3-non-trivial_counts_by_talker.png} 
-\caption{A summary of the number of non-trivial comparisons from Table~\ref{ch3:tab:cohend} across the 34 talkers.}
-\label{ch3:fig:ntcounts}
-\end{center}
-\end{figure}
+% \begin{figure}[htbp]
+% \begin{center}
+% \includegraphics[width=0.875\linewidth]{figures/3-non-trivial_counts_by_talker.png} 
+% \caption{A summary of the number of non-trivial comparisons from Table~\ref{ch3:tab:cohend} across the 34 talkers.}
+% \label{ch3:fig:ntcounts}
+% \end{center}
+% \end{figure}
 
-For the non-trivial comparisons, there were consistent patterns across languages for H1*--H2* and F0. For the remaining variables, while some talkers exhibited a difference in mean values, the direction of the difference varied, or relatively few talkers exhibited the difference. 
+% For the non-trivial comparisons, there were consistent patterns across languages for H1*--H2* and F0. For the remaining variables, while some talkers exhibited a difference in mean values, the direction of the difference varied, or relatively few talkers exhibited the difference. 
 
-H1*--H2* was significantly higher in Cantonese for a relatively large subset of the talkers (13/34), lower for a small number (3/34), but trivial for most (18/34). While based on a different measure than \citep{ng_2012_ltas}, this is consistent with the finding that Cantonese tends to be breathier, or English creakier---the current analysis does not distinguish between these interpretations.
+% H1*--H2* was significantly higher in Cantonese for a relatively large subset of the talkers (13/34), lower for a small number (3/34), but trivial for most (18/34). While based on a different measure than \citep{ng_2012_ltas}, this is consistent with the finding that Cantonese tends to be breathier, or English creakier---the current analysis does not distinguish between these interpretations.
 
-If there was a non-trivial difference in F0 across languages, then Cantonese had a lower mean F0 than English (13/34; Female = 7), though most talkers did not exhibit a difference (21/34). This is consistent with prior findings that when a difference between English and Cantonese was found, Cantonese had a lower mean F0 for females \citep{ng_2012_ltas,altenberg_2006_f0}. I also observe this difference for a small number of males. 
+% If there was a non-trivial difference in F0 across languages, then Cantonese had a lower mean F0 than English (13/34; Female = 7), though most talkers did not exhibit a difference (21/34). This is consistent with prior findings that when a difference between English and Cantonese was found, Cantonese had a lower mean F0 for females \citep{ng_2012_ltas,altenberg_2006_f0}. I also observe this difference for a small number of males. 
 
 
 \subsection{Principal components analysis}\label{ch3:sec:pca}
