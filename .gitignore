@@ -3,7 +3,7 @@
 /ubcdiss
 /old
 /code/3-voice-variability/data
-/code/3-voice-variability/fits
+/code/3-voice-variability/rcode/fits
 dissertation.code-workspace
 
 *.Rproj.user
