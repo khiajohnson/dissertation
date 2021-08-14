@@ -1,14 +1,16 @@
-## Local folders to ignore
+## Local files & folders to ignore
 *.DS_Store
 /ubcdiss
 /old
+/code/3-voice-variability/data
+/code/3-voice-variability/fits
+dissertation.code-workspace
+
 *.Rproj.user
 *.RData
 *.Rhistory
 *.Rproj
 *.RDataTmp
-dissertation.code-workspace
-/code/3-voice-variability/data
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
