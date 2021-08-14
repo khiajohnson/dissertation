@@ -50,9 +50,6 @@ df_trunc <- df %>%
 nrow(df_trunc)
 ```
 
-
-
-
 Function to run PCA for a single talker with promax rotation/standardization and process the output
 ```{r}
 run_pca <- function(one_talker_df, filename, n=0) {
@@ -90,9 +87,6 @@ run_pca <- function(one_talker_df, filename, n=0) {
 }
 ```
 
-```{r}
-df_trunc
-```
 
 Using the function `run_pca()` function defined above, does PCA separately for each Talker/Language combo, and saves to `list_results`. *Note: prints file names as they finish running.*
 ```{r fig.height=4, fig.width=4}
@@ -109,6 +103,7 @@ for (f in files) {
 
 ```{r}
 saveRDS(list_results, file='../data/pca_results_truncated.rds')
+list_results <- readRDS(file='../data/pca_results_truncated.rds')
 ```
 
 
@@ -148,8 +143,68 @@ rm(this_file, this_pca, f,variance_orders, grouping_vars)
 
 **cleaned up code until here**
 
+## Analyze PCA results
+```{r}
+results <- read_csv('../data/pca_results_truncated.csv')
+```
 
+```{r}
+results
+```
 
+```{r}
+
+```
+
+Function to plot loadings
+```{r, fig.width=4, fig.height=6}
+return_loadings_plot <- function(subset) {
+  
+  subset <- subset %>%
+    mutate(Loading= abs(Loading))
+  
+  lplot <- ggplot(subset, aes(y=Loading, x=Bar_Order, fill=Category, label=Variable)) +
+      geom_col() +
+      scale_fill_viridis_d(option='magma', begin = 0, end=0.75) +
+      geom_text(angle=90, nudge_y = -0.5*(subset$Loading), colour = "white", fontface = "bold", size=3)+
+      geom_label(aes(label=paste('Var:', round(Variance,3))), x= 0.6*max(subset$Bar_Order), y=-0.1, size=3, fill='white') +
+      scale_y_continuous(limits = c(-0.25,1.1)) +
+      facet_grid(Language~Var_Order) +
+      theme_clean() +
+      ylab('Loading') +
+      xlab('') +
+      theme(strip.text = element_text(face='bold', size=6),
+            axis.text.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            axis.title.x = element_blank(),
+            legend.position = 'bottom',
+            legend.title = element_blank(),
+            legend.text = element_text(size=6),
+            legend.key.size = unit(0.15, "in"),
+            panel.border = element_rect(color = "lightgray", fill = NA, size = 0.5),
+            plot.title = element_text(hjust = 0.5)) +
+      guides(fill = guide_legend(nrow = 2))
+  
+  return(lplot)
+} 
+```
+
+```{r fig.width=12}
+return_loadings_plot(filter(results, Talker=='VF19A', abs(Loading) > 0.32))
+```
+
+This is a bit messy, but its a useful structure for exploring the components.. a little better than it was
+```{r}
+results %>%
+  filter(abs(Loading)>0.32) %>%
+  select(Talker, Language, Variable, Variance, Var_Order) %>%
+  pivot_wider(names_from = Variable, values_from = Variable) %>%
+  select(Talker, Language, Variance, Var_Order, F0, F0_sd, F1, F1_sd, F2, F2_sd, F3, F3_sd, F4, F4_sd, H1H2c, H1H2c_sd, H2H4c, H2H4c_sd, H2KH5Kc, H2KH5Kc_sd, H42Kc, H42Kc_sd, CPP, CPP_sd, Energy, Energy_sd, SHR, SHR_sd) %>%
+  group_by(Language, F0, F0_sd, F1, F1_sd, F2, F2_sd, F3, F3_sd, F4, F4_sd, H1H2c, H1H2c_sd, H2H4c, H2H4c_sd, H2KH5Kc, H2KH5Kc_sd, H42Kc, H42Kc_sd, CPP, CPP_sd, Energy, Energy_sd, SHR, SHR_sd) %>%
+  summarise(n=n(), minV=min(Variance), maxV=max(Variance)) %>%
+  arrange(desc(n)) %>%
+  filter(n>1)
+```
 
 
 

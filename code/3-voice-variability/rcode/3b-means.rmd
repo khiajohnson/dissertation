@@ -11,6 +11,8 @@ library(tidyverse)
 library(ggthemes)
 library(lsr)
 library(broom)
+library(brms)
+library(tidybayes)
 ```
 
 visualization defaults
@@ -31,14 +33,14 @@ theme_set(theme_clean() + theme(
 df <- fread('../data/spice_voicesauce_processed.csv', sep = ',') 
 ```
 
-Pivot longer to prep for getting t-test and cohen's d results
+## Visualize
+
+Pivot longer to prep for getting t-test and cohen's d results // data viz
 ```{r}
 long_df <- df %>%
   select(Talker, Language, F0:SHR_sd) %>%
   pivot_longer(F0:SHR_sd, names_to = 'Variable', values_to = 'Value')
 ```
-
-## Visualize
 
 ```{r fig.width=5, fig.height=6.5}
 long_df %>%
@@ -51,54 +53,37 @@ long_df %>%
     ylab('Density') +
     xlab('')
 
-ggsave('../../../text/figures/ch3_allmeasuresdensity_5in.png', width = 5, height = 6.5)
+#ggsave('../../../text/figures/ch3_allmeasuresdensity_5in.png', width = 5, height = 6.5)
 
 ```
 
-ggsave('../../text/figures/ch2_cantonesetypecounts_5in.png', width = 5, height = 6.5)
 
 ## Bayesian estimation
-```{r}
-library(brms)
-library(tidybayes)
-```
 
-```{r}
-df_cpp <- df %>%
-  select(Talker, Language, CPP) %>%
-  mutate(CPP_z = scale(CPP),
-         Language = as_factor(Language))
+Do one model for each acoustic measurement, using robust t-distribution for all measures except 
+- SHR, which gets a zero-inflated beta
+- Energy could get a log-normal
 
-vf19a_cpp <- df_cpp %>%
-  filter(Talker=='VF19A')
-```
-
-Setup according to https://mvuorre.github.io/posts/2017-01-02-how-to-compare-two-groups-with-robust-bayesian-estimation-using-r-stan-and-brms/
-```{r}
-best_cpp <- brm(
-  bf(CPP ~ Language, sigma ~ Language),
-  family = student,
-  data = vf19a_cpp,
-  cores = 4,
-  file = "best_vf19a_cpp"
-)
-```
-
-```{r}
-best_cpp
-```
-
-
-
+General formula:
+- Measure ~ 0 + Language + (0 + Language | Talker)
 
 For each measure, use:
 
 - Formula: Measure ~ Language + (Language | Talker)
 
+```{r}
+cpp <- df %>%
+  group_by(Talker, Language) %>%
+  slice_sample(n=500) %>%
+  ungroup() %>%
+  select(Talker, Language, CPP) %>%
+  mutate(CPP_z = scale(CPP))
+
+```
+
 ```{r fig.width=5, fig.height=6.5}
-df %>%
-  select(Talker, Language, i, CPP) %>%
-  ggplot(aes(x=CPP, color=Language)) +
+cpp %>%
+  ggplot(aes(x=CPP_z, color=Language)) +
     geom_density() +
     scale_color_viridis_d(option='magma', begin = 0.75, end = 0)+
     facet_wrap(~Talker, ncol = 5) +
@@ -108,18 +93,45 @@ df %>%
         axis.ticks.y = element_blank())
 ```
 
-```{r fig.width=5, fig.height=6.5}
-df %>%
-  select(Talker, Language, i, F0) %>%
-  ggplot(aes(x=F0, color=Language)) +
-    geom_density() +
-    scale_color_viridis_d(option='magma', begin = 0.75, end = 0)+
-    facet_wrap(~Talker, ncol = 5) +
-    ylab('Density') +
-    xlab('F0 (Hz)') +
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank())
+Using recommended regularizing prior from Gelman & stan crew
+```{r}
+cpp.fit.1 <- brm(data = cpp, 
+             family = student,
+             formula = CPP_z ~ 0 + Language + (0 + Language | Talker),
+             prior = c(prior(normal(0, 1), class = b)),
+             sample_prior = TRUE,
+             iter = 2000, warmup = 1000, chains = 4, cores = 4,  
+             seed = 23,
+             file = "fits/cpp.fit.1")
+
+summary(cpp.fit.1)
+mcmc_plot(cpp.fit.1, type = 'trace')
+mcmc_plot(cpp.fit.1, type = 'neff_hist')
+mcmc_plot(cpp.fit.1, type = 'nuts_divergence')
+mcmc_plot(cpp.fit.1, type = 'rhat_hist')
 ```
+
+Plotting comparisons between languages with ROPE of [-0.1, 0.1]
+```{r fig.width=10, fig.height=5}
+cpp.fit.1 %>%
+  spread_draws(r_Talker[Talker,Language]) %>%
+  mutate(Language = str_replace(Language, 'Language', '')) %>%
+  group_by(Talker) %>%
+  compare_levels(r_Talker, by=Language) %>%
+  ungroup() %>%
+  mutate(Talker = reorder(Talker, r_Talker)) %>%
+  ggplot(aes(x=Talker, y=r_Talker)) + 
+  stat_pointinterval() + 
+  annotate(geom = "rect", ymin = -0.1, ymax = 0.1, xmin = -Inf, xmax = Inf,
+           fill = "skyblue", colour = "black", alpha = 0.5) +
+  theme(axis.text.x = element_text(angle=90)) +
+  xlab('') +
+  ylab('CPP Posterior difference for Cantonese-English')
+
+ggsave('../../../text/figures/ch3_cpp_5in.png', width = 5, height = 2.5)
+
+```
+
 
 
 Do all the t-tests and cohen's d calculations
