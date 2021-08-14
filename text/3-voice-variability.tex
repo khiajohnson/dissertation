@@ -118,33 +118,40 @@ Following from prior work, the first step in this analysis is a crosslinguistic 
     \caption{Distribution of all acoustic measures by language after filtering.}
     \label{ch3:fig:allmeasures}
     \end{center}
-    \end{figure}
+\end{figure}
 
-    For each of the 12 acoustic measurements (but not the moving standard deviations), a separate Bayesian mixed-effects model was used to compare the distribution of values by talkers across languages.  The models were implemented with \textit{brms} \citep{} in R \citep{}. The brms package offers a simple R-based interface for fitting Bayesian models with the Stan probabilistic programming language \citep{}. 
+For each of the 12 acoustic measurements (but not the moving standard deviations), a separate Bayesian mixed-effects model was used to compare the distribution of values by talkers across languages.  The models were implemented with \textit{brms} \citep{burkner_2017_brms} in R \citep{r_2021}. The brms package offers a simple R-based interface for fitting Bayesian models with the Stan probabilistic programming language \citep{stan_2021}. Bayesian models provide mnay advantages for scientific inference...\hl{ADD GENERAL METHODS MOTIVATION HERE}. For a more thorough discussion of Bayesian modeling in the phonetic sciences, please refer to the recent tutorial in \citet{vasishth_2018_bayesian}. 
 
-    Bayesian models provide many advantages... For more information, see Vasishth et al. (2018)
-    
-    A robust linear mixed-effects model was used for each standardized acoustic measure, with a Student's t distributed dependent variable. This decision was motivated by the strong possibility that outliers---real or erroneous---remained in the data. It also follows from Kruschke's (2013) paper arguing that robust Bayesian estimation provides better group comparison estimates. The exception to this was for SHR. As SHR is bounded by zero and one and contains many real and meaningful zero measurements, SHR was modeled as zero-inflated beta distribution. Apart from this, the models share structure and specifications. In all cases, the formula in \ref{ch3:num:formula} was used, where Measure refers to the particular standardized acoustic measure for the model. 
+A robust linear mixed-effects model was used for each standardized acoustic measure, with a Student's t distributed dependent variable. This decision was motivated by the strong possibility that outliers---real or erroneous---remained in the data. It also follows from Kruschke's (2013) paper arguing that robust Bayesian estimation provides better group comparison estimates. The exception to this was for SHR. As SHR is bounded by zero and one and contains many real and meaningful zero measurements, SHR was modeled as zero-inflated beta distribution. Apart from this, the models share structure and specifications. In all cases, the formula in \ref{ch3:num:formula} was used, where Measure refers to the particular acoustic measure for the model. All measures were standardized prior to modeling (except SHR). \hl{After standardization, 1000 samples from each talker/language pair were randomly selected for modeling. This was done for feasibility of running.}
     
     \begin{equation}\label{ch3:num:formula}
         \text{Measure} \sim 0 + \text{Language} + (0 + \text{Language }|\text{ Talker})
     \end{equation}
     
-    Weakly informative priors were used in all cases, following guidelines from Gelman for standardized data. For the robust linear regression models, they were as follows:
+Weakly informative priors were used in all models, following guidelines in the Stan documentation \citep{gelman_2020_prior} and from \citet{mcelreath_2020_sr}. For the the non-SHR models, these were as follows.... 
+
+Each model consisted of four chains with 2000 iterations, half of which were warm-up iterations, for a total of 4000 samples after warm-up. \hl{ Divergent transitions, R-hat, ESS }
     
-    Each model consisted of four chains with XXX iterations, half of which were warm-up iterations, for a total of XXX samples after warm-up.
+These models give high-level insight into how much individuals differed for particular acoustic dimensions across language. The models also give insight into whether or not there is a common pattern across talkers. While this part of the analysis extends the work done primarily on F0 \citep[e.g., by][]{} to the present data set, it does not elucidate how the different acoustic dimensions vary. 
     
-    Divergent transitions, R-hat, ESS 
+Inference in Bayesian statistics is based on the posterior distributions, which reflect the range and probability of credible values for parameters. The comparison of interest here is the difference between the two languages for each talker. 
+
+Figure XX depicts the magnitude of the difference across languages for CPP. \hl{describe ... the blue shaded interval depicts the recommended region of practical equivalence (ROPE) for standardized variables} \citep{kruschke_2011_rope}. Most of the comparisons overlap with the ROPE, suggesting that there is no difference in CPP across languages. Further, in the talkers with a differce, the direction is not consistent across languages. \hl{As CPP is associated with non-modal phonation types...}
+
+
+\begin{figure}[htbp]
+    \begin{center}
+    \includegraphics[width=\linewidth]{figures/ch3_cpp_5in.png} 
+    \caption{Posterior difference between languages for CPP.}
+    \label{ch3:fig:cpp}
+    \end{center}
+\end{figure}
+
+Other variables...
+
+In the case of SHR... how to interpret
     
-    These models give high-level insight into whether individuals differed for particular acoustic dimensions across language. The models also give insight into whether or not there is a common pattern across talkers. While this part of the analysis extends the work done primarily on F0 \citep[e.g., by][]{} to the present data set, it does not elucidate how the different acoustic dimensions vary. 
-    
-    Inference in Bayesian statistics is based on the posterior distributions, which reflect the range and probability of credible values for parameters... For each of the models, a difference can be computed between the posterior distributions of Cantonese and English for each participant. This provides a magnitude of difference between the two languages, as well as how it varies across individuals.  
-    
-    In the case of SHR... how to interpret
-    
-    
-    
-    
+
 
 % %old version
 % For each acoustic measurement and talker, I conducted a Student's \textit{t}-test and calculated Cohen's \textit{d}, in order to give a high-level assessment of whether variable means differed across the two languages. These comparisons have no bearing on how a given variable \textit{varies}. Table~\ref{ch3:tab:cohend} reports counts of talkers by effect size. Notably, across all talkers and variables, only 21.1\% yielded non-trivial Cohen's \textit{d} values. Most talkers (32/34) had at least one non-trivial comparison. The distribution of these counts is depicted in Figure~\ref{ch3:fig:ntcounts}. 
