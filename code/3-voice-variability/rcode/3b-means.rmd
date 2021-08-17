@@ -62,6 +62,71 @@ long_df %>%
 
 ## Bayesian estimation
 
+### Functions
+
+Subset and standardize for a particular acoustic measure
+```{r}
+subset_and_standardize <- function(fulldf, measure, samplesize) {
+  
+  subset <- mutate(measure = scale(measure)) %>%
+            group_by(Talker, Language) %>%
+            slice_sample(n = samplesize) %>%
+            ungroup() %>%
+            select(Talker, Language, measure)
+  
+  return(subset)
+}
+
+```
+
+By talker density plot
+```{r}
+plot_density_by_talker <- function(subsetdf, measure, x_label) {
+  
+  p <- measure %>%
+    ggplot(aes(x=measure, color=Language)) +
+    geom_density() +
+    scale_color_viridis_d(option='magma', begin = 0.75, end = 0)+
+    facet_wrap(~Talker, ncol = 5) +
+    ylab('Density') +
+    xlab(x_label) +
+    theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank())
+}
+```
+
+
+
+Plot results as difference between Languages by Talker
+```{r}
+plot_difference_forest <- function(fit, y_label, rope_min=-0.1, rope_max=0.1) {
+
+p <- fit %>%
+  spread_draws(r_Talker[Talker,Language]) %>%
+  mutate(Language = str_replace(Language, 'Language', '')) %>%
+  group_by(Talker) %>%
+  compare_levels(r_Talker, by=Language) %>%
+  ungroup() %>%
+  mutate(Talker = reorder(Talker, r_Talker)) %>%
+  ggplot(aes(x=Talker, y=r_Talker)) + 
+  stat_pointinterval() + 
+  annotate(geom = "rect", ymin = rope_min, ymax = rope_max, xmin = -Inf, xmax = Inf,
+           fill = "skyblue", colour = "black", alpha = 0.5) +
+  theme(axis.text.x = element_text(angle=90)) +
+  xlab('') +
+  ylab(y_label)
+
+return(p)
+}
+```
+
+
+
+```{r}
+colnames(df)
+```
+
+
 Do one model for each acoustic measurement, using robust t-distribution for all measures except 
 - SHR, which gets a zero-inflated beta
 - Energy could get a log-normal
@@ -72,6 +137,45 @@ General formula:
 For each measure, use:
 
 - Formula: Measure ~ Language + (Language | Talker)
+
+### F0
+```{r}
+f0 <- df %>%
+  group_by(Talker, Language) %>%
+  slice_sample(n=500) %>%
+  ungroup() %>%
+  select(Talker, Language, F0) %>%
+  mutate(F0_z = scale(F0))
+
+f0
+```
+
+```{r fig.width=5, fig.height=6.5}
+f0 %>%
+  ggplot(aes(x=F0_z, color=Language)) +
+    geom_density() +
+    scale_color_viridis_d(option='magma', begin = 0.75, end = 0)+
+    facet_wrap(~Talker, ncol = 5) +
+    ylab('Density') +
+    xlab('F0 (Hz, z-scored)') +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
+```
+
+Using recommended regularizing prior from Gelman & stan crew
+```{r}
+f0.fit.1 <- brm(data = f0, 
+             family = student(),
+             formula = F0_z ~ 0 + Language + (0 + Language | Talker),
+             prior = c(prior(normal(0, 1), class = b),
+                       prior(lkj(2), class = cor)),
+             sample_prior = TRUE,
+             iter = 2000, warmup = 1000, chains = 6, cores = 6, 
+             file = "fits/f0.fit.1")
+```
+
+started at 11:17
+
 
 ```{r}
 cpp <- df %>%
@@ -98,7 +202,7 @@ cpp %>%
 ```{r}
 get_prior(
   data = cpp, 
-  family = gaussian,
+  family = student,
   formula = CPP_z ~ 0 + Language + (0 + Language | Talker)
 )
 ```
