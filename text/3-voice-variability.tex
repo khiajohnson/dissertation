@@ -120,9 +120,9 @@ Following from prior work, the first step in this analysis is a crosslinguistic 
     \end{center}
 \end{figure}
 
-For each of the 12 acoustic measurements (but not the moving standard deviations), a separate Bayesian mixed-effects model was used to compare the distribution of values by talkers across languages. The models were implemented with \textit{brms} \citep[version 2.15.0;][]{burkner_2017_brms} in R \citep[version 4.0.5;][]{r_2021}. The brms package offers a simple R-based interface for fitting Bayesian models with the Stan probabilistic programming language \citep{stan_2021}. Bayesian models provide many advantages for scientific inference...\hl{ADD GENERAL METHODS MOTIVATION HERE}. For a more thorough discussion of Bayesian modeling in the phonetic sciences, please refer to the recent tutorial in \citet{vasishth_2018_bayesian}. 
+For each of the 12 acoustic measurements (but not the moving standard deviations), a separate Bayesian mixed-effects model was used to compare the distribution of values by talkers across languages. The models were implemented with \textit{brms} \citep[version 2.15.0;][]{burkner_2017_brms} in R \citep[version 4.1.1;][]{r_2021}. The brms package offers a simple R-based interface for fitting Bayesian models with the Stan probabilistic programming language \citep{stan_2021}. Bayesian models provide many advantages for scientific inference...\hl{ADD GENERAL METHODS MOTIVATION HERE}. For a more thorough discussion of Bayesian modeling in the phonetic sciences, please refer to the recent tutorial in \citet{vasishth_2018_bayesian}. 
 
-A linear mixed-effects model was used for each standardized acoustic measure, with a Student's t distributed dependent variable. This decision was motivated by the strong possibility that outliers---real or erroneous---remained in the data. It also follows from Kruschke's (2013) paper arguing that robust Bayesian estimation provides better group comparison estimates. The exception to this was for SHR. As SHR is bounded by zero and one and contains many real and meaningful zero measurements, SHR was modeled as zero-inflated beta distribution. Apart from this, the models share structure and specifications. In all cases, the formula in \ref{ch3:num:formula} was used, where Measure refers to the particular acoustic measure for the model. All measures were standardized prior to modeling (except SHR). \hl{After standardization, 500 samples from each talker/language pair were randomly selected for modeling. This was done for feasibility of running.}
+A linear mixed-effects model was used for each standardized acoustic measure, with a Student's \textit{t} distributed dependent variable. This decision was motivated by the strong possibility that outliers---real or erroneous---remained in the data. It also follows from Kruschke's (2013) paper arguing that robust Bayesian estimation provides better group comparison estimates. The exception to this was for SHR. As SHR is bounded by zero and one and contains many real and meaningful zero measurements, SHR was modeled as zero-inflated beta distribution. Apart from this, the models share structure and specifications. In all cases, the formula in \ref{ch3:num:formula} was used, where Measure refers to the particular acoustic measure for the model. All measures were standardized prior to modeling (except SHR). \hl{After standardization, 500 samples from each talker/language pair were randomly selected for modeling. This was done for feasibility of running.}
     
     \begin{equation}\label{ch3:num:formula}
         \text{Measure} \sim 0 + \text{Language} + (0 + \text{Language }|\text{ Talker})
@@ -130,14 +130,132 @@ A linear mixed-effects model was used for each standardized acoustic measure, wi
     
 Weakly informative priors were used in all models, following guidelines in the Stan documentation \citep{gelman_2020_prior} and from \citet{mcelreath_2020_sr}. For the the non-SHR models, these were as follows.... 
 
-Each model consisted of four chains with 2000 iterations, half of which were warm-up iterations, for a total of 4000 samples after warm-up. \hl{ Divergent transitions, R-hat, ESS }
+Each model consisted of four chains with 2000 iterations, half of which were warm-up iterations, for a total of 4000 samples after warm-up. Langauge was coded as an index variable \citep{mcelreath_2020_sr}, such that a separate intercept was estimated for each of the two langauges. \hl{ Divergent transitions, R-hat, ESS}. These models give high-level insight into how much individuals differed for particular acoustic dimensions across language. The models also give insight into whether or not there is a common pattern across talkers. While this part of the analysis extends the work done primarily on F0 \citep[e.g.,][]{ng_2012_ltas} to the present data set, it does not elucidate how the different acoustic dimensions vary. % Prior work based mostly on ANOVA and t-tests
     
-These models give high-level insight into how much individuals differed for particular acoustic dimensions across language. The models also give insight into whether or not there is a common pattern across talkers. While this part of the analysis extends the work done primarily on F0 \citep[e.g., by][]{} to the present data set, it does not elucidate how the different acoustic dimensions vary. 
-    
-Inference in Bayesian statistics is based on the posterior distributions, which reflect the range and probability of credible values for parameters. The comparison of interest here is the difference between the two languages for each talker. 
+Inference in Bayesian statistics is based on the posterior distributions, which reflect the range and probability of credible values for parameters. In the case of comparing acoustic measurements across languages for the various talkers, the relevant comparison is the by-talker difference between langauges. While the overall effect of Language is also relevant and will be reported, the more interesting model result arises from the variability across slopes and intercepts. As such, results reporting for each of the 12 acoustic measurements will proceed as follows: posterior summaries for each language globally, and a discussion of how individual across-language differences vary. 
 
-Figure XX depicts the magnitude of the difference across languages for CPP. \hl{describe ... the blue shaded interval depicts the recommended region of practical equivalence (ROPE) for standardized variables} \citep{kruschke_2011_rope}. Most of the comparisons overlap with the ROPE, suggesting that there is no difference in CPP across languages. Further, in the talkers with a differce, the direction is not consistent across languages. \hl{As CPP is associated with non-modal phonation types...}
+Reporting on the global effects is accomplished by reporting 95\% highest-density credible intervals (HDIs) for both levels of Language and their difference. Bayesian estimation is primarily focused on estimating the magnitude of parameters, and in this case, their difference. While using a descision criteria is not a requirement, it can aid interpretation. I used Kruschke's region of practical equivalence (ROPE) method with a threshold of XX \citep{kruschke_2011_rope}. In the case of the standardized measures (all but SHR), the ROPE is defined as [-0.1, 0.1]. In this decision framework, when 95\% of the posterior distribution falls above or below the ROPE, the effect is considered to be present. When more than 5\% the posterior overlaps with the ROPE, it would be considered a ``null'' effect. While Bayesians tend to shy away from using decision criteria, it nonetheless provides a useful scaffolding for interpreting the magnitudes of standardized effects. 
 
+Individual differences are depicted visually, using forest plots of the difference between langauges by talker, accompanied by a prose description of what the variability means for interpretation of the variable. Figures XX depict the magnitude of the difference across languages for each of the different acoustic measurements. Each of the figures for the other acoustic measures can be similarly interpreted. Positive difference indicate that a talker produces a particular measure with higher Cantonese values. Negative difference values indicate that a talker produces the measure with lower Cantonese values compared to English. In each of the plots, the light blue shaded interval represents the ROPE. The posterior distribution is summarized by the mean (the point), and the 95\% HDI (the line)
+
+% F0
+F0\dots
+
+% \begin{figure}[htbp]
+%     \begin{center}
+%     \includegraphics[width=\linewidth]{figures/ch3_f0_5in.png} 
+%     \caption{Posterior difference between languages for F0.}
+%     \label{ch3:fig:f0}
+%     \end{center}
+% \end{figure}
+
+
+% F1
+F1\dots
+
+% \begin{figure}[htbp]
+%     \begin{center}
+%     \includegraphics[width=\linewidth]{figures/ch3_f1_5in.png} 
+%     \caption{Posterior difference between languages for F1.}
+%     \label{ch3:fig:f1}
+%     \end{center}
+% \end{figure}
+
+%--------------------------------------------------%
+
+% F2
+F2\dots
+
+% \begin{figure}[htbp]
+%     \begin{center}
+%     \includegraphics[width=\linewidth]{figures/ch3_f2_5in.png} 
+%     \caption{Posterior difference between languages for F2.}
+%     \label{ch3:fig:f2}
+%     \end{center}
+% \end{figure}
+
+%--------------------------------------------------%
+
+% F3
+F3\dots
+
+% \begin{figure}[htbp]
+%     \begin{center}
+%     \includegraphics[width=\linewidth]{figures/ch3_f3_5in.png} 
+%     \caption{Posterior difference between languages for F3.}
+%     \label{ch3:fig:f3}
+%     \end{center}
+% \end{figure}
+
+%--------------------------------------------------%
+
+% F4
+F4\dots
+
+% \begin{figure}[htbp]
+%     \begin{center}
+%     \includegraphics[width=\linewidth]{figures/ch3_f4_5in.png} 
+%     \caption{Posterior difference between languages for F4.}
+%     \label{ch3:fig:f4}
+%     \end{center}
+% \end{figure}
+
+%--------------------------------------------------%
+
+% H1*-H2*
+H1*-H2*\dots
+
+% \begin{figure}[htbp]
+%     \begin{center}
+%     \includegraphics[width=\linewidth]{figures/ch3_h1h2_5in.png} 
+%     \caption{Posterior difference between languages for H1*-H2*.}
+%     \label{ch3:fig:h1h2}
+%     \end{center}
+% \end{figure}
+
+%--------------------------------------------------%
+
+% H2*-H4*
+H2*-H4*\dots
+
+% \begin{figure}[htbp]
+%     \begin{center}
+%     \includegraphics[width=\linewidth]{figures/ch3_h2h4_5in.png} 
+%     \caption{Posterior difference between languages for H2*-H4*.}
+%     \label{ch3:fig:fh2h4}
+%     \end{center}
+% \end{figure}
+
+%--------------------------------------------------%
+
+% H4*-H2kHz*
+H4*-H2kHz*\dots
+
+% \begin{figure}[htbp]
+%     \begin{center}
+%     \includegraphics[width=\linewidth]{figures/ch3_h4h2k_5in.png} 
+%     \caption{Posterior difference between languages for H4*-H2kHz*.}
+%     \label{ch3:fig:h4h2k}
+%     \end{center}
+% \end{figure}
+
+%--------------------------------------------------%
+
+% H2kHz*-H5kHz*
+H2kHz*-H5kHz*\dots
+
+% \begin{figure}[htbp]
+%     \begin{center}
+%     \includegraphics[width=\linewidth]{figures/ch3_h2kh5k_5in.png} 
+%     \caption{Posterior difference between languages for H2kHz*-H5kHz*.}
+%     \label{ch3:fig:h2kh5k}
+%     \end{center}
+% \end{figure}
+
+%--------------------------------------------------%
+
+% CPP
+The model for CPP estimates similar posterior distributions for Cantonese () and English (), which is reflected by the small difference magnitude (). This difference overlaps substantially with the ROPE, indicating that globally-speaking, CPP does not differ across languages. On a by-talker level, however, this differs. Figure \ref{ch3:fig:cpp} depicts the posterior difference for CPP between languges for each talker. Higher CPP values are associated with both breathy or creaky non-modal phonation types. In this sense, a positive difference would indicate that Cantonese was more non-modal, while a negative difference would indicate that English was more non-modal. Interpreting CPP is not so straightforward, however, as it is not immediately clear which type of non-modal phonation is reflected in the measure. In any case, there is no consistent pattern across language for CPP. And considering that a majority of the comparison soverlap with the ROPE, the takeaway is that while individuals vary, the global effect is largely representative.
 
 \begin{figure}[htbp]
     \begin{center}
@@ -147,10 +265,31 @@ Figure XX depicts the magnitude of the difference across languages for CPP. \hl{
     \end{center}
 \end{figure}
 
-Other variables...
+% Energy
 
-In the case of SHR... how to interpret
-    
+% \begin{figure}[htbp]
+%     \begin{center}
+%     \includegraphics[width=\linewidth]{figures/ch3_energy_5in.png} 
+%     \caption{Posterior difference between languages for Energy.}
+%     \label{ch3:fig:energy}
+%     \end{center}
+% \end{figure}
+
+%--------------------------------------------------%
+
+% SHR
+
+In the case of SHR, the model looked a little bit different\dots 
+
+% \begin{figure}[htbp]
+%     \begin{center}
+%     \includegraphics[width=\linewidth]{figures/ch3_shr_5in.png} 
+%     \caption{Posterior difference between languages for SHR.}
+%     \label{ch3:fig:shr}
+%     \end{center}
+% \end{figure}
+
+%--------------------------------------------------%
 
 
 % %old version
