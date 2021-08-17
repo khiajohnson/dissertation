@@ -189,26 +189,136 @@ return_loadings_plot <- function(subset) {
 } 
 ```
 
-```{r fig.width=12}
-return_loadings_plot(filter(results, Talker=='VF19A', abs(Loading) > 0.32))
+```{r fig.width=12, fig.height=6}
+return_loadings_plot(filter(results, Talker=='VF19A', abs(Loading) > 0.45))
+```
+
+```{r}
+results %>%
+  filter(abs(Loading)>0.45) %>%
+  select(Talker, Language, Variable, Variance, Var_Order) %>%
+  mutate(Variance = round(Variance,2)) %>%
+  pivot_wider(names_from = Variable, values_from = Variable) %>%
+  group_by(Talker, Language) %>%
+  summarize(n=n(), sv = sum(Variance)) %>%
+  ungroup()  %>%
+  pivot_wider(names_from = Language, values_from = n:sv) %>%
+  write_csv('components_variances.csv')
+```
+
+```{r}
+results %>%
+  filter(abs(Loading)>0.45) %>%
+  select(Talker, Language, Variable, Variance, Var_Order) %>%
+  pivot_wider(names_from = Variable, values_from = Variable) %>%
+  group_by(Talker, Language) %>%
+  summarize(n=n()) %>%
+  pivot_wider(names_from = Language, values_from = n) %>%
+  mutate(d = as_factor(abs(Cantonese-English)) )%>%
+  group_by(d) %>%
+  summarise(n())
 ```
 
 This is a bit messy, but its a useful structure for exploring the components.. a little better than it was
 ```{r}
 results %>%
-  filter(abs(Loading)>0.32) %>%
+  filter(abs(Loading)>0.45) %>%
   select(Talker, Language, Variable, Variance, Var_Order) %>%
   pivot_wider(names_from = Variable, values_from = Variable) %>%
-  select(Talker, Language, Variance, Var_Order, F0, F0_sd, F1, F1_sd, F2, F2_sd, F3, F3_sd, F4, F4_sd, H1H2c, H1H2c_sd, H2H4c, H2H4c_sd, H2KH5Kc, H2KH5Kc_sd, H42Kc, H42Kc_sd, CPP, CPP_sd, Energy, Energy_sd, SHR, SHR_sd) %>%
-  group_by(Language, F0, F0_sd, F1, F1_sd, F2, F2_sd, F3, F3_sd, F4, F4_sd, H1H2c, H1H2c_sd, H2H4c, H2H4c_sd, H2KH5Kc, H2KH5Kc_sd, H42Kc, H42Kc_sd, CPP, CPP_sd, Energy, Energy_sd, SHR, SHR_sd) %>%
-  summarise(n=n(), minV=min(Variance), maxV=max(Variance)) %>%
-  arrange(desc(n)) %>%
-  filter(n>1)
+  select(Talker, Language, Variance, F0, F0_sd, F1, F1_sd, F2, F2_sd, F3, F3_sd, 
+         F4, F4_sd, H1H2c, H1H2c_sd, H2H4c, H2H4c_sd, H2KH5Kc, H2KH5Kc_sd, 
+         H42Kc, H42Kc_sd, CPP, CPP_sd, Energy, Energy_sd, SHR, SHR_sd
+         ) %>%
+  group_by(Talker, F0, F0_sd, F1, F1_sd, F2, F2_sd, F3, F3_sd, F4, F4_sd, H1H2c, 
+           H1H2c_sd, H2H4c, H2H4c_sd, H2KH5Kc, H2KH5Kc_sd, H42Kc, H42Kc_sd, CPP, 
+           CPP_sd, Energy, Energy_sd, SHR, SHR_sd
+           ) %>%
+  unite('Component', F0:SHR_sd, na.rm=TRUE, sep = " | ") %>%
+  group_by(Talker, Component) %>% 
+  summarise(n = n()) %>%
+  group_by(Talker) %>%
+  mutate(shared = n==2) %>%
+  summarise(shared_count = sum(shared), shared_prop=2*sum(shared)/sum(n)) %>%
+  write_csv('shared_comps.csv')
+    # ungroup() %>%
+  # summarise(min(shared_count), mean(shared_count), median(shared_count), max(shared_count),
+  #           min(shared_prop), mean(shared_prop), median(shared_prop), max(shared_prop))
+
+```
+
+0.333--0.9167, M=0.667
+
+```{r}
+results %>%
+  filter(abs(Loading)>0.45) %>%
+  select(Talker, Language, Variable, Variance, Var_Order) %>%
+  pivot_wider(names_from = Variable, values_from = Variable) %>%
+  select(Talker, Language, Variance, F0, F0_sd, F1, F1_sd, F2, F2_sd, F3, F3_sd, 
+         F4, F4_sd, H1H2c, H1H2c_sd, H2H4c, H2H4c_sd, H2KH5Kc, H2KH5Kc_sd, 
+         H42Kc, H42Kc_sd, CPP, CPP_sd, Energy, Energy_sd, SHR, SHR_sd
+         ) %>%
+  group_by(Talker, F0, F0_sd, F1, F1_sd, F2, F2_sd, F3, F3_sd, F4, F4_sd, H1H2c, 
+           H1H2c_sd, H2H4c, H2H4c_sd, H2KH5Kc, H2KH5Kc_sd, H42Kc, H42Kc_sd, CPP, 
+           CPP_sd, Energy, Energy_sd, SHR, SHR_sd
+           ) %>%
+  unite('Component', F0:SHR_sd, na.rm=TRUE, sep = " | ") %>%
+  group_by(Talker, Component) %>% 
+  summarise(n = n()) %>%
+  group_by(Talker) %>%
+  mutate(shared = n==2) %>%
+  summarise(shared_count = sum(shared), shared_prop=2*sum(shared)/sum(n))
+
+```
+
+```{r fig.width= 12, fig.height=6.5}
+results %>%
+  filter(abs(Loading)>0.45) %>%
+  select(Talker, Language, Variable, Variance, Var_Order) %>%
+  mutate(Variance = round(Variance, 3)) %>%
+  pivot_wider(names_from = Variable, values_from = Variable) %>%
+  select(Talker, Language, Variance, F0, F0_sd, F1, F1_sd, F2, F2_sd, F3, F3_sd, 
+         F4, F4_sd, H1H2c, H1H2c_sd, H2H4c, H2H4c_sd, H2KH5Kc, H2KH5Kc_sd, 
+         H42Kc, H42Kc_sd, CPP, CPP_sd, Energy, Energy_sd, SHR, SHR_sd
+         ) %>%
+  group_by(Talker, F0, F0_sd, F1, F1_sd, F2, F2_sd, F3, F3_sd, F4, F4_sd, H1H2c, 
+           H1H2c_sd, H2H4c, H2H4c_sd, H2KH5Kc, H2KH5Kc_sd, H42Kc, H42Kc_sd, CPP, 
+           CPP_sd, Energy, Energy_sd, SHR, SHR_sd
+           ) %>%
+  unite('Component', F0:SHR_sd, na.rm=TRUE, sep = " | ") %>%
+  mutate(Component = str_replace_all(Component, '_sd', ' s.d.')) %>%
+  group_by(Language, Component) %>%
+  summarise(n=n(), minV = min(Variance), maxV = max(Variance)) %>%
+  arrange(desc(maxV), Component) %>%
+  ungroup() %>%
+  write_csv('component_summary.csv')
+ #  filter(n>10) %>%
+ # ggplot(aes(y=Component, xmin=minV, xmax=maxV, color=Language)) +
+ #  
+ #  geom_linerange() +
+ #  scale_color_viridis_d(option = 'magma', begin=0.9, end=0) +
+ #    theme_clean()+
+ #    theme(legend.position = 'none',
+ #          panel.border = element_rect(color='black',fill=NA),
+ #          strip.text = element_text(size=14, face='bold'))
+```
+
+```{r}
+library(ggrepel)
 ```
 
 
-
-
+```{r}
+ ggplot(aes(x=mv, y=mpob, label=Component, color=n, size=n)) +
+    geom_text_repel(segment.colour = NA, box.padding = 0.2) +
+    scale_color_viridis_c(option = 'magma', begin=0.9, end=0) +
+    facet_wrap(~Language) +
+    ylab('Consistency (Mean Proportion short PCAs with component)')+
+    xlab('Importance (Mean variance)')+
+    theme_clean()+
+    theme(legend.position = 'none',
+          panel.border = element_rect(color='black',fill=NA),
+          strip.text = element_text(size=14, face='bold'))
+```
 
 
 

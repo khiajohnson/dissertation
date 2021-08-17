@@ -45,7 +45,7 @@ The authors of these studies speculate that Cantonese's status as a tone languag
 
 \citet{lee_2017_bilingual} compare F0, speech rate, and intensity in a small group of late Mandarin-English bilinguals (n$=$11) across three different tasks. They report a higher mean F0 for Mandarin reading compared to English, but no differences in the other tasks (picture description and monologue). Additionally, there were no differences in F0 variability across languages or tasks. While there were no differences in intensity, the bilinguals spoke faster in Mandarin. \citet{lee_2017_bilingual} speculate that Mandarin's status as a tone language may account for the higher mean F0 in reading, as it echoes some prior work with separate populations of English and Mandarin speakers, in which Mandarin tends to have higher and more variable F0 \citep{keating_2012_f0}. This finding seems to reflect more balanced and proficient bilinguals. \citet{xue_2002_f0} found that Mandarin-English bilinguals aged 22-35 years produced higher F0 in English. \citet{lee_2017_bilingual} argue that the difference in results can be attributed to the language backgrounds of the respective groups studied. \citet{xue_2002_f0} looked at non-native English speakers, who arguably produce higher pitch speech for reasons related to stress or confidence \citep{jarvinen_2013_speaking, lee_2017_bilingual}.
 
-The speculation that higher F0 is a feature of tone languages does not align with the observation in \citet{ng_2012_ltas}, who argued the opposite for Cantonese: that lower F0 could be accounted for by lexical tone. While the tone inventories for Cantonese and Mandarin have substantial differences, it seems clear that appealing to the presence or absence of lexical tone is too simplistic of an answer. Alternatively—or perhaps, concurrently—talkers may be expressing different cultural identities in each of their languages \citep[see][]{loveday_1981_pitch}. Regardless of whether language, experiential, or social factors drive differences across languages, this body of work highlights the importance of comparing within the same task.
+The speculation that higher F0 is a feature of tone languages does not align with the observation in \citet{ng_2012_ltas}, who argued the opposite for Cantonese: that lower F0 could be accounted for by lexical tone. While the tone inventories for Cantonese and Mandarin have substantial differences, it seems clear that appealing to the presence or absence of lexical tone is too simplistic of an answer. Alternatively---or perhaps, concurrently---talkers may be expressing different social and cultural identities in each of their languages \citep{loveday_1981_pitch, voigt_2016_between}. Regardless of whether language, experiential, or social factors drive differences across languages, this body of work highlights the importance of comparing within the same task.
 
 Treating Mandarin and Cantonese as similar just because they are both tone languages may not be appropriate, though there is little research to say either way. In a study with 12 Cantonese-Mandarin bilinguals who are Cantonese-dominant, \citet{yang_2020_f0} found no differences in their F0 profiles across languages. F0 profiles were characterized by minimum, maximum, range, and mean. The authors also examined a Mandarin-dominant group and report clear differences between the two populations' F0 profiles in Mandarin. The Mandarin-dominant individuals produced higher F0 with a narrower range. While the conclusions from this study are tenuous given the small sample size, it nonetheless highlights an important point: that typologically related tone languages may not necessarily behave in comparable ways.
 
@@ -120,9 +120,9 @@ Following from prior work, the first step in this analysis is a crosslinguistic 
     \end{center}
 \end{figure}
 
-For each of the 12 acoustic measurements (but not the moving standard deviations), a separate Bayesian mixed-effects model was used to compare the distribution of values by talkers across languages.  The models were implemented with \textit{brms} \citep{burkner_2017_brms} in R \citep{r_2021}. The brms package offers a simple R-based interface for fitting Bayesian models with the Stan probabilistic programming language \citep{stan_2021}. Bayesian models provide mnay advantages for scientific inference...\hl{ADD GENERAL METHODS MOTIVATION HERE}. For a more thorough discussion of Bayesian modeling in the phonetic sciences, please refer to the recent tutorial in \citet{vasishth_2018_bayesian}. 
+For each of the 12 acoustic measurements (but not the moving standard deviations), a separate Bayesian mixed-effects model was used to compare the distribution of values by talkers across languages. The models were implemented with \textit{brms} \citep[version 2.15.0;][]{burkner_2017_brms} in R \citep[version 4.0.5;][]{r_2021}. The brms package offers a simple R-based interface for fitting Bayesian models with the Stan probabilistic programming language \citep{stan_2021}. Bayesian models provide many advantages for scientific inference...\hl{ADD GENERAL METHODS MOTIVATION HERE}. For a more thorough discussion of Bayesian modeling in the phonetic sciences, please refer to the recent tutorial in \citet{vasishth_2018_bayesian}. 
 
-A robust linear mixed-effects model was used for each standardized acoustic measure, with a Student's t distributed dependent variable. This decision was motivated by the strong possibility that outliers---real or erroneous---remained in the data. It also follows from Kruschke's (2013) paper arguing that robust Bayesian estimation provides better group comparison estimates. The exception to this was for SHR. As SHR is bounded by zero and one and contains many real and meaningful zero measurements, SHR was modeled as zero-inflated beta distribution. Apart from this, the models share structure and specifications. In all cases, the formula in \ref{ch3:num:formula} was used, where Measure refers to the particular acoustic measure for the model. All measures were standardized prior to modeling (except SHR). \hl{After standardization, 1000 samples from each talker/language pair were randomly selected for modeling. This was done for feasibility of running.}
+A linear mixed-effects model was used for each standardized acoustic measure, with a Student's t distributed dependent variable. This decision was motivated by the strong possibility that outliers---real or erroneous---remained in the data. It also follows from Kruschke's (2013) paper arguing that robust Bayesian estimation provides better group comparison estimates. The exception to this was for SHR. As SHR is bounded by zero and one and contains many real and meaningful zero measurements, SHR was modeled as zero-inflated beta distribution. Apart from this, the models share structure and specifications. In all cases, the formula in \ref{ch3:num:formula} was used, where Measure refers to the particular acoustic measure for the model. All measures were standardized prior to modeling (except SHR). \hl{After standardization, 500 samples from each talker/language pair were randomly selected for modeling. This was done for feasibility of running.}
     
     \begin{equation}\label{ch3:num:formula}
         \text{Measure} \sim 0 + \text{Language} + (0 + \text{Language }|\text{ Talker})
@@ -211,20 +211,66 @@ In the case of SHR... how to interpret
 
 \subsection{Principal components analysis}\label{ch3:sec:pca}
 \subsubsection{Methods}
-Principal components analysis (PCA) is a dimensionality reduction technique appropriate for data with many potentially correlated variables. In the case of voices, distilling numerous acoustic dimensions into a smaller number of components facilitates identifying and describing the structure of voice variability. PCA provides insight into how variables pattern together in a data set. This feature of PCA is especially relevant here, as voice perception research has made it clear that individual acoustic measurements may be necessary to capture and encode a voice but not be perceptually meaningful to listeners. What matters is how the different aspects conspire together to form a percept. %Revised this paragraph
+Principal components analysis (PCA) is a dimensionality reduction technique appropriate for data with many potentially correlated variables. In the case of voices, distilling numerous acoustic dimensions into a smaller number of components facilitates identifying and describing the structure of voice variability. PCA provides insight into how variables pattern together in a data set. This feature of PCA is especially relevant here, as voice perception research has made it clear that individual acoustic measurements may be necessary to capture and encode a voice but not be perceptually meaningful to listeners. What matters is how the different aspects conspire together to form a percept. 
 
-Often, the goal of PCA is to take a large number of dimensions and extract a much smaller set to use for some additional purpose, such as regression modeling. The focus in this chapter is on the internal structure of the components. That is, I examine what makes up components for different talkers and whether an individual's voice structure varies (or not) across languages.  %Revised this paragraph
+Often, the goal of PCA is to take a large number of dimensions and extract a much smaller set to use for some additional purpose, such as regression modeling. The focus in this chapter is on the internal structure of the components. That is, I examine what makes up components for different talkers and whether an individual's voice structure varies (or not) across languages.  
 
-I adapt methods from work on voices \citep{lee_2019_acoustic,lee_2020_language} and faces \citep{burton_2016_faces,turk_1991_eigenfaces}. The goal is to the capture similarities or differences in the structure of each talker's voice across languages. As such, I conducted PCAs separately for each talker-language pair, and compared the results of each talker's English and Cantonese PCAs. All 24 measures were normalized (z-scored) on by-PCA basis prior to the analysis. PCAs were implemented with the \textit{parameters} package \citep{makowski_2019_parameters} in R \citep{r_2021}, using an oblique \textit{promax} rotation to simplify the factor structure, as the measurements reported in the previous section were expected to be somewhat correlated given prior findings \citep{lee_2019_acoustic}, and a broader undesttanding of how different acoustic measures align with one another \citep{kreiman_2014_theory, kreiman_2021_validating}.
+I adapt methods from work on voices \citep{lee_2019_acoustic,lee_2020_language} and faces \citep{burton_2016_faces,turk_1991_eigenfaces}. The  of this analysis is to the capture similarities or differences in the structure of each talker's voice across languages. As such, I conducted PCAs separately for each talker-language pair, and compared the results of each talker's English and Cantonese PCAs. All 24 measures were normalized (z-scored) on by-PCA basis prior to the analysis. PCAs were implemented with the \textit{parameters} package \citep{makowski_2019_parameters} in R \citep{r_2021}, using an oblique \textit{promax} rotation to simplify the factor structure, as the measurements reported in the previous section were expected to be somewhat correlated given prior findings \citep{lee_2019_acoustic}, and a broader understanding of how different acoustic measures align with one another \citep{kreiman_2014_theory, kreiman_2021_validating}.
 
-Each PCA included the number of components for which all resulting eigenvalues were greater than 0.7 times the mean eigenvalue, following Jolliffe's \citep{jolliffe_2002_pca} recommended adjustment to the Kaiser-Guttman rule. I used this rule, rather than a more sophisticated test (e.g., broken sticks), as it is not detrimental to our exploratory analysis to err on the side of including marginal components. Additionally, across each of the components, only loadings with an absolute value of 0.32 or higher were interpreted \citep{lee_2019_acoustic,tabachnick_2013_statistics}.
+Each PCA included the number of components for which all resulting eigenvalues were greater than 0.7 times the mean eigenvalue, following \citeauthor{jolliffe_2002_pca}'s \citeyearpar{jolliffe_2002_pca} recommended adjustment to the Kaiser-Guttman rule. I used this rule, rather than a more sophisticated test (e.g., broken sticks), as it is not detrimental to this exploratory analysis to err on the side of including marginal components. Additionally, across each of the components, only loadings with an absolute value of 0.45 or higher were interpreted \citep{lee_2019_acoustic, tabachnick_2013_statistics}. While \citet{lee_2019_acoustic} use a threshold of 0.32, \citet{tabachnick_2013_statistics} note that higher loadings indicate that a particular variable is a better measure of the component, with 0.32 corresponding to poor (but still interpretable) overlap between the varialbe and the component. By the same scale, a loading of 0.45 corresponds to fair, 0.55 to good, 0.63 to very good, and 0.71 and above to excellent. Given the large number of components and loadings, in this analysis, only loadings in excess of the fair threshold are interpreted.\footnote{The Interspeech publication this chapter is expanded from used the 0.32 threshold.} 
+% this section revised
 
 \subsection{PCA results}\label{ch3:sec:pca_results} 
-The PCAs across both languages for all 34 talkers resulted in 10--15 components and accounted for 74.6--85.8\% of the total variation. A slight majority of talkers had the same number of components for each of their languages (18/34). Of the remainder, most talkers had a difference of one in the number components (14/34), and far fewer differed by two (2/34). Table XX details the number of components and variance accounted for across all talkers and languages. 
+The PCAs across both languages for all 34 talkers resulted in 10--14 components and accounted for 74.9--82.7\% of the total variation. Half of talkers had the same number of components for each of their languages (17 of 34). Of the remainder, 16 of the 34 talkers had a difference of one in the number components, and only one had a difference of two. Talkers had 4--11 identical component configurations across their languages (M$=$7.82). These shared components represent 33.3\%--91.7\% of the total components for talkers (M$=$66.7\%). The numbers comprising these summary statistics are provided in Table \ref{ch3:tab:componentcount}. While this already indicates a substantial amount of shared lower dimensional structure across languages, it likely underestimates the actual shared structure, given that similarity of component structure is not taken into account (i.e., a component of F2, F3 and F4 versus a component with just F2 and F3), as is the case in Seciton \ref{ch3:sec:cca}. %this paragraph updated
 
-\hl{TABLE HERE}
+\begin{table}[htbp]
+    \caption{}
+\label{ch3:tab:componentcount}
+\centering
+    \begin{tabular}{llllll}
+    \toprule
+     & \multicolumn{2}{l}{\textbf{Cantonese}} & \multicolumn{2}{l}{\textbf{English}} & \textbf{} \\
+    \textbf{Talker} & \textbf{N} & \textbf{Variance} & \textbf{N} & \textbf{Variance} & \textbf{Identical N} \\
+    \midrule
+    \textbf{VF19A} & 11 & 0.77 & 12 & 0.80 & 8 \\
+    \textbf{VF19B} & 12 & 0.78 & 12 & 0.78 & 8 \\
+    \textbf{VF19C} & 12 & 0.78 & 12 & 0.79 & 9 \\
+    \textbf{VF19D} & 13 & 0.81 & 13 & 0.78 & 9 \\
+    \textbf{VF20A} & 11 & 0.78 & 12 & 0.79 & 6 \\
+    \textbf{VF20B} & 13 & 0.81 & 12 & 0.82 & 8 \\
+    \textbf{VF21A} & 12 & 0.78 & 12 & 0.80 & 6 \\
+    \textbf{VF21B} & 12 & 0.78 & 12 & 0.80 & 8 \\
+    \textbf{VF21C} & 14 & 0.83 & 13 & 0.83 & 10 \\
+    \textbf{VF21D} & 12 & 0.79 & 12 & 0.81 & 9 \\
+    \textbf{VF22A} & 11 & 0.78 & 12 & 0.80 & 7 \\
+    \textbf{VF23B} & 12 & 0.78 & 12 & 0.78 & 8 \\
+    \textbf{VF23C} & 12 & 0.79 & 12 & 0.80 & 7 \\
+    \textbf{VF26A} & 12 & 0.78 & 13 & 0.80 & 7 \\
+    \textbf{VF27A} & 11 & 0.79 & 11 & 0.77 & 8 \\
+    \textbf{VF32A} & 12 & 0.78 & 11 & 0.76 & 8 \\
+    \textbf{VF33B} & 12 & 0.77 & 12 & 0.79 & 9 \\
+    \textbf{VM19A} & 12 & 0.78 & 11 & 0.76 & 5 \\
+    \textbf{VM19B} & 11 & 0.80 & 12 & 0.80 & 6 \\
+    \textbf{VM19C} & 11 & 0.76 & 11 & 0.78 & 6 \\
+    \textbf{VM19D} & 13 & 0.80 & 14 & 0.82 & 10 \\
+    \textbf{VM20B} & 12 & 0.80 & 11 & 0.76 & 9 \\
+    \textbf{VM21A} & 10 & 0.78 & 11 & 0.79 & 5 \\
+    \textbf{VM21B} & 11 & 0.79 & 11 & 0.76 & 9 \\
+    \textbf{VM21C} & 12 & 0.80 & 12 & 0.77 & 9 \\
+    \textbf{VM21D} & 11 & 0.75 & 12 & 0.77 & 7 \\
+    \textbf{VM21E} & 10 & 0.74 & 12 & 0.80 & 7 \\
+    \textbf{VM22A} & 12 & 0.77 & 13 & 0.83 & 11 \\
+    \textbf{VM22B} & 12 & 0.79 & 12 & 0.79 & 7 \\
+    \textbf{VM23A} & 12 & 0.81 & 12 & 0.79 & 4 \\
+    \textbf{VM24A} & 11 & 0.77 & 11 & 0.76 & 8 \\
+    \textbf{VM25A} & 12 & 0.81 & 12 & 0.77 & 11 \\
+    \textbf{VM25B} & 11 & 0.74 & 12 & 0.76 & 7 \\
+    \textbf{VM34A} & 11 & 0.77 & 12 & 0.81 & 10 \\
+    \bottomrule
+    \end{tabular}
+\end{table}
 
-To assess whether talkers exhibit the same structure in voice variability across their languages, I first consider the patterns present across the different PCAs, as this provides context for understating what unique structural characteristics in talkers' voices looks like. To this end, I briefly summarize common patterns across PCA components, regardless of how much variance they account for, as the difference is often quite small. Figure~\ref{ch3:fig:VF32A} shows the first four components of a single talker's Cantonese and English PCAs, illustrating some examples of how components can vary (or not) across languages. It also highlights the importance of not attributing to much value to the ordering of components, but rather to their composition and variance accounted for.
+To assess whether talkers exhibit the same structure in voice variability across their languages, I first consider the patterns present across the different PCAs, as this provides context for understating what unique structural characteristics in talkers' voices looks like. To this end, I briefly summarize common patterns across PCA components, regardless of how much variance they account for, as the difference is often quite small. Figure~\ref{ch3:fig:VF32A} shows the first four components of a single talker's Cantonese and English PCAs, illustrating some examples of how components can vary (or not) across languages. It also highlights the importance of not attributing too much value to the ordering of components, but rather to their composition and variance accounted for.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -234,35 +280,52 @@ To assess whether talkers exhibit the same structure in voice variability across
 \end{center}
 \end{figure}
 
-Broadly speaking, there were a lot of similarities in component composition across both talkers and languages, with the eight most commonly occurring components summarized in Table~\ref{ch3:tab:components}. For context, recall that PCAs had anywhere from 10--15 components total. These eight components consisted of source spectral shape, spectral noise, as well as formant variables. On the other hand, F0 co-occurred with a wide variety of variables (often Energy), but in a manner that was less consistent across talkers. There were additional components (not reported here) that were shared by less than half of talkers. In summary, despite the greater amount of shared structure across PCAs than found in \citet{lee_2019_acoustic}, there is still ample room for idiosyncratic variation, both in terms of which variables co-occur, as well as in how much variance different components account for. 
+Broadly speaking, there were a lot of similarities in component composition across both talkers and languages. The following paragraphs summarize the components that were present in every PCA, regardless of talker or language. This is followed by a summary of the variables with the least consistent pattern across components. 
 
-\begin{table}[th]
-\caption{A summary of the most commonly occurring components across all PCAs. Variables are only included if $|$Loading$|>$ 0.32. Italics indicate additional variables that were present on a component for a subset of talkers (i.e., an alternative but related configuration). \textit{N} indicates the number of times a component occurred (out of 34), and \textit{Var. \%} gives the range of percent variance accounted for by the component.}
-\label{ch3:tab:components}
-\centering
-\begin{tabular}{lcccc}
-\toprule
- & \multicolumn{2}{c}{\textbf{Cantonese}} & \multicolumn{2}{c}{\textbf{English}} \\
-\textbf{Variables} & \textbf{N}  & \textbf{Var. \%}  & \textbf{N}  & \textbf{Var. \%} \\
-\midrule
-\begin{tabular}[c]{@{}l@{}}H4*--H2kHz*,\\ H2kHz*--H5kHz*, F2, \\\textit{F3}, \textit{F4}\end{tabular} & 34 & 9.3--15.5 & 32 & 9.2--16.7 \\
-\midrule
-\begin{tabular}[c]{@{}l@{}}H4*--H2kHz* s.d.,\\ H2kHz*--H5kHz* s.d.\end{tabular} & 32 & 6.3--8.3  & 34 & 4.1--5.0  \\
-\midrule
-\begin{tabular}[c]{@{}l@{}}Energy, Energy s.d, \textit{F0}\end{tabular} & 31 & 5.8--9.4  & 33 & 6.3--9.1  \\
-\midrule
-CPP s.d. & 29 & 4.1--5.0  & 31 & 4.1--4.9  \\
-\midrule
-\begin{tabular}[c]{@{}l@{}}SHR, SHR s.d.\end{tabular} & 30 & 3.8--7.5  & 29 & 5.4--7.3  \\
-\midrule
-\begin{tabular}[c]{@{}l@{}}F3, F4, \textit{F2}\end{tabular} & 26 & 6.0--8.5  & 29 & 5.8--8.5  \\
-\midrule
-\begin{tabular}[c]{@{}l@{}}F3 s.d., F4 s.d., \textit{F2 s.d.}\end{tabular} & 26 & 5.3--8.6  & 29 & 4.7--8.6  \\
-\midrule
-\begin{tabular}[c]{@{}l@{}}H2*--H4* s.d., \\H1*--H2* s.d.\end{tabular} & 26 & 4.2--6.5  & 28 & 4.2--6.8  \\
-\bottomrule
-\end{tabular}
-\end{table}
+The shared component accounting for the most variation across talkers had a core structure consisting of F2 and H4*-H2kHz. These usually went along with H2kHz*-H5kHz* (Cantonese = 34, English = 31), and occasionally with F3 and F4 (Cantonese = 3, English = 3). In a similar vein, all talkers had a component consisting of H4*-H2kHz* s.d. and H2kHz*--H5kHz* s.d., though it accounted for a smaller proportion of the total variation. \hl{Describe what these mean}
+
+While F3 and F4 often patterned with the higher spectral tilt paramters, they were more liekly to cooccur with just each other (Cantonese = 28, English = 26)
+
+Formant s.d. pattern
+
+Spectral tilt s.d. pattern 
+
+The spectral noise parameters had relatively consistent component patterns across talkers and languages. Energy and Energy s.d. consistenly loaded on the same component, and were sometimes accompanied by F0 (Cantonese = 6, English = 2) and F0 s.d. (Cantonese = 1). CPP s.d. occurred consistently on its own component for all English PCAs, and 31 of the Cantonese PCAs. In the remaining three cases, it was accompanied by CPP (n=1) or H1*-H2* s.d. (n=2). CPP patterned less consistently, but was most often accompanied by F0 s.d. (Cantonse = 19, English = 14). SHR and SHR s.d. exclusively loaded together for 31 talkers in each language, and SHR by itself for a single talker per language. The pair was sometimes accompanied by H1*-H2* (Cantonese = 2, English = 2), H2*-H4* (English = 1), or F0 (English = 3). \hl{Describe what these mean}
+
+
+While this covers a lot of the variables included in the PCAs, F0 is notably sparse in the above paragraphs. This is because F0 patterned very inconsistently. 
+
+
+
+% , with the eight most commonly occurring components summarized in Table~\ref{ch3:tab:components}. For context, recall that PCAs had anywhere from 10--14 components total. These eight components consisted of source spectral shape, spectral noise, as well as formant variables. On the other hand, F0 co-occurred with a wide variety of variables (often Energy), but in a manner that was less consistent across talkers. There were additional components (not reported here) that were shared by less than half of talkers. In summary, despite the greater amount of shared structure across PCAs than found in \citet{lee_2019_acoustic}, there is still ample room for idiosyncratic variation, both in terms of which variables co-occur, as well as in how much variance different components account for. 
+
+% \begin{table}[th]
+% \caption{A summary of the most commonly occurring components across all PCAs. Variables are only included if $|$Loading$|>$ 0.32. Italics indicate additional variables that were present on a component for a subset of talkers (i.e., an alternative but related configuration). \textit{N} indicates the number of times a component occurred (out of 34), and \textit{Var. \%} gives the range of percent variance accounted for by the component.}
+% \label{ch3:tab:components}
+% \centering
+% \begin{tabular}{lcccc}
+% \toprule
+%  & \multicolumn{2}{c}{\textbf{Cantonese}} & \multicolumn{2}{c}{\textbf{English}} \\
+% \textbf{Variables} & \textbf{N}  & \textbf{Var. \%}  & \textbf{N}  & \textbf{Var. \%} \\
+% \midrule
+% \begin{tabular}[c]{@{}l@{}}H4*--H2kHz*,\\ H2kHz*--H5kHz*, F2, \\\textit{F3}, \textit{F4}\end{tabular} & 34 & 9.3--15.5 & 32 & 9.2--16.7 \\
+% \midrule
+% \begin{tabular}[c]{@{}l@{}}H4*--H2kHz* s.d.,\\ H2kHz*--H5kHz* s.d.\end{tabular} & 32 & 6.3--8.3  & 34 & 4.1--5.0  \\
+% \midrule
+% \begin{tabular}[c]{@{}l@{}}Energy, Energy s.d, \textit{F0}\end{tabular} & 31 & 5.8--9.4  & 33 & 6.3--9.1  \\
+% \midrule
+% CPP s.d. & 29 & 4.1--5.0  & 31 & 4.1--4.9  \\
+% \midrule
+% \begin{tabular}[c]{@{}l@{}}SHR, SHR s.d.\end{tabular} & 30 & 3.8--7.5  & 29 & 5.4--7.3  \\
+% \midrule
+% \begin{tabular}[c]{@{}l@{}}F3, F4, \textit{F2}\end{tabular} & 26 & 6.0--8.5  & 29 & 5.8--8.5  \\
+% \midrule
+% \begin{tabular}[c]{@{}l@{}}F3 s.d., F4 s.d., \textit{F2 s.d.}\end{tabular} & 26 & 5.3--8.6  & 29 & 4.7--8.6  \\
+% \midrule
+% \begin{tabular}[c]{@{}l@{}}H2*--H4* s.d., \\H1*--H2* s.d.\end{tabular} & 26 & 4.2--6.5  & 28 & 4.2--6.8  \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
 
 
 \subsection{Canonical redundancy analysis}\label{ch3:sec:cca}

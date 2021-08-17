@@ -13,6 +13,8 @@ library(lsr)
 library(broom)
 library(brms)
 library(tidybayes)
+
+sessionInfo()
 ```
 
 visualization defaults
@@ -93,18 +95,36 @@ cpp %>%
         axis.ticks.y = element_blank())
 ```
 
+```{r}
+get_prior(
+  data = cpp, 
+  family = gaussian,
+  formula = CPP_z ~ 0 + Language + (0 + Language | Talker)
+)
+```
+
+
 Using recommended regularizing prior from Gelman & stan crew
 ```{r}
 cpp.fit.1 <- brm(data = cpp, 
-             family = student,
+             family = student(),
              formula = CPP_z ~ 0 + Language + (0 + Language | Talker),
-             prior = c(prior(normal(0, 1), class = b)),
+             prior = c(prior(normal(0, 1), class = b),
+                       prior(lkj(2), class = cor)),
              sample_prior = TRUE,
-             iter = 2000, warmup = 1000, chains = 4, cores = 4,  
-             seed = 23,
+             iter = 2000, warmup = 1000, chains = 6, cores = 6, 
              file = "fits/cpp.fit.1")
+```
 
+started at 12:15
+chains starting to finish at 12:40
+
+```{r}
 summary(cpp.fit.1)
+```
+
+
+```{r}
 mcmc_plot(cpp.fit.1, type = 'trace')
 mcmc_plot(cpp.fit.1, type = 'neff_hist')
 mcmc_plot(cpp.fit.1, type = 'nuts_divergence')
