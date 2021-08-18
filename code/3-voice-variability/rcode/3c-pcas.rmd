@@ -225,7 +225,7 @@ ggplot(subset, aes(y=Loading, x=Bar_Order, fill=Category, label=Variable)) +
             panel.border = element_rect(color = "lightgray", fill = NA, size = 0.5),
             plot.title = element_text(hjust = 0.5)) 
 
-ggsave('../../../text/figures/ch3_pca_vf32a_vert5in.png', width = 5, height = 6.5)
+ggsave('../../../text/figures/ch3_pca_vf32a_vert5in.png', width = 5, height = 7.5)
 
 ```
 
