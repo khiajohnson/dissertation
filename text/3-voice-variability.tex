@@ -271,23 +271,15 @@ To assess whether talkers exhibit the same structure in voice variability across
 \caption{In this depiction of the components of VF32A's Cantonese and English PCAs, loadings are represented by bar height and are labelled with the variable name; color represents conceptual groupings; and, the component's variance is superimposed.}
 \label{ch3:fig:VF32A}
 \end{center}
-\end{figure} % too large of image but figure out later
+\end{figure}
 
-Broadly speaking, there were a lot of similarities in component composition across both talkers and languages. The following paragraphs summarize the components that were present in every PCA, regardless of talker or language. This is followed by a summary of the variables with the least consistent pattern across components. 
+Broadly speaking, there were a lot of similarities in component composition across both talkers and languages. The following paragraphs summarize the components that were present in every PCA, regardless of talker or language. The shared component accounting for the most variation across talkers had a core structure consisting of F2 and H4*-H2kHz. These usually went along with H2kHz*-H5kHz* (Cantonese = 34, English = 31), and occasionally with F3 and F4 (Cantonese = 3, English = 3). In a similar vein, all talkers had a component consisting of H4*-H2kHz* s.d. and H2kHz*--H5kHz* s.d., though it accounted for a smaller proportion of the total variation. \hl{Describe what these mean}
 
-The shared component accounting for the most variation across talkers had a core structure consisting of F2 and H4*-H2kHz. These usually went along with H2kHz*-H5kHz* (Cantonese = 34, English = 31), and occasionally with F3 and F4 (Cantonese = 3, English = 3). In a similar vein, all talkers had a component consisting of H4*-H2kHz* s.d. and H2kHz*--H5kHz* s.d., though it accounted for a smaller proportion of the total variation. \hl{Describe what these mean}
+In the case of moving standard deviation parameters, there were a few common configurations. Formant s.d. parameters often co-occured. In both languages, the components typically consisted of F3 s.d. and F4 s.d. (Cantonese = 32, English = 26), and in many cases this also included F2 s.d. (Cantonese = 6, English = 10). In the case of spectral tile, the variable for H2*--H4* s.d. commonly occurred alone (Cantonese = 18, English = 18) or in combination with H1*--H2* s.d. (Cantonese = 13, English = 14). While these two categories of variables exhibited these common patterns, the formant and spectral tilt moving standard deviations often patterned in more idiosyncratic ways, loading along side each other, F0, formants, and spectral measures. This kind of variability does not summarize easily.
 
-While F3 and F4 often patterned with the higher spectral tilt paramters, they were more liekly to cooccur with just each other (Cantonese = 28, English = 26)
+The spectral noise parameters had relatively consistent component patterns across talkers and languages. Energy and Energy s.d. consistently loaded on the same component, and were sometimes accompanied by F0 (Cantonese = 6, English = 2) and F0 s.d. (Cantonese = 1). CPP s.d. occurred consistently on its own component for all English PCAs, and 31 of the Cantonese PCAs. In the remaining three cases, it was accompanied by CPP (n=1) or H1*-H2* s.d. (n=2). CPP patterned less consistently but was most often accompanied by F0 s.d. (Cantonese = 19, English = 14). SHR and SHR s.d. exclusively loaded together for 31 talkers in each language and SHR by itself for a single talker per language. The pair was sometimes accompanied by H1*-H2* (Cantonese = 2, English = 2), H2*-H4* (English = 1), or F0 (English = 3). 
 
-Formant s.d. pattern
-
-Spectral tilt s.d. pattern 
-
-The spectral noise parameters had relatively consistent component patterns across talkers and languages. Energy and Energy s.d. consistenly loaded on the same component, and were sometimes accompanied by F0 (Cantonese = 6, English = 2) and F0 s.d. (Cantonese = 1). CPP s.d. occurred consistently on its own component for all English PCAs, and 31 of the Cantonese PCAs. In the remaining three cases, it was accompanied by CPP (n=1) or H1*-H2* s.d. (n=2). CPP patterned less consistently, but was most often accompanied by F0 s.d. (Cantonse = 19, English = 14). SHR and SHR s.d. exclusively loaded together for 31 talkers in each language, and SHR by itself for a single talker per language. The pair was sometimes accompanied by H1*-H2* (Cantonese = 2, English = 2), H2*-H4* (English = 1), or F0 (English = 3). \hl{Describe what these mean}
-
-
-While this covers a lot of the variables included in the PCAs, F0 is notably sparse in the above paragraphs. This is because F0 patterned very inconsistently. %often co-occurred with Energy
-
+While this covers a lot of the variables included in the PCAs, F0 is notably sparse in the above paragraphs. This is because F0 patterned very inconsistently across talkers, perhaps reflecting idiosyncrasies. This is notable, because Lee and colleagues found differences in F0 behavior across styles and languages \citep{lee_2019_acoustic,lee_2019_spontaneous,lee_2020_language}. %often co-occurred with Energy
 
 There were additional components (not reported here) that were shared by less than half of talkers. In summary, despite the greater amount of shared structure across PCAs than found in \citet{lee_2019_acoustic}, there is still ample room for idiosyncratic variation, both in terms of which variables co-occur, as well as in how much variance different components account for. 
 
@@ -309,7 +301,7 @@ The high values are not unexpected. As PCA is a dimensionality reduction techniq
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[width=0.875\linewidth]{figures/ch3_redundancy.png} 
+\includegraphics[width=\linewidth]{figures/ch3_redundancy.png} 
 \caption{The relationship between the two redundancy indices for three different types of comparisons. Within-talker comparisons are clustered at the top right.}
 \label{ch3:fig:redundancy}
 \end{center}
@@ -317,8 +309,21 @@ The high values are not unexpected. As PCA is a dimensionality reduction techniq
 
 
 \section{Passage length analysis}\label{ch3:sec:passagelength}
+As previewed in the introduction, passage length is an important factor to consider in the principal components and canonical redundancy analyses. It represents one possible reason why the results presented thus far differ from prior work by Lee and colleagues. To examine the role of passage length, I conducted multiple PCAs for each talker and language combination, such that each PCA captured a progressively larger portion of the overall interview, using passage lengths comprising sample sizes of 500, 2000, 4500, 8000, 12500, 18000, 24500, 32000, 40500, 50000, 60500, and 72000. As the total number of samples per talker varied between 21024 and 74XXX, there were six to 12 total PCAs per interview. These step sizes were selected to give a more granular perspective on the lower end, while still covering the longest passage lengths. Redundancy was expected to level off somewhere in the middle, as talkers should eventually cover their range of variability in a given style.
 
+In these PCAs, the number of components was fixed to 10, the lowest number found in Section X. This was done to put the PCAs on more equal footing in the subsequent analysis. For each interview, the canonical redundancy indices were calculated for each talker and language combination, comparing PCAs for each passage length to the PCA for the longest passage length. The final comparison thus has perfect redundancy, as the longest PCA is compared to itself.
 
+Figure X plots polynomial smooths for each interview, with superimposed mean smooths. The x-axis represents the sample size of the shorter passage length in the comparison. The y-axis represents an average of the two redundancy indices. The vertical line at 5,000 represents the average sample size from Lee et al. (2019). The vertical line at 20,124 represents the sample size used in Section X. 
+
+\begin{figure}[htbp]
+    \begin{center}
+    \includegraphics[width=\linewidth]{figures/ch3_passagelength.png} 
+    \caption{Passage length redundancy indices.}
+    \label{ch3:fig:passagelength}
+    \end{center}
+\end{figure}
+
+While there are some gains to be had in the higher sample sizes, it is readily apparent from this plot that the sample size used for PCAs in this chapter was sufficient to capture the range of talkers' within-interview variability. As the leveling-off point likely varies across speech styles, it is not immediately apparent whether the sample size in Lee et al. (2019) sufficiently captured the range of talker variability and thus may not adequately capture the structure of their variability. 
 
 \section{Discussion and conclusion}\label{ch3:sec:discussion}
 
