@@ -1,0 +1,103 @@
+---
+title: "3d-length"
+author: "Khia A. Johnson"
+date: "8/17/2021"
+output: html_document
+---
+
+```{r}
+
+```
+
+
+### Variable passage length stuff
+
+Function to get the PCA loadings for a subset of the big dataframe
+```{r}
+get_pca_loadings_tibble_pl <- function(f) {
+  m <- pl_results %>%
+    filter(File==f) %>%
+    select(Variable, Var_Order, Loading) %>%
+    arrange(Var_Order, Variable) %>%
+    pivot_wider(names_from = Var_Order, values_from = Loading)
+  return(m[,2:ncol(m)]) 
+}
+```
+
+
+```{r}
+pl_list_results <- list()
+lengths <- seq(from=500, to=nrow(test1), by=2000)
+for (l in lengths) {
+    print(l)
+    this_length <- slice_head(test1, n=l)
+    this_pca <- run_pca(this_length, paste('vf19a',l,sep='_'))
+    pl_list_results[[l]] <- this_pca
+  }
+
+pl_results <- bind_rows(pl_list_results)
+
+pl_variance_orders <- pl_results %>%
+  group_by(File, Component, Variance) %>%
+  summarize() %>%
+  group_by(File) %>%
+  arrange(desc(Variance)) %>%
+  mutate(number=1, Var_Order=cumsum(number)) %>%
+  arrange(File) %>%
+  select(File, Component, Var_Order)%>%
+  ungroup()
+
+pl_results <- left_join(pl_results, pl_variance_orders, by=c('File', 'Component'))
+
+all_pairs <- tibble(
+    V1 = unique(pl_results$File),
+    V2 = 'vf19a_60500'
+)
+
+# calc redundancy
+xs <- list()
+ys <- list()
+px <- list()
+py <- list()
+
+for (i in 1:nrow(all_pairs)) {
+
+  x_file <- all_pairs[[i, 1]]
+  y_file <- all_pairs[[i, 2]]
+  this_CCA <- cancor(
+    x=get_pca_loadings_tibble_pl(x_file),
+    y=get_pca_loadings_tibble_pl(y_file))
+  this_red <- redundancy(this_CCA)
+
+  px[[i]] <- x_file
+  py[[i]] <- y_file
+  xs[[i]] <- this_red$X.redun
+  ys[[i]] <- this_red$Y.redun
+  }
+
+all_redundancy <- as_tibble(cbind(px,py,xs,ys)) %>% 
+  unnest(c(px,py,xs,ys))
+
+rm(px,py,xs,ys, x_file, y_file, this_CCA, this_red)
+```
+
+
+```{r}
+all_redundancy %>%
+    mutate(size=lengths) %>%
+    pivot_longer(cols = xs:ys) %>%
+    ggplot(aes(x=size, y=value, color=name)) +
+    geom_point() +
+    geom_line() +
+    scale_color_colorblind()+
+    theme_clean() +
+    geom_vline(xintercept = 22433) +
+    geom_vline(xintercept = 5150)
+
+# %>%
+#     ggplot(aes(x=xs,y=ys,label=px)) +
+#     geom_text() +
+#     geom_line()+
+#     theme_clean()
+```
+

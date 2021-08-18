@@ -34,6 +34,8 @@ df <- fread('../data/spice_voicesauce_processed.csv', sep = ',')
 grouping_vars <- read_csv('../data/spice_grouping_vars.csv')
 ```
 
+
+
 Summarize range of samples across interviews
 ```{r}
 df %>%
@@ -139,8 +141,6 @@ rm(this_file, this_pca, f,variance_orders, grouping_vars)
 ```
 
 
-
-
 **cleaned up code until here**
 
 ## Analyze PCA results
@@ -148,30 +148,27 @@ rm(this_file, this_pca, f,variance_orders, grouping_vars)
 results <- read_csv('../data/pca_results_truncated.csv')
 ```
 
-```{r}
-results
-```
-
-```{r}
-
-```
-
 Function to plot loadings
 ```{r, fig.width=4, fig.height=6}
 return_loadings_plot <- function(subset) {
   
   subset <- subset %>%
-    mutate(Loading= abs(Loading))
+    mutate(Loading= abs(Loading),
+           Variable = str_replace(Variable, '_sd', ' s.d.'),
+           Variable = str_replace(Variable, 'H1H2c', 'H1*-H2*'),
+           Variable = str_replace(Variable, 'H2H4c', 'H2*-H4*'),
+           Variable = str_replace(Variable, 'H42Kc', 'H4*-H2kHz*'),
+           Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz-H5kHz*'))
   
   lplot <- ggplot(subset, aes(y=Loading, x=Bar_Order, fill=Category, label=Variable)) +
       geom_col() +
       scale_fill_viridis_d(option='magma', begin = 0, end=0.75) +
-      geom_text(angle=90, nudge_y = -0.5*(subset$Loading), colour = "white", fontface = "bold", size=3)+
-      geom_label(aes(label=paste('Var:', round(Variance,3))), x= 0.6*max(subset$Bar_Order), y=-0.1, size=3, fill='white') +
+      geom_text(angle=90, nudge_y = -0.5*(subset$Loading), colour = "white", fontface = "bold", size=1.9)+
+      geom_label(aes(label=paste('Var:\n', round(Variance,3))), x= 0.6*max(subset$Bar_Order), y=-0.15, size=1.9, fill='white') +
       scale_y_continuous(limits = c(-0.25,1.1)) +
       facet_grid(Language~Var_Order) +
       theme_clean() +
-      ylab('Loading') +
+      ylab('Loading (absolute value)') +
       xlab('') +
       theme(strip.text = element_text(face='bold', size=6),
             axis.text.x = element_blank(),
@@ -189,9 +186,57 @@ return_loadings_plot <- function(subset) {
 } 
 ```
 
-```{r fig.width=12, fig.height=6}
-return_loadings_plot(filter(results, Talker=='VF19A', abs(Loading) > 0.45))
+```{r fig.width=6.5, fig.height=5}
+return_loadings_plot(filter(results, Talker=='VF27A', abs(Loading) > 0.45))
+
+ggsave('../../../text/figures/ch3_pca_vf27a_vert5in.png', width = 6.5, height = 5)
+
 ```
+
+```{r fig.height=6.5, fig.width=5}
+subset <- results %>%
+    filter(Talker=='VF32A', abs(Loading) > 0.45) %>%
+    mutate(Loading= abs(Loading),
+           Variable = str_replace(Variable, '_sd', ' s.d.'),
+           Variable = str_replace(Variable, 'H1H2c', 'H1*-H2*'),
+           Variable = str_replace(Variable, 'H2H4c', 'H2*-H4*'),
+           Variable = str_replace(Variable, 'H42Kc', 'H4*-H2kHz*'),
+           Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz-H5kHz*'))
+  
+ggplot(subset, aes(y=Loading, x=Bar_Order, fill=Category, label=Variable)) +
+      geom_col() +
+      scale_fill_viridis_d(option='magma', begin = 0, end=0.75) +
+      geom_text(nudge_y = -0.5*(subset$Loading), colour = "white", fontface = "bold", size=1.9)+
+      #geom_label(aes(label=paste('Var:\n', round(Variance,3))), x= 0.6*max(subset$Bar_Order), y=-0.15, size=1.9, fill='white') +
+      coord_flip() +
+    
+      facet_grid(Var_Order~Language) +
+      theme_clean() +
+      ylab('Loading (absolute value)') +
+      xlab('') +
+      theme(strip.text = element_text(face='bold', size=6),
+            axis.text.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            axis.title.y = element_blank(),
+            legend.position = 'bottom',
+            legend.title = element_blank(),
+            legend.text = element_text(size=6),
+            legend.key.size = unit(0.15, "in"),
+            panel.border = element_rect(color = "lightgray", fill = NA, size = 0.5),
+            plot.title = element_text(hjust = 0.5)) 
+
+ggsave('../../../text/figures/ch3_pca_vf32a_vert5in.png', width = 5, height = 6.5)
+
+```
+
+
+
+
+
+
+
+
+
 
 ```{r}
 results %>%
@@ -202,8 +247,8 @@ results %>%
   group_by(Talker, Language) %>%
   summarize(n=n(), sv = sum(Variance)) %>%
   ungroup()  %>%
-  pivot_wider(names_from = Language, values_from = n:sv) %>%
-  write_csv('components_variances.csv')
+  pivot_wider(names_from = Language, values_from = n:sv) 
+  # write_csv('components_variances.csv')
 ```
 
 ```{r}
@@ -238,8 +283,8 @@ results %>%
   summarise(n = n()) %>%
   group_by(Talker) %>%
   mutate(shared = n==2) %>%
-  summarise(shared_count = sum(shared), shared_prop=2*sum(shared)/sum(n)) %>%
-  write_csv('shared_comps.csv')
+  summarise(shared_count = sum(shared), shared_prop=2*sum(shared)/sum(n))
+  # write_csv('shared_comps.csv')
     # ungroup() %>%
   # summarise(min(shared_count), mean(shared_count), median(shared_count), max(shared_count),
   #           min(shared_prop), mean(shared_prop), median(shared_prop), max(shared_prop))
@@ -289,8 +334,8 @@ results %>%
   group_by(Language, Component) %>%
   summarise(n=n(), minV = min(Variance), maxV = max(Variance)) %>%
   arrange(desc(maxV), Component) %>%
-  ungroup() %>%
-  write_csv('component_summary.csv')
+  ungroup()
+  # write_csv('component_summary.csv')
  #  filter(n>10) %>%
  # ggplot(aes(y=Component, xmin=minV, xmax=maxV, color=Language)) +
  #  
@@ -300,117 +345,6 @@ results %>%
  #    theme(legend.position = 'none',
  #          panel.border = element_rect(color='black',fill=NA),
  #          strip.text = element_text(size=14, face='bold'))
-```
-
-```{r}
-library(ggrepel)
-```
-
-
-```{r}
- ggplot(aes(x=mv, y=mpob, label=Component, color=n, size=n)) +
-    geom_text_repel(segment.colour = NA, box.padding = 0.2) +
-    scale_color_viridis_c(option = 'magma', begin=0.9, end=0) +
-    facet_wrap(~Language) +
-    ylab('Consistency (Mean Proportion short PCAs with component)')+
-    xlab('Importance (Mean variance)')+
-    theme_clean()+
-    theme(legend.position = 'none',
-          panel.border = element_rect(color='black',fill=NA),
-          strip.text = element_text(size=14, face='bold'))
-```
-
-
-
-### Variable passage length stuff
-
-Function to get the PCA loadings for a subset of the big dataframe
-```{r}
-get_pca_loadings_tibble_pl <- function(f) {
-  m <- pl_results %>%
-    filter(File==f) %>%
-    select(Variable, Var_Order, Loading) %>%
-    arrange(Var_Order, Variable) %>%
-    pivot_wider(names_from = Var_Order, values_from = Loading)
-  return(m[,2:ncol(m)]) 
-}
-```
-
-
-```{r}
-pl_list_results <- list()
-lengths <- seq(from=500, to=nrow(test1), by=2000)
-for (l in lengths) {
-    print(l)
-    this_length <- slice_head(test1, n=l)
-    this_pca <- run_pca(this_length, paste('vf19a',l,sep='_'))
-    pl_list_results[[l]] <- this_pca
-  }
-
-pl_results <- bind_rows(pl_list_results)
-
-pl_variance_orders <- pl_results %>%
-  group_by(File, Component, Variance) %>%
-  summarize() %>%
-  group_by(File) %>%
-  arrange(desc(Variance)) %>%
-  mutate(number=1, Var_Order=cumsum(number)) %>%
-  arrange(File) %>%
-  select(File, Component, Var_Order)%>%
-  ungroup()
-
-pl_results <- left_join(pl_results, pl_variance_orders, by=c('File', 'Component'))
-
-all_pairs <- tibble(
-    V1 = unique(pl_results$File),
-    V2 = 'vf19a_60500'
-)
-
-# calc redundancy
-xs <- list()
-ys <- list()
-px <- list()
-py <- list()
-
-for (i in 1:nrow(all_pairs)) {
-
-  x_file <- all_pairs[[i, 1]]
-  y_file <- all_pairs[[i, 2]]
-  this_CCA <- cancor(
-    x=get_pca_loadings_tibble_pl(x_file),
-    y=get_pca_loadings_tibble_pl(y_file))
-  this_red <- redundancy(this_CCA)
-
-  px[[i]] <- x_file
-  py[[i]] <- y_file
-  xs[[i]] <- this_red$X.redun
-  ys[[i]] <- this_red$Y.redun
-  }
-
-all_redundancy <- as_tibble(cbind(px,py,xs,ys)) %>% 
-  unnest(c(px,py,xs,ys))
-
-rm(px,py,xs,ys, x_file, y_file, this_CCA, this_red)
-```
-
-
-```{r}
-all_redundancy %>%
-    mutate(size=lengths) %>%
-    pivot_longer(cols = xs:ys) %>%
-    ggplot(aes(x=size, y=value, color=name)) +
-    geom_point() +
-    geom_line() +
-    scale_color_colorblind()+
-    theme_clean() +
-    geom_vline(xintercept = 22433) +
-    geom_vline(xintercept = 5150)
-
-# %>%
-#     ggplot(aes(x=xs,y=ys,label=px)) +
-#     geom_text() +
-#     geom_line()+
-#     theme_clean()
 ```
 
 

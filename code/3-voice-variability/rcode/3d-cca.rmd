@@ -1,0 +1,146 @@
+---
+title: "4c-cca"
+author: "Khia A. Johnson"
+date: "8/17/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggthemes)
+library(ggrepel)
+library(parameters)
+library(candisc)
+```
+
+
+```{r}
+files <- unique(df_trunc$File)
+
+```
+
+
+# Canonical Correlation Analysis
+
+Get a tibble of a single PCA's loadings matrix given the filename
+```{r}
+get_pca_loadings_tibble <- function(f) {
+  m <- results %>%
+    filter(File==f) %>%
+    select(Variable, Var_Order, Loading) %>%
+    arrange(Var_Order, Variable) %>%
+    pivot_wider(names_from = Var_Order, values_from = Loading)
+  return(m[,2:ncol(m)]) 
+}
+```
+
+Run CCA and get redundancy indicies for all unique combinations
+```{r}
+all_pairs <- t(combn(files,2))
+
+xs <- list()
+ys <- list()
+px <- list()
+py <- list()
+
+for (i in 1:nrow(all_pairs)) {
+
+  x_file <- all_pairs[[i, 1]]
+  y_file <- all_pairs[[i, 2]]
+  this_CCA <- cancor(
+    x=get_pca_loadings_tibble(x_file),
+    y=get_pca_loadings_tibble(y_file))
+  this_red <- redundancy(this_CCA)
+
+  px[[i]] <- x_file
+  py[[i]] <- y_file
+  xs[[i]] <- this_red$X.redun
+  ys[[i]] <- this_red$Y.redun
+  }
+
+all_redundancy <- as_tibble(cbind(px,py,xs,ys)) %>% 
+  unnest(c(px,py,xs,ys))
+
+rm(px, py, xs, ys, this_CCA, this_red, this_talker, i, all_pairs, x_file, y_file)
+all_redundancy
+
+all_redundancy %>%
+  write_csv('../data/truncated_all_redundancy_indices.csv')
+```
+
+Modify redundancy dataframe before plotting
+```{r}
+all_redundancy <- all_redundancy %>%
+  separate(px, into = c('x_talker','x_language')) %>%
+  separate(py, into = c('y_talker','y_language')) %>%
+  mutate(x_language = str_replace(x_language, '[0-9]', ''),
+         y_language = str_replace(y_language, '[0-9]', ''),
+         same_language = x_language == y_language,
+         same_talker = x_talker == y_talker)
+  
+head(all_redundancy)
+```  
+ 
+```{r fig.width=5, fig.height=5}
+all_redundancy %>%
+    mutate(grp = paste0(same_talker,same_language),
+           grp = str_replace(grp, 'TRUEFALSE', 'Same talker, different language'),
+           grp = str_replace(grp, 'FALSETRUE', 'Different talker, same language'),
+           grp = str_replace(grp, 'FALSEFALSE', 'Different talker, different language')
+    ) %>%
+  ggplot(aes(x=xs, y=ys, color=grp, shape=grp)) +
+        geom_point(size=3, alpha=0.6) + 
+        scale_color_viridis_d(option = 'magma', begin=0.9, end=0) +
+        xlab('Redundancy (x)') +
+        ylab('Redundancy (y)') +
+        theme_clean() +
+        theme(legend.title = element_blank(), 
+              legend.position = 'bottom') +
+     guides(color=guide_legend(nrow=3))
+
+ggsave('../../../text/figures/ch3_redundancy.png', width = 5, height = 5)
+
+```
+ 
+
+Redundancy indices for within-talker comparisons ranged from 0.80 to 0.97, (\textit{Mdn} = 0.92, \textit{M} = 0.91, \textit{SD} = 0.04), and are displayed in Figure~\ref{ch3:fig:redundancy}, with the two redundancy indices for a given pair plotted against one another. Comparisons across talkers within-language (range: 0.64--0.96, \textit{Mdn} = 0.83, \textit{M} = 0.83, \textit{SD} = 0.5) and across-language (range: 0.64--0.97, \textit{Mdn} = 0.83, \textit{M} = 0.83, \textit{SD} = 0.5) are generally lower, but still relatively high. Within-talker values were confirmed to be higher than across-talker comparisons [\textit{Welch's t}(70.93) = $-$17.35, \textit{p} $<$ 0.001, d = 1.77]. 
+
+ 
+```{r}
+all_redundancy %>%
+    mutate(grp = paste0(same_talker,same_language),
+           grp = str_replace(grp, 'TRUEFALSE', 'Same talker, different language'),
+           grp = str_replace(grp, 'FALSETRUE', 'Different talker, same language'),
+           grp = str_replace(grp, 'FALSEFALSE', 'Different talker, different language')
+    ) %>%
+select(grp, xs, ys) %>%
+    pivot_longer(xs:ys) %>%
+    group_by(grp) %>%
+    summarise(min(value), max(value), mean(value), median(value), sd(value)) 
+```
+
+```{r}
+red_pivoted <- all_redundancy %>%
+    select(same_talker, xs, ys) %>%
+    pivot_longer(xs:ys)
+
+red_pivoted
+
+ttest <- t.test(value ~ same_talker, data = red_pivoted)
+
+cohensD(value ~ same_talker, data = red_pivoted, method = 'unequal')
+
+```
+
+```{r}
+red_pivoted2 <- all_redundancy %>%
+    filter(same_talker==FALSE) %>%
+    select(same_language, xs, ys) %>%
+    pivot_longer(xs:ys)
+
+ttest <- t.test(value ~ same_language, data = red_pivoted2)
+ttest
+cohensD(value ~ same_language, data = red_pivoted2, method = 'unequal')
+```
+
+t(4485.9) = -1.53, p=0.13, d=0.05

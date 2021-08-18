@@ -120,233 +120,87 @@ Following from prior work, the first step in this analysis is a crosslinguistic 
     \end{center}
 \end{figure}
 
-For each of the 12 acoustic measurements (but not the moving standard deviations), a separate Bayesian mixed-effects model was used to compare the distribution of values by talkers across languages. The models were implemented with \textit{brms} \citep[version 2.15.0;][]{burkner_2017_brms} in R \citep[version 4.1.1;][]{r_2021}. The brms package offers a simple R-based interface for fitting Bayesian models with the Stan probabilistic programming language \citep{stan_2021}. Bayesian models provide many advantages for scientific inference...\hl{ADD GENERAL METHODS MOTIVATION HERE}. For a more thorough discussion of Bayesian modeling in the phonetic sciences, please refer to the recent tutorial in \citet{vasishth_2018_bayesian}. 
+For each acoustic measurement and talker, I conducted a Student's \textit{t}-test and calculated Cohen's \textit{d} using the \textit{lsr} package \citep{navarro_2015_lsr} in R \citep{r_2021}. This provides a high-level assessment of whether variable means differed across the two languages. These comparisons have no bearing on how a given variable \textit{varies}. Table~\ref{ch3:tab:cohend} reports counts of talkers by effect size. Notably, across all talkers and variables, only 21.1\% yielded non-trivial Cohen's \textit{d} values. Most talkers (32/34) had at least one non-trivial comparison. The distribution of these counts is depicted in Figure~\ref{ch3:fig:ntcounts}. 
 
-A linear mixed-effects model was used for each standardized acoustic measure, with a Student's \textit{t} distributed dependent variable. This decision was motivated by the strong possibility that outliers---real or erroneous---remained in the data. It also follows from Kruschke's (2013) paper arguing that robust Bayesian estimation provides better group comparison estimates. The exception to this was for SHR. As SHR is bounded by zero and one and contains many real and meaningful zero measurements, SHR was modeled as zero-inflated beta distribution. Apart from this, the models share structure and specifications. In all cases, the formula in \ref{ch3:num:formula} was used, where Measure refers to the particular acoustic measure for the model. All measures were standardized prior to modeling (except SHR). \hl{After standardization, 500 samples from each talker/language pair were randomly selected for modeling. This was done for feasibility of running.}
-    
-    \begin{equation}\label{ch3:num:formula}
-        \text{Measure} \sim 0 + \text{Language} + (0 + \text{Language }|\text{ Talker})
-    \end{equation}
-    
-Weakly informative priors were used in all models, following guidelines in the Stan documentation \citep{gelman_2020_prior} and from \citet{mcelreath_2020_sr}. For the the non-SHR models, these were as follows.... 
+\begin{table}[htbp]
+\caption{This table reports counts of Cohen's \textit{d} for crosslinguistic comparisons of each of the acoustic measurements by talker. Degrees of freedom ranged between 49,274--136,644 across t-tests. For most talkers and variables, the difference in means was trivial, which is reflected in that column's high counts.}
+\label{ch3:tab:cohend}
+\centering
+\begin{tabular}{lccc}
+\toprule
+         & \multicolumn{3}{c}{\textbf{Cohen's \textit{d}}} \\
+         & \textbf{Trivial} & \textbf{Small} & \textbf{Medium} \\
+\textbf{Variable} & \textbf{\textit{0.0--0.2}} & \textbf{\textit{0.2--0.5}} & \textbf{\textit{0.5--0.8}} \\ 
+\midrule
+F0	        &	21	&	10	&	3	\\
+F0 s.d.	    &	34	&	-	&	-	\\
+F1	        &	24	&	9	&	1	\\
+F1 s.d.	    &	29	&	5	&	-	\\
+F2	        &	26	&	8	&	-	\\
+F2 s.d.	    &	32	&	2	&	-	\\
+F3	        &	24	&	9	&	1	\\
+F3 s.d.	    &	29	&	5	&	-	\\
+F4	        &	30	&	3	&	1	\\
+F4 s.d.	    &	28	&	6	&	-	\\
+H1*--H2*	    &	18	&	15	&	1	\\
+H1*--H2* s.d.	&	32	&	2	&	-	\\
+H2*--H4*	    &	25	&	9	&	-	\\
+H2*--H4* s.d.	&	31	&	3	&	-	\\
+H4*--H2kHz* 	    &	25	&	8	&	1	\\
+H4*--H2kHz*  s.d.	&	34	&	-	&	-	\\
+H2kHz*--5kHz*	    &	23	&	10	&	1	\\
+H2kHz*--5kHz* s.d.	&	31	&	3	&	-	\\
+CPP	        &	21	&	10	&	3	\\
+CPP s.d.	&	32	&	2	&	-	\\
+Energy	    &	17	&	14	&	3	\\
+Energy s.d.	&	18	&	16	&	-	\\
+SHR	        &	31	&	3	&	-	\\
+SHR s.d.	&	29	&	5	&	- \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-Each model consisted of four chains with 2000 iterations, half of which were warm-up iterations, for a total of 4000 samples after warm-up. Langauge was coded as an index variable \citep{mcelreath_2020_sr}, such that a separate intercept was estimated for each of the two langauges. \hl{ Divergent transitions, R-hat, ESS}. These models give high-level insight into how much individuals differed for particular acoustic dimensions across language. The models also give insight into whether or not there is a common pattern across talkers. While this part of the analysis extends the work done primarily on F0 \citep[e.g.,][]{ng_2012_ltas} to the present data set, it does not elucidate how the different acoustic dimensions vary. % Prior work based mostly on ANOVA and t-tests
-    
-Inference in Bayesian statistics is based on the posterior distributions, which reflect the range and probability of credible values for parameters. In the case of comparing acoustic measurements across languages for the various talkers, the relevant comparison is the by-talker difference between langauges. While the overall effect of Language is also relevant and will be reported, the more interesting model result arises from the variability across slopes and intercepts. As such, results reporting for each of the 12 acoustic measurements will proceed as follows: posterior summaries for each language globally, and a discussion of how individual across-language differences vary. 
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=0.875\linewidth]{figures/ch3_nontrivial_counts_by_talker_5in.png} 
+\caption{A summary of the number of non-trivial comparisons from Table~\ref{ch3:tab:cohend} across the 34 talkers.}
+\label{ch3:fig:ntcounts}
+\end{center}
+\end{figure}
 
-Reporting on the global effects is accomplished by reporting 95\% highest-density credible intervals (HDIs) for both levels of Language and their difference. Bayesian estimation is primarily focused on estimating the magnitude of parameters, and in this case, their difference. While using a descision criteria is not a requirement, it can aid interpretation. I used Kruschke's region of practical equivalence (ROPE) method with a threshold of XX \citep{kruschke_2011_rope}. In the case of the standardized measures (all but SHR), the ROPE is defined as [-0.1, 0.1]. In this decision framework, when 95\% of the posterior distribution falls above or below the ROPE, the effect is considered to be present. When more than 5\% the posterior overlaps with the ROPE, it would be considered a ``null'' effect. While Bayesians tend to shy away from using decision criteria, it nonetheless provides a useful scaffolding for interpreting the magnitudes of standardized effects. 
+For the non-trivial comparisons, there were consistent patterns across languages for a handful of the variables, including F0, H4*--H2kHz, and to a lesser extent, H1*--H2**.
 
-Individual differences are depicted visually, using forest plots of the difference between langauges by talker, accompanied by a prose description of what the variability means for interpretation of the variable. Figures XX depict the magnitude of the difference across languages for each of the different acoustic measurements. Each of the figures for the other acoustic measures can be similarly interpreted. Positive difference indicate that a talker produces a particular measure with higher Cantonese values. Negative difference values indicate that a talker produces the measure with lower Cantonese values compared to English. In each of the plots, the light blue shaded interval represents the ROPE. The posterior distribution is summarized by the mean (the point), and the 95\% HDI (the line)
+If there was a non-trivial difference in F0 across languages, then Cantonese had a lower mean F0 than English (13/34; Female = 7), though most talkers did not exhibit a difference (21/34). This is consistent with prior findings that when a difference between English and Cantonese was found, Cantonese had a lower mean F0 for females \citep{ng_2012_ltas,altenberg_2006_f0}. I also observe this difference for a small number of males.
 
-% F0
-F0\dots
+H4*--H2kHz consistently lower in Cantonese for non-trivial comparisons (n=9), though most talkers did not exhibit a difference on this measure. \hl{interpretation?}
 
-% \begin{figure}[htbp]
-%     \begin{center}
-%     \includegraphics[width=\linewidth]{figures/ch3_f0_5in.png} 
-%     \caption{Posterior difference between languages for F0.}
-%     \label{ch3:fig:f0}
-%     \end{center}
-% \end{figure}
+H1*--H2* was significantly higher in Cantonese for a relatively large subset of the talkers (13/34), lower for a small number (3/34), but trivial for most (18/34). While based on a different measure than \citep{ng_2012_ltas}, this is consistent with the finding that Cantonese tends to be breathier, or English creakier---the current analysis does not distinguish between these interpretations.
 
+For the remaining variables, while some talkers exhibited a difference in mean values, the direction of the difference varied, or relatively few talkers exhibited the difference. For example, a variable like F4 would be unlikely to vary across languages, given its association with vocal tract size. This is reflected in the relatively low count of talkers with a non-trivial differnce across langauges for F4. 
 
-% F1
-F1\dots
+Other measures, such as Energy, have a high number of nontrivial comparisons, but show a relatively even split with respect to direction (Positive = 7, Negative = 10). The wide spread for Energy may reflect things like speaking confidence in the two langauges, which likely varies by individual \citep{}.
 
-% \begin{figure}[htbp]
-%     \begin{center}
-%     \includegraphics[width=\linewidth]{figures/ch3_f1_5in.png} 
-%     \caption{Posterior difference between languages for F1.}
-%     \label{ch3:fig:f1}
-%     \end{center}
-% \end{figure}
+CPP also behaves in this way (Positive = 6, Negative = 7). Higher CPP values are associated with both breathy or creaky non-modal phonation types. In this sense, a positive difference would indicate that Cantonese was more non-modal, while a negative difference would indicate that English was more non-modal. Interpreting CPP is not so straightforward, however, as it is not immediately clear which type of non-modal phonation is reflected in the measure. Given the results of H1*--H2**, it seems clear that knowing where on the creaky-modal-breathy spectrum a given speaker falls is pertinent to interpreting this measure. CPP would likely corroborate that outcome. 
 
-%--------------------------------------------------%
+\hl{How much more interpretation in here?}
 
-% F2
-F2\dots
-
-% \begin{figure}[htbp]
-%     \begin{center}
-%     \includegraphics[width=\linewidth]{figures/ch3_f2_5in.png} 
-%     \caption{Posterior difference between languages for F2.}
-%     \label{ch3:fig:f2}
-%     \end{center}
-% \end{figure}
-
-%--------------------------------------------------%
-
-% F3
-F3\dots
-
-% \begin{figure}[htbp]
-%     \begin{center}
-%     \includegraphics[width=\linewidth]{figures/ch3_f3_5in.png} 
-%     \caption{Posterior difference between languages for F3.}
-%     \label{ch3:fig:f3}
-%     \end{center}
-% \end{figure}
-
-%--------------------------------------------------%
-
-% F4
-F4\dots
-
-% \begin{figure}[htbp]
-%     \begin{center}
-%     \includegraphics[width=\linewidth]{figures/ch3_f4_5in.png} 
-%     \caption{Posterior difference between languages for F4.}
-%     \label{ch3:fig:f4}
-%     \end{center}
-% \end{figure}
-
-%--------------------------------------------------%
-
-% H1*-H2*
-H1*-H2*\dots
-
-% \begin{figure}[htbp]
-%     \begin{center}
-%     \includegraphics[width=\linewidth]{figures/ch3_h1h2_5in.png} 
-%     \caption{Posterior difference between languages for H1*-H2*.}
-%     \label{ch3:fig:h1h2}
-%     \end{center}
-% \end{figure}
-
-%--------------------------------------------------%
-
-% H2*-H4*
-H2*-H4*\dots
-
-% \begin{figure}[htbp]
-%     \begin{center}
-%     \includegraphics[width=\linewidth]{figures/ch3_h2h4_5in.png} 
-%     \caption{Posterior difference between languages for H2*-H4*.}
-%     \label{ch3:fig:fh2h4}
-%     \end{center}
-% \end{figure}
-
-%--------------------------------------------------%
-
-% H4*-H2kHz*
-H4*-H2kHz*\dots
-
-% \begin{figure}[htbp]
-%     \begin{center}
-%     \includegraphics[width=\linewidth]{figures/ch3_h4h2k_5in.png} 
-%     \caption{Posterior difference between languages for H4*-H2kHz*.}
-%     \label{ch3:fig:h4h2k}
-%     \end{center}
-% \end{figure}
-
-%--------------------------------------------------%
-
-% H2kHz*-H5kHz*
-H2kHz*-H5kHz*\dots
-
-% \begin{figure}[htbp]
-%     \begin{center}
-%     \includegraphics[width=\linewidth]{figures/ch3_h2kh5k_5in.png} 
-%     \caption{Posterior difference between languages for H2kHz*-H5kHz*.}
-%     \label{ch3:fig:h2kh5k}
-%     \end{center}
-% \end{figure}
-
-%--------------------------------------------------%
-
-% CPP
-The model for CPP estimates similar posterior distributions for Cantonese () and English (), which is reflected by the small difference magnitude (). This difference overlaps substantially with the ROPE, indicating that globally-speaking, CPP does not differ across languages. On a by-talker level, however, this differs. Figure \ref{ch3:fig:cpp} depicts the posterior difference for CPP between languges for each talker. Higher CPP values are associated with both breathy or creaky non-modal phonation types. In this sense, a positive difference would indicate that Cantonese was more non-modal, while a negative difference would indicate that English was more non-modal. Interpreting CPP is not so straightforward, however, as it is not immediately clear which type of non-modal phonation is reflected in the measure. In any case, there is no consistent pattern across language for CPP. And considering that a majority of the comparison soverlap with the ROPE, the takeaway is that while individuals vary, the global effect is largely representative.
+Overall, while talkers show some clear across language differences, these are far outnumbered by instances with no difference. The variability observed here fits in with the variable outcomes of previous work, but does not necessarily fall neatly along the lines prior work would suggest male and female talkers fall along. 
 
 \begin{figure}[htbp]
     \begin{center}
-    \includegraphics[width=\linewidth]{figures/ch3_cpp_5in.png} 
-    \caption{Posterior difference between languages for CPP.}
-    \label{ch3:fig:cpp}
+    \includegraphics[width=\linewidth]{figures/ch3_cohend_part1_5in.png} 
+    \caption{Cohen's d by difference of means for measurements}
+    \label{ch3:fig:cohendmeasure}
     \end{center}
 \end{figure}
 
-% Energy
-
-% \begin{figure}[htbp]
-%     \begin{center}
-%     \includegraphics[width=\linewidth]{figures/ch3_energy_5in.png} 
-%     \caption{Posterior difference between languages for Energy.}
-%     \label{ch3:fig:energy}
-%     \end{center}
-% \end{figure}
-
-%--------------------------------------------------%
-
-% SHR
-
-In the case of SHR, the model looked a little bit different\dots 
-
-% \begin{figure}[htbp]
-%     \begin{center}
-%     \includegraphics[width=\linewidth]{figures/ch3_shr_5in.png} 
-%     \caption{Posterior difference between languages for SHR.}
-%     \label{ch3:fig:shr}
-%     \end{center}
-% \end{figure}
-
-%--------------------------------------------------%
-
-
-% %old version
-% For each acoustic measurement and talker, I conducted a Student's \textit{t}-test and calculated Cohen's \textit{d}, in order to give a high-level assessment of whether variable means differed across the two languages. These comparisons have no bearing on how a given variable \textit{varies}. Table~\ref{ch3:tab:cohend} reports counts of talkers by effect size. Notably, across all talkers and variables, only 21.1\% yielded non-trivial Cohen's \textit{d} values. Most talkers (32/34) had at least one non-trivial comparison. The distribution of these counts is depicted in Figure~\ref{ch3:fig:ntcounts}. 
-
-% \begin{table}[htbp]
-% \caption{This table reports counts of Cohen's \textit{d} for crosslinguistic comparisons of each of the acoustic measurements by talker. Degrees of freedom ranged between 49,274--136,644 across t-tests. For most talkers and variables, the difference in means was trivial, which is reflected in that column's high counts.}
-% \label{ch3:tab:cohend}
-% \centering
-% \begin{tabular}{lccc}
-% \toprule
-%          & \multicolumn{3}{c}{\textbf{Cohen's \textit{d}}} \\
-%          & \textbf{Trivial} & \textbf{Small} & \textbf{Medium} \\
-% \textbf{Variable} & \textbf{\textit{0.0--0.2}} & \textbf{\textit{0.2--0.5}} & \textbf{\textit{0.5--0.8}} \\ 
-% \midrule
-% F0 & 21 & 10 & 3 \\
-% F0 s.d. & 34 & 0 & 0 \\
-% F1 & 24 & 9 & 1 \\
-% F1 s.d. & 29 & 5 & 0 \\
-% F2 & 26 & 8 & 0 \\
-% F2 s.d. & 32 & 2 & 0 \\
-% F3 & 24 & 9 & 1 \\
-% F3 s.d. & 29 & 5 & 0 \\
-% F4 & 30 & 3 & 1 \\
-% F4 s.d. & 28 & 6 & 0 \\
-% H1*--H2* & 18 & 15 & 1 \\
-% H1*--H2* s.d. & 32 & 2 & 0 \\
-% H2*--H4* & 25 & 9 & 0 \\
-% H2*--H4* s.d. & 31 & 3 & 0 \\
-% H4*--2kHz* & 25 & 8 & 1 \\
-% H4*--2kHz* s.d. & 34 & 0 & 0 \\
-% H2kHz*--5kHz* & 23 & 10 & 1 \\
-% H2kHz*--5kHz* s.d. & 31 & 3 & 0 \\
-% CPP & 21 & 10 & 3 \\
-% CPP s.d. & 32 & 2 & 0 \\
-% Energy & 17 & 14 & 3 \\
-% Energy s.d. & 18 & 16 & 0 \\
-% SHR & 31 & 3 & 0 \\
-% SHR s.d. & 29 & 5 & 0 \\
-% \bottomrule
-% \end{tabular}
-% \end{table}
-
-% \begin{figure}[htbp]
-% \begin{center}
-% \includegraphics[width=0.875\linewidth]{figures/3-non-trivial_counts_by_talker.png} 
-% \caption{A summary of the number of non-trivial comparisons from Table~\ref{ch3:tab:cohend} across the 34 talkers.}
-% \label{ch3:fig:ntcounts}
-% \end{center}
-% \end{figure}
-
-% For the non-trivial comparisons, there were consistent patterns across languages for H1*--H2* and F0. For the remaining variables, while some talkers exhibited a difference in mean values, the direction of the difference varied, or relatively few talkers exhibited the difference. 
-
-% H1*--H2* was significantly higher in Cantonese for a relatively large subset of the talkers (13/34), lower for a small number (3/34), but trivial for most (18/34). While based on a different measure than \citep{ng_2012_ltas}, this is consistent with the finding that Cantonese tends to be breathier, or English creakier---the current analysis does not distinguish between these interpretations.
-
-% If there was a non-trivial difference in F0 across languages, then Cantonese had a lower mean F0 than English (13/34; Female = 7), though most talkers did not exhibit a difference (21/34). This is consistent with prior findings that when a difference between English and Cantonese was found, Cantonese had a lower mean F0 for females \citep{ng_2012_ltas,altenberg_2006_f0}. I also observe this difference for a small number of males. 
-
+\begin{figure}[htbp]
+    \begin{center}
+    \includegraphics[width=\linewidth]{figures/ch3_cohend_part2_5in.png} 
+    \caption{Cohen's d by difference of means for rolling standard deviations}
+    \label{ch3:fig:cohendsd}
+    \end{center}
+\end{figure}
 
 \subsection{Principal components analysis}\label{ch3:sec:pca}
 \subsubsection{Methods}
@@ -409,15 +263,15 @@ The PCAs across both languages for all 34 talkers resulted in 10--14 components 
     \end{tabular}
 \end{table}
 
-To assess whether talkers exhibit the same structure in voice variability across their languages, I first consider the patterns present across the different PCAs, as this provides context for understating what unique structural characteristics in talkers' voices looks like. To this end, I briefly summarize common patterns across PCA components, regardless of how much variance they account for, as the difference is often quite small. Figure~\ref{ch3:fig:VF32A} shows the first four components of a single talker's Cantonese and English PCAs, illustrating some examples of how components can vary (or not) across languages. It also highlights the importance of not attributing too much value to the ordering of components, but rather to their composition and variance accounted for.
+To assess whether talkers exhibit the same structure in voice variability across their languages, I first consider the patterns present across the different PCAs, as this provides context for understating what unique structural characteristics in talkers' voices looks like. To this end, I briefly summarize common patterns across PCA components, regardless of how much variance they account for, as the difference is often quite small. Figure~\ref{ch3:fig:VF32A} shows all of the components of participant VF32A's Cantonese and English PCAs, illustrating some examples of how components can vary (or not) across languages. It also highlights the importance of not attributing too much value to the ordering of components, but rather to their composition and variance accounted for.
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[width=0.875\linewidth]{figures/3-VF32A_pretty.png} 
-\caption{In the first four components of a talker's Cantonese and English PCAs, loadings are represented by bar height and are labelled with the variable name; color represents conceptual groupings; and, the component's variance is superimposed.}
+\includegraphics[width=0.875\linewidth]{figures/ch3_pca_vf32a_vert5in.png} 
+\caption{In this depiction of the components of VF32A's Cantonese and English PCAs, loadings are represented by bar height and are labelled with the variable name; color represents conceptual groupings; and, the component's variance is superimposed.}
 \label{ch3:fig:VF32A}
 \end{center}
-\end{figure}
+\end{figure} % too large of image but figure out later
 
 Broadly speaking, there were a lot of similarities in component composition across both talkers and languages. The following paragraphs summarize the components that were present in every PCA, regardless of talker or language. This is followed by a summary of the variables with the least consistent pattern across components. 
 
@@ -432,40 +286,10 @@ Spectral tilt s.d. pattern
 The spectral noise parameters had relatively consistent component patterns across talkers and languages. Energy and Energy s.d. consistenly loaded on the same component, and were sometimes accompanied by F0 (Cantonese = 6, English = 2) and F0 s.d. (Cantonese = 1). CPP s.d. occurred consistently on its own component for all English PCAs, and 31 of the Cantonese PCAs. In the remaining three cases, it was accompanied by CPP (n=1) or H1*-H2* s.d. (n=2). CPP patterned less consistently, but was most often accompanied by F0 s.d. (Cantonse = 19, English = 14). SHR and SHR s.d. exclusively loaded together for 31 talkers in each language, and SHR by itself for a single talker per language. The pair was sometimes accompanied by H1*-H2* (Cantonese = 2, English = 2), H2*-H4* (English = 1), or F0 (English = 3). \hl{Describe what these mean}
 
 
-While this covers a lot of the variables included in the PCAs, F0 is notably sparse in the above paragraphs. This is because F0 patterned very inconsistently.
+While this covers a lot of the variables included in the PCAs, F0 is notably sparse in the above paragraphs. This is because F0 patterned very inconsistently. %often co-occurred with Energy
 
 
-
-% , with the eight most commonly occurring components summarized in Table~\ref{ch3:tab:components}. For context, recall that PCAs had anywhere from 10--14 components total. These eight components consisted of source spectral shape, spectral noise, as well as formant variables. On the other hand, F0 co-occurred with a wide variety of variables (often Energy), but in a manner that was less consistent across talkers. There were additional components (not reported here) that were shared by less than half of talkers. In summary, despite the greater amount of shared structure across PCAs than found in \citet{lee_2019_acoustic}, there is still ample room for idiosyncratic variation, both in terms of which variables co-occur, as well as in how much variance different components account for. 
-
-% \begin{table}[th]
-% \caption{A summary of the most commonly occurring components across all PCAs. Variables are only included if $|$Loading$|>$ 0.32. Italics indicate additional variables that were present on a component for a subset of talkers (i.e., an alternative but related configuration). \textit{N} indicates the number of times a component occurred (out of 34), and \textit{Var. \%} gives the range of percent variance accounted for by the component.}
-% \label{ch3:tab:components}
-% \centering
-% \begin{tabular}{lcccc}
-% \toprule
-%  & \multicolumn{2}{c}{\textbf{Cantonese}} & \multicolumn{2}{c}{\textbf{English}} \\
-% \textbf{Variables} & \textbf{N}  & \textbf{Var. \%}  & \textbf{N}  & \textbf{Var. \%} \\
-% \midrule
-% \begin{tabular}[c]{@{}l@{}}H4*--H2kHz*,\\ H2kHz*--H5kHz*, F2, \\\textit{F3}, \textit{F4}\end{tabular} & 34 & 9.3--15.5 & 32 & 9.2--16.7 \\
-% \midrule
-% \begin{tabular}[c]{@{}l@{}}H4*--H2kHz* s.d.,\\ H2kHz*--H5kHz* s.d.\end{tabular} & 32 & 6.3--8.3  & 34 & 4.1--5.0  \\
-% \midrule
-% \begin{tabular}[c]{@{}l@{}}Energy, Energy s.d, \textit{F0}\end{tabular} & 31 & 5.8--9.4  & 33 & 6.3--9.1  \\
-% \midrule
-% CPP s.d. & 29 & 4.1--5.0  & 31 & 4.1--4.9  \\
-% \midrule
-% \begin{tabular}[c]{@{}l@{}}SHR, SHR s.d.\end{tabular} & 30 & 3.8--7.5  & 29 & 5.4--7.3  \\
-% \midrule
-% \begin{tabular}[c]{@{}l@{}}F3, F4, \textit{F2}\end{tabular} & 26 & 6.0--8.5  & 29 & 5.8--8.5  \\
-% \midrule
-% \begin{tabular}[c]{@{}l@{}}F3 s.d., F4 s.d., \textit{F2 s.d.}\end{tabular} & 26 & 5.3--8.6  & 29 & 4.7--8.6  \\
-% \midrule
-% \begin{tabular}[c]{@{}l@{}}H2*--H4* s.d., \\H1*--H2* s.d.\end{tabular} & 26 & 4.2--6.5  & 28 & 4.2--6.8  \\
-% \bottomrule
-% \end{tabular}
-% \end{table}
-
+There were additional components (not reported here) that were shared by less than half of talkers. In summary, despite the greater amount of shared structure across PCAs than found in \citet{lee_2019_acoustic}, there is still ample room for idiosyncratic variation, both in terms of which variables co-occur, as well as in how much variance different components account for. 
 
 \subsection{Canonical redundancy analysis}\label{ch3:sec:cca}
 \subsubsection{Methods}
@@ -477,14 +301,15 @@ I computed redundancy indices for all pairwise combinations, including cases whe
 
 \subsubsection{Results}
 
+Redundancy indices for within-talker comparisons ranged from 0.80 to 0.97, (\textit{Mdn} = 0.92, \textit{M} = 0.91, \textit{SD} = 0.04), and are displayed in Figure~\ref{ch3:fig:redundancy}, with the two redundancy indices for a given pair plotted against one another. Comparisons across talkers within-language ranged from 0.64 to 0.96 (\textit{Mdn} = 0.83, \textit{M} = 0.83, \textit{SD} = 0.5). Comparisons across both talkers and languages ranged from 0.64 to 0.97 (\textit{Mdn} = 0.83, \textit{M} = 0.83, \textit{SD} = 0.5). While the across talker comparisons were generally lower, the redundancy indicies are overall still relativley high. 
 
-Redundancy indices for within-talker comparisons ranged from 0.82 to 0.99, (\textit{Mdn} = 0.93, \textit{M} = 0.92, \textit{SD} = 0.04), and are displayed in Figure~\ref{ch3:fig:redundancy}, with the two redundancy indices for a given pair plotted against one another. Comparisons across talkers within-language (range: 0.63--0.98, \textit{Mdn} = 0.84, \textit{M} = 0.84, \textit{SD} = 0.6) and across-language (range: 0.66--0.98, \textit{Mdn} = 0.83, \textit{M} = 0.84, \textit{SD} = 0.6) are generally lower, but still relatively high. Within-talker values were confirmed to be higher than across-talker comparisons [\textit{Welch's t}(71.36) = --17.83, \textit{p} $<$ 0.001, d = 1.76]. 
+Within-talker values were confirmed to be higher than across-talker comparisons, per a Welch's t-test (\textit{t}(70.93) = $-$17.35, \textit{p} $<$ 0.001, d = 1.77). A second Welch's t-test testing the same versus different language for the across talker comparisons did not find a difference between those groups (\textit{t}(4485.9) = $-$1.53, \textit{p} = 0.13, d = 0.05). 
 
 The high values are not unexpected. As PCA is a dimensionality reduction technique, the discarded components almost certainly contain idiosyncratic variation. Moreover, and following from Section~\ref{ch3:sec:pca_results}, there were a substantial number of commonly occurring patterns across talkers and languages. 
 
 \begin{figure}[htbp]
 \begin{center}
-\includegraphics[width=0.875\linewidth]{figures/3-reds_pretty.png} 
+\includegraphics[width=0.875\linewidth]{figures/ch3_redundancy.png} 
 \caption{The relationship between the two redundancy indices for three different types of comparisons. Within-talker comparisons are clustered at the top right.}
 \label{ch3:fig:redundancy}
 \end{center}

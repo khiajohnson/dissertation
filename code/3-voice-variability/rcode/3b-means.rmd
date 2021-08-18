@@ -11,8 +11,7 @@ library(tidyverse)
 library(ggthemes)
 library(lsr)
 library(broom)
-library(brms)
-library(tidybayes)
+library(ggdist)
 
 sessionInfo()
 ```
@@ -60,204 +59,7 @@ long_df %>%
 ```
 
 
-## Bayesian estimation
-
-### Functions
-
-Subset and standardize for a particular acoustic measure
-```{r}
-subset_and_standardize <- function(fulldf, measure, samplesize) {
-  
-  subset <- mutate(measure = scale(measure)) %>%
-            group_by(Talker, Language) %>%
-            slice_sample(n = samplesize) %>%
-            ungroup() %>%
-            select(Talker, Language, measure)
-  
-  return(subset)
-}
-
-```
-
-By talker density plot
-```{r}
-plot_density_by_talker <- function(subsetdf, measure, x_label) {
-  
-  p <- measure %>%
-    ggplot(aes(x=measure, color=Language)) +
-    geom_density() +
-    scale_color_viridis_d(option='magma', begin = 0.75, end = 0)+
-    facet_wrap(~Talker, ncol = 5) +
-    ylab('Density') +
-    xlab(x_label) +
-    theme(axis.text.y = element_blank(),
-          axis.ticks.y = element_blank())
-}
-```
-
-
-
-Plot results as difference between Languages by Talker
-```{r}
-plot_difference_forest <- function(fit, y_label, rope_min=-0.1, rope_max=0.1) {
-
-p <- fit %>%
-  spread_draws(r_Talker[Talker,Language]) %>%
-  mutate(Language = str_replace(Language, 'Language', '')) %>%
-  group_by(Talker) %>%
-  compare_levels(r_Talker, by=Language) %>%
-  ungroup() %>%
-  mutate(Talker = reorder(Talker, r_Talker)) %>%
-  ggplot(aes(x=Talker, y=r_Talker)) + 
-  stat_pointinterval() + 
-  annotate(geom = "rect", ymin = rope_min, ymax = rope_max, xmin = -Inf, xmax = Inf,
-           fill = "skyblue", colour = "black", alpha = 0.5) +
-  theme(axis.text.x = element_text(angle=90)) +
-  xlab('') +
-  ylab(y_label)
-
-return(p)
-}
-```
-
-
-
-```{r}
-colnames(df)
-```
-
-
-Do one model for each acoustic measurement, using robust t-distribution for all measures except 
-- SHR, which gets a zero-inflated beta
-- Energy could get a log-normal
-
-General formula:
-- Measure ~ 0 + Language + (0 + Language | Talker)
-
-For each measure, use:
-
-- Formula: Measure ~ Language + (Language | Talker)
-
-### F0
-```{r}
-f0 <- df %>%
-  group_by(Talker, Language) %>%
-  slice_sample(n=500) %>%
-  ungroup() %>%
-  select(Talker, Language, F0) %>%
-  mutate(F0_z = scale(F0))
-
-f0
-```
-
-```{r fig.width=5, fig.height=6.5}
-f0 %>%
-  ggplot(aes(x=F0_z, color=Language)) +
-    geom_density() +
-    scale_color_viridis_d(option='magma', begin = 0.75, end = 0)+
-    facet_wrap(~Talker, ncol = 5) +
-    ylab('Density') +
-    xlab('F0 (Hz, z-scored)') +
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank())
-```
-
-Using recommended regularizing prior from Gelman & stan crew
-```{r}
-f0.fit.1 <- brm(data = f0, 
-             family = student(),
-             formula = F0_z ~ 0 + Language + (0 + Language | Talker),
-             prior = c(prior(normal(0, 1), class = b),
-                       prior(lkj(2), class = cor)),
-             sample_prior = TRUE,
-             iter = 2000, warmup = 1000, chains = 6, cores = 6, 
-             file = "fits/f0.fit.1")
-```
-
-started at 11:17
-
-
-```{r}
-cpp <- df %>%
-  group_by(Talker, Language) %>%
-  slice_sample(n=500) %>%
-  ungroup() %>%
-  select(Talker, Language, CPP) %>%
-  mutate(CPP_z = scale(CPP))
-
-```
-
-```{r fig.width=5, fig.height=6.5}
-cpp %>%
-  ggplot(aes(x=CPP_z, color=Language)) +
-    geom_density() +
-    scale_color_viridis_d(option='magma', begin = 0.75, end = 0)+
-    facet_wrap(~Talker, ncol = 5) +
-    ylab('Density') +
-    xlab('CPP (dB)') +
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank())
-```
-
-```{r}
-get_prior(
-  data = cpp, 
-  family = student,
-  formula = CPP_z ~ 0 + Language + (0 + Language | Talker)
-)
-```
-
-
-Using recommended regularizing prior from Gelman & stan crew
-```{r}
-cpp.fit.1 <- brm(data = cpp, 
-             family = student(),
-             formula = CPP_z ~ 0 + Language + (0 + Language | Talker),
-             prior = c(prior(normal(0, 1), class = b),
-                       prior(lkj(2), class = cor)),
-             sample_prior = TRUE,
-             iter = 2000, warmup = 1000, chains = 6, cores = 6, 
-             file = "fits/cpp.fit.1")
-```
-
-started at 12:15
-chains starting to finish at 12:40
-
-```{r}
-summary(cpp.fit.1)
-```
-
-
-```{r}
-mcmc_plot(cpp.fit.1, type = 'trace')
-mcmc_plot(cpp.fit.1, type = 'neff_hist')
-mcmc_plot(cpp.fit.1, type = 'nuts_divergence')
-mcmc_plot(cpp.fit.1, type = 'rhat_hist')
-```
-
-Plotting comparisons between languages with ROPE of [-0.1, 0.1]
-```{r fig.width=10, fig.height=5}
-cpp.fit.1 %>%
-  spread_draws(r_Talker[Talker,Language]) %>%
-  mutate(Language = str_replace(Language, 'Language', '')) %>%
-  group_by(Talker) %>%
-  compare_levels(r_Talker, by=Language) %>%
-  ungroup() %>%
-  mutate(Talker = reorder(Talker, r_Talker)) %>%
-  ggplot(aes(x=Talker, y=r_Talker)) + 
-  stat_pointinterval() + 
-  annotate(geom = "rect", ymin = -0.1, ymax = 0.1, xmin = -Inf, xmax = Inf,
-           fill = "skyblue", colour = "black", alpha = 0.5) +
-  theme(axis.text.x = element_text(angle=90)) +
-  xlab('') +
-  ylab('CPP Posterior difference for Cantonese-English')
-
-ggsave('../../../text/figures/ch3_cpp_5in.png', width = 5, height = 2.5)
-
-```
-
-
-
+## T-tests galore
 Do all the t-tests and cohen's d calculations
 ```{r}
 # ttest_results <- long_df %>%
@@ -278,7 +80,7 @@ ttest_results <- fread('../data/spice_voicesauce_ttests.csv')
 
 Display the non-trivial comparisons
 ```{r fig.width=6, fig.height=12}
-ttest_results %>%
+cohensd <- ttest_results %>%
   mutate(Difference = estimate1-estimate2,
          Significant = p.value < 0.01,
          CohenD = if_else(cohen_d<0.2, 'Trivial', 
@@ -286,9 +88,124 @@ ttest_results %>%
                                   if_else(cohen_d<0.8, 'Medium', 'Large')))
          ) %>%
   
-  select(Talker, Variable, Difference, Significant, CohenD) %>%
-  group_by(Talker, Variable, CohenD) %>%
-  summarise(mean(Difference), n()) %>%
-  filter(CohenD!='Trivial')
+  select(Talker, Variable, Difference, Significant, cohen_d, CohenD)
 ```
+
+```{r}
+cohensd %>%
+  filter(CohenD != 'Trivial') %>%
+  group_by(Talker) %>%
+  summarise(n=n()) %>%
+  ggplot(aes(x=n)) +
+  geom_histogram(binwidth = 1, color='white', fill='black') +
+  scale_x_continuous(limits = c(0,13), breaks = c(0,1,2,3,4,5,6,7,8,9,10,11,12) ) +
+  ylab('Count') +
+  xlab('Number of non-trivial comparisons')
+
+#ggsave('../../../text/figures/ch3_nontrivial_counts_by_talker_5in.png', width = 5, height = 2.5)
+
+```
+
+
+Counts by Cohen's d brackets for table
+```{r}
+cohensd %>%
+  mutate(positive = Difference>0) %>%
+  group_by(Variable, positive, CohenD) %>%
+  summarise(n = n()) %>%
+  pivot_wider(names_from = c('positive','CohenD'), values_from = n) %>%
+  select(Variable, FALSE_Small, FALSE_Medium, TRUE_Small, TRUE_Medium)
+```
+
+Energy: 10 neg, 7pos
+
+## Data visualization
+```{r fig.width=5.5, fig.height=7}
+long_pointinterval <- long_df %>%
+  group_by(Talker, Language, Variable) %>%
+  summarise(m = mean(Value), 
+    q025 = quantile(Value, 0.025), 
+    q25 = quantile(Value, 0.25), 
+    q75= quantile(Value, 0.75), 
+    q975 = quantile(Value, 0.975)
+    ) %>%
+  left_join(cohensd, by=c('Talker','Variable'))
+```
+
+```{r}
+plot_dist_cohen <-function(var, xlabel_text='!!!', cohensd_position=0) {
+  p <- long_pointinterval %>%
+    filter(Variable==var) %>%
+    select(Talker, Language, Variable, m, q025, q25, q75, q975, cohen_d, CohenD) %>%
+    ggplot(aes(y=Talker, color=Language)) +
+      geom_linerange(aes(xmin=q025, xmax=q975), size=0.5, alpha=0.5, position = position_dodge(width = 0.7)) +
+      geom_pointrange(aes(x = m, xmin=q25, xmax=q75), size=0.5, position = position_dodge(width = 0.7), shape=18) +
+      geom_label(size =2.25, aes(fill=CohenD,x=cohensd_position, label=round(cohen_d,2)))+
+      scale_color_viridis_d(option='magma', begin = 0.75, end = 0) +
+      scale_fill_viridis_d(option='magma', begin = 0.5, end = 1) +
+      scale_y_discrete(limits=rev) +
+      xlab(xlabel_text) +
+      theme(legend.position = 'right')
+  return(p)
+}
+```
+
+```{r fig.width=5, fig.height=6.5}
+# plot_dist_cohen('F0', 'F0 (Hz)', 425)
+# plot_dist_cohen('H1H2c', 'H1*-H2* (dB)', 16)
+# 
+# plot_dist_cohen('F1', 'F1 (Hz)', 1150)
+# plot_dist_cohen('F2', 'F2 (Hz)', 3000)
+# plot_dist_cohen('F3', 'F3 (Hz)', 4100)
+# plot_dist_cohen('F4', 'F4 (Hz)', 4800)
+# plot_dist_cohen('H2H4c', 'H2*-H4* (dB)', 28)
+# plot_dist_cohen('H42Kc', 'H4*-H2kHz* (dB)', 28)
+# plot_dist_cohen('H2KH5Kc', 'H2kHz*-H5kHz* (dB)', 70)
+# plot_dist_cohen('CPP', 'CPP (dB)', 32)
+# plot_dist_cohen('Energy', 'Energy (dB)', 10)
+# plot_dist_cohen('SHR', 'SHR', 1.05)
+```
+
+
+
+```{r fig.height=6.5, fig.width=5}
+long_pointinterval %>%
+  mutate(
+    CohenD = as_factor(CohenD),
+    Variable = str_replace(Variable, '_sd', ' s.d.'),
+    Variable = str_replace(Variable, 'H1H2c', 'H1*-H2*'),
+    Variable = str_replace(Variable, 'H2H4c', 'H2*-H4*'),
+    Variable = str_replace(Variable, 'H42Kc', 'H4*-H2kHz*'),
+    Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz-H5kHz*')
+  ) %>%
+  filter(str_detect(Variable, 's.d.', negate=TRUE)) %>%
+  ggplot(aes(x=cohen_d, y=Difference, color=CohenD, shape=CohenD)) + 
+  geom_point() +
+  geom_hline(aes(yintercept = 0))+
+  scale_color_viridis_d(option='magma', begin = 0.9, end=0) +
+  facet_wrap(~Variable, scales = 'free', ncol=3)
+
+ggsave('../../../text/figures/ch3_cohend_part1_5in.png', width = 5, height = 6.5)
+```
+
+
+```{r fig.height=6.5, fig.width=5}
+long_pointinterval %>%
+  mutate(
+    CohenD = as_factor(CohenD),
+    Variable = str_replace(Variable, '_sd', ' s.d.'),
+    Variable = str_replace(Variable, 'H1H2c', 'H1*-H2*'),
+    Variable = str_replace(Variable, 'H2H4c', 'H2*-H4*'),
+    Variable = str_replace(Variable, 'H42Kc', 'H4*-H2kHz*'),
+    Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz-H5kHz*')
+  ) %>%
+  filter(str_detect(Variable, 's.d.', negate=FALSE)) %>%
+  ggplot(aes(x=cohen_d, y=Difference, color=CohenD, shape=CohenD)) + 
+  geom_point() +
+  geom_hline(aes(yintercept = 0))+
+  scale_color_viridis_d(option='magma', begin = 0.9, end=0.45) +
+  facet_wrap(~Variable, scales = 'free', ncol=3)
+ggsave('../../../text/figures/ch3_cohend_part2_5in.png', width = 5, height = 6.5)
+```
+
 
