@@ -6,7 +6,29 @@ output: html_document
 ---
 
 ```{r}
+library(tidyverse)
+library(ggthemes)
+library(ggrepel)
+library(parameters)
+library(candisc)
+library(data.table)
+library(psych)
+```
 
+```{r}
+df <- fread('../data/spice_voicesauce_processed.csv', sep = ',') 
+```
+
+```{r}
+theme_set(theme_clean() + theme(
+      legend.title = element_text(face = 'bold', size=10),
+      legend.text = element_text(size=10),
+      legend.position = 'bottom',
+      axis.title.x = element_text(size = 10, face='bold'),
+      axis.title.y = element_text(size = 10, face='bold'),
+      strip.text = element_text(size=10, face='bold'),
+      plot.background = element_blank()
+    ))
 ```
 
 
@@ -14,6 +36,40 @@ output: html_document
 
 Function to get the PCA loadings for a subset of the big dataframe
 ```{r}
+run_pca <- function(one_talker_df, filename, n=0) {
+
+  # run the pca
+  tX <- one_talker_df[,10:33]
+  if (n>0) {
+    n_components <- n
+  } else {
+    tX_pca_all <- principal_components(tX, n='all', rotation = "promax", standardize = TRUE)
+    tX_var_all <- summary(tX_pca_all)
+    tX_var_all <- rownames_to_column(setNames(data.frame(t(tX_var_all[,-1])), tX_var_all[,1]), 'Component')
+    n_components <- nrow(filter(tX_var_all, Eigenvalues > mean(tX_var_all$Eigenvalues)*0.7))
+  }
+  tX_pca <- principal_components(tX, n = n_components, rotation = "promax", standardize = TRUE) 
+
+  # add summary information and wrangle
+  tX_var <-summary(tX_pca)
+  tX_var <- rownames_to_column(setNames(data.frame(t(tX_var[,-1])), tX_var[,1]), 'Component')
+  tX_pca <- as_tibble(tX_pca) %>% 
+    pivot_longer(cols = starts_with('RC'), names_to = 'Component', values_to = "Loading") %>%
+    left_join(tX_var, by = 'Component') %>%
+    drop_na() %>%
+    mutate(File=filename) %>%
+    select(File, Variable, Component, Loading, Eigenvalues, Variance, Variance_Proportion, Complexity, Uniqueness, MSA)
+  
+  # clean up
+  if (n>0) {
+    rm(tX, tX_var)    
+  } else {
+    rm(tX, tX_pca_all, tX_var_all, tX_var)
+  }
+
+  return(tX_pca)
+}
+
 get_pca_loadings_tibble_pl <- function(f) {
   m <- pl_results %>%
     filter(File==f) %>%
@@ -24,16 +80,48 @@ get_pca_loadings_tibble_pl <- function(f) {
 }
 ```
 
+seq
+
+- Manually fix number of components (striation issue)
+- go up to individual maximum with steps that get increasingly far apart
+biggest 74k
 
 ```{r}
-pl_list_results <- list()
-lengths <- seq(from=500, to=nrow(test1), by=2000)
-for (l in lengths) {
-    print(l)
-    this_length <- slice_head(test1, n=l)
-    this_pca <- run_pca(this_length, paste('vf19a',l,sep='_'))
-    pl_list_results[[l]] <- this_pca
+lengths <- c(500, 2000, 4500, 8000, 12500, 18000, 24500, 32000, 40500, 50000, 60500, 72000)
+
+lengths - c(0, 500, 2000, 4500, 8000, 12500, 18000, 24500, 32000, 40500, 50000, 60500)
+
+```
+
+```{r}
+unique(df$File)[21:68]
+```
+
+VF22A_Cantonese_I1_20181206
+
+
+```{r}
+files <- unique(df$File)[21:68]
+# pl_list_results <- list()
+
+for (f in files) {
+  this_file <- filter(df, File==f)
+  print(f)
+  longest <- nrow(this_file)
+  print(longest)
+  
+  for (l in lengths) {
+    if (l < longest) {
+      try({
+        this_length <- slice_head(this_file, n=l)
+        this_combo = paste0(f,'_L',l)
+        this_pca <- run_pca(this_length, this_combo, n=10)
+        pl_list_results[[this_combo]] <- this_pca
+      })
+    }
   }
+  
+}
 
 pl_results <- bind_rows(pl_list_results)
 
@@ -49,10 +137,17 @@ pl_variance_orders <- pl_results %>%
 
 pl_results <- left_join(pl_results, pl_variance_orders, by=c('File', 'Component'))
 
-all_pairs <- tibble(
-    V1 = unique(pl_results$File),
-    V2 = 'vf19a_60500'
-)
+fwrite(pl_results, '../data/passage_length_pca_results.csv', sep = ',')
+
+```
+
+```{r}
+all_pairs <- tibble(V1 = unique(pl_results$File)) %>%
+  separate(V1, sep='_I[12]_[0-9]+_', into = c('File','Length'), remove=FALSE) %>%
+  group_by(File) %>%
+  mutate(V2 = tail(V1, 1)) %>%
+  ungroup() %>%
+  select(V1, V2)
 
 # calc redundancy
 xs <- list()
@@ -75,29 +170,32 @@ for (i in 1:nrow(all_pairs)) {
   ys[[i]] <- this_red$Y.redun
   }
 
-all_redundancy <- as_tibble(cbind(px,py,xs,ys)) %>% 
+pl_all_redundancy <- as_tibble(cbind(px,py,xs,ys)) %>% 
   unnest(c(px,py,xs,ys))
 
 rm(px,py,xs,ys, x_file, y_file, this_CCA, this_red)
 ```
 
 
-```{r}
-all_redundancy %>%
-    mutate(size=lengths) %>%
+```{r fig.width=5, fig.height=6.5}
+pl_all_redundancy %>%
+    separate(py, into = c('Talker','Language')) %>%
+    mutate(size = as.numeric(str_extract(px, '[0-9]+$'))) %>%
     pivot_longer(cols = xs:ys) %>%
-    ggplot(aes(x=size, y=value, color=name)) +
-    geom_point() +
-    geom_line() +
+    ggplot(aes(x=size, y=value)) +
+    # geom_point(size=0.1, aes(group=factor(paste(Talker,Language))) ) +
+    geom_smooth(color='black',  se=FALSE, size=0.1, aes(group=factor(paste(Talker,Language)))) +
+    geom_smooth(color='black', se=FALSE, size=2, ) +
     scale_color_colorblind()+
     theme_clean() +
-    geom_vline(xintercept = 22433) +
-    geom_vline(xintercept = 5150)
+    geom_vline(xintercept = 20124, color='orange') +
+    geom_vline(xintercept = 5150, color='orange') +
+    xlab('Sample Size') +
+    ylab('Redundancy') +
+  facet_wrap(~Language, ncol=1) +
+  theme(strip.text = element_text(face='bold'))
 
-# %>%
-#     ggplot(aes(x=xs,y=ys,label=px)) +
-#     geom_text() +
-#     geom_line()+
-#     theme_clean()
+ggsave('../../../text/figures/ch3_passagelength.png', width = 5, height = 6.5)
+
 ```
 
