@@ -68,6 +68,11 @@ all_redundancy %>%
   write_csv('../data/truncated_all_redundancy_indices.csv')
 ```
 
+```{r}
+all_redundancy <- read_csv('../data/truncated_all_redundancy_indices.csv')
+```
+
+
 Modify redundancy dataframe before plotting
 ```{r}
 all_redundancy <- all_redundancy %>%
@@ -102,7 +107,6 @@ ggsave('../../../text/figures/ch3_redundancy.png', width = 5, height = 5)
 
 ```
  
-
 Redundancy indices for within-talker comparisons ranged from 0.80 to 0.97, (\textit{Mdn} = 0.92, \textit{M} = 0.91, \textit{SD} = 0.04), and are displayed in Figure~\ref{ch3:fig:redundancy}, with the two redundancy indices for a given pair plotted against one another. Comparisons across talkers within-language (range: 0.64--0.96, \textit{Mdn} = 0.83, \textit{M} = 0.83, \textit{SD} = 0.5) and across-language (range: 0.64--0.97, \textit{Mdn} = 0.83, \textit{M} = 0.83, \textit{SD} = 0.5) are generally lower, but still relatively high. Within-talker values were confirmed to be higher than across-talker comparisons [\textit{Welch's t}(70.93) = $-$17.35, \textit{p} $<$ 0.001, d = 1.77]. 
 
  
@@ -144,3 +148,49 @@ cohensD(value ~ same_language, data = red_pivoted2, method = 'unequal')
 ```
 
 t(4485.9) = -1.53, p=0.13, d=0.05
+
+long_pointinterval %>%
+  mutate(
+    CohenD = as_factor(CohenD),
+    Variable = str_replace(Variable, '_sd', ' s.d.'),
+    Variable = str_replace(Variable, 'H1H2c', 'H1*-H2*'),
+    Variable = str_replace(Variable, 'H2H4c', 'H2*-H4*'),
+    Variable = str_replace(Variable, 'H42Kc', 'H4*-H2kHz*'),
+    Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz-H5kHz*')
+  ) %>%
+  filter(str_detect(Variable, 's.d.', negate=TRUE)) %>%
+  ggplot(aes(x=cohen_d, y=Difference, color=CohenD, shape=CohenD)) + 
+  geom_point() +
+  geom_hline(aes(yintercept = 0))+
+  scale_color_viridis_d(option='magma', begin = 0.9, end=0) +
+  facet_wrap(~Variable, scales = 'free', ncol=3)
+
+```{r fig.width=5, fig.height=6.5}
+all_redundancy %>%
+  filter(same_talker==TRUE, same_language==FALSE) %>%
+  mutate(average_redundancy = (xs+ys)/2) %>%
+  select(Talker=x_talker, average_redundancy) %>%
+  left_join(long_pointinterval, by='Talker') %>%
+  mutate(
+    CohenD = as_factor(CohenD),
+    abs_difference = abs(Difference),
+    average_redundancy = round(average_redundancy,2),
+    Variable = str_replace(Variable, '_sd', ' s.d.'),
+    Variable = str_replace(Variable, 'H1H2c', 'H1*-H2*'),
+    Variable = str_replace(Variable, 'H2H4c', 'H2*-H4*'),
+    Variable = str_replace(Variable, 'H42Kc', 'H4*-H2kHz*'),
+    Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz-H5kHz*')
+  ) %>%
+  filter(str_detect(Variable, 's.d.', negate=TRUE)) %>%
+  ggplot(aes(x=abs_difference, y=average_redundancy)) + 
+  geom_point(aes(color=CohenD, shape=CohenD)) +
+  stat_smooth(method = 'lm', color='black', fill='black') +
+  scale_y_continuous(limits = c(0.85, 0.97),breaks = c(0.85, 0.9, 0.95)) +
+  scale_color_viridis_d(option='magma', begin = 0.9, end=0) +
+  facet_wrap(~Variable, scales = 'free_x', ncol=3) +
+  ylab('Redundancy (Average)') + 
+  xlab('Absolute Mean Difference')
+
+ggsave('../../../text/figures/ch3_redundancybyttestdiff_5in.png', width = 5, height = 6.5)
+```
+

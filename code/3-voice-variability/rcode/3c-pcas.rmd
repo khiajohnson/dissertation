@@ -263,5 +263,65 @@ results %>%
   # write_csv('component_summary.csv')
 ```
 
+```{r}
+results %>%
+  filter(abs(Loading)>0.45) %>%
+  select(Talker, Language, Variable, Variance, Var_Order) %>%
+  mutate(Variance = round(Variance, 3)) %>%
+  pivot_wider(names_from = Variable, values_from = Variable) %>%
+  select(Talker, Language, Variance, F0, F0_sd, F1, F1_sd, F2, F2_sd, F3, F3_sd, 
+         F4, F4_sd, H1H2c, H1H2c_sd, H2H4c, H2H4c_sd, H2KH5Kc, H2KH5Kc_sd, 
+         H42Kc, H42Kc_sd, CPP, CPP_sd, Energy, Energy_sd, SHR, SHR_sd
+         )  %>%
+  filter(H2KH5Kc_sd=='H2KH5Kc_sd') %>%
+  group_by(Talker, F0, F0_sd, F1, F1_sd, F2, F2_sd, F3, F3_sd, 
+         F4, F4_sd, H1H2c, H1H2c_sd, H2H4c, H2H4c_sd, H2KH5Kc, H2KH5Kc_sd, 
+         H42Kc, H42Kc_sd, CPP, CPP_sd, Energy, Energy_sd, SHR, SHR_sd)
+
+```
+
+Identical: 
+Diff by 1: xxxxxx
+Diff by more" xxxx
+
+
+11 talkers had the same component configuration for H1*--H2*, and another 11 had similar component structures, differing in only 1 loading.
+In 6 cases, H1--H2 only emerged in only 1 language, and in another 6 instances there were larger component structure differences.
+
+
+Only emerged in 1 language: xxxxxx
+Differ by 1 loading: xxxxxxxxxxx
+Differ by more than 1: xxxxxx
+
+complex loading, VM19A - edit dist 1 for one of the comparisons
+
+Complex loading counts
+F0,       E-1 C-2 
+F0_sd,    E-1 C-2 
+F2,       E-1
+F3,       C-1
+F3_sd,    C-1
+F4,       C-1
+F4_sd,    C-1
+H1H2c,    C-1 E-1
+H1H2c_sd, C-1 E-1
+H2H4c,    C-3 E-3
+H2KH5Kc,  C-1 E-1
+H42Kc,    E-1
+CPP,      E-1
+Energy_sd, E-1
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ---
