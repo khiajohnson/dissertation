@@ -374,10 +374,10 @@ demographics %>%
     arrange(Place) %>%
     drop_na() %>%
     ggplot(aes(y=fct_rev(Place))) +
-        geom_bar() +
+        geom_bar(fill='black', color='white') +
         facet_wrap(~Ages, ncol=2) +
-        ylab('Country Lived In') +
-        xlab('Count') +
+        ylab('Country lived in') +
+        xlab('Count of articipants') +
         theme(legend.position = 'none')
 
 ggsave('../../text/figures/ch2_placeslived_5in.png', width = 5, height = 4)
@@ -392,19 +392,24 @@ demographics %>%
     pivot_wider(names_from = 'Question', values_from = 'Place') %>%
     drop_na() %>%
     mutate(born = str_replace(born,'Manila|Ilocos ', '')) %>%
-    mutate(born = str_replace(born,'[A-Za-z]+ China', 'China')) %>%
-    group_by(born) %>%
-    summarise(n=n()) %>%
-    arrange(born) %>%
+    mutate(`primarily raised` = str_replace(`primarily raised`,'Ilocos ', '')) %>%
+    mutate(`primarily raised` = str_replace(`primarily raised`,'Phillippines', 'Philippines')) %>%
+    mutate(`primarily raised` = str_replace(`primarily raised`,'[A-Za-z]+ China', 'China')) %>%
+    mutate(`primarily raised` = str_replace(`primarily raised`,'China - Hong Kong', 'China')) %>%
     
-    ggplot(aes(x=n, y=reorder(born, n))) +
-        geom_col() +
-        xlab('Count') +
-        ylab('Caretaker(s) born in')
+    group_by(`primarily raised`) %>%
+    summarise(n=n()) %>%
+    arrange(`primarily raised`) %>%
+
+    ggplot(aes(x=n, y=reorder(`primarily raised`, n))) +
+        geom_col(fill='black', color='white') +
+        xlab("Count of participants' caretakers") +
+        ylab('Caretaker(s) primarily raised in')
 
 ggsave('../../text/figures/ch2_caretakers_3in.png', width = 3, height = 3)
 
 ```
+
 
 ```{r}
 demographics %>%
@@ -471,7 +476,7 @@ tidy_languages %>%
     ggplot(aes(y=Age, x='', color = Age, label=Language)) +
         geom_point(size=2, shape=18) +
         geom_text_repel(max.iter=100000, min.segment.length = 0,
-                        box.padding = 0.4, force=2, size=2.5, max.overlaps = 10) +
+                        box.padding = 0.4, force=2, size=2.5, max.overlaps = 12) +
         scale_y_continuous(limits = c(-4,22), breaks = c(0,5,10,15,20), 
                            labels = c('0', '5', '10','15', '20+'))+
         scale_color_viridis_c(option='magma', begin = 0, end = 0.8) + 
@@ -486,6 +491,38 @@ ggsave('../../text/figures/ch2_multilingualism_vm_5in.png', width = 5, height = 
 #ggsave('../../text/figures/ch2_multilingualism_vf_5in.png', width = 5, height = 7)
 ```
 
+```{r}
+nrow(words)
+```
+
+```{r}
+utts %>%
+    select(utterance, talker) %>%
+    filter(str_detect(utterance, '@e'))
+```
+
+@m 
+@h - VM25A
+@j
+@ml- VF27A
+@i - VM21B
+@e - VF23B
+
+
+```{r}
+lbq_summary %>%
+    filter(id=='VF23B') 
+```
+
+
+
+```{r}
+utts %>%
+    select(file, task, task_offset) %>%
+    filter(task=='interview') %>%
+    unique() %>%
+    summarise(time = sum(task_offset)/60/60)
+```
 
 
 ---
