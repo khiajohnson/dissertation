@@ -5,6 +5,7 @@
 /code/3-voice-variability/data
 /code/3-voice-variability/rcode/fits
 dissertation.code-workspace
+sent-to-committee-versions/feedback
 
 *.Rproj.user
 *.RData
