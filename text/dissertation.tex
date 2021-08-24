@@ -31,7 +31,7 @@
 %%
 
 % For submission to GPS
-\documentclass[gpscopy,onehalfspacing,11pt]{ubcdiss}
+\documentclass[gpscopy,onehalfspacing,12pt]{ubcdiss}
 
 % For your own copies (looks nicer)
 % \documentclass[balanced,twoside,11pt]{ubcdiss}
@@ -82,15 +82,19 @@
 %% Minion Pro and Myriad Pro are shipped with some versions of
 %% Adobe Reader.  Adobe representatives have commented that these
 %% fonts can be used outside of Adobe Reader.
-%\setromanfont[Numbers=OldStyle]{Minion Pro}
+% \setromanfont[Numbers=OldStyle]{Minion Pro}
 %\setsansfont[Numbers=OldStyle,Scale=MatchLowercase]{Myriad Pro}
 %\setmonofont[Scale=MatchLowercase]{Andale Mono}
 
+\setromanfont{TeX Gyre Termes}
+\setsansfont{Arial}
+\setmonofont{Courier}
+
 %% Other alternatives:
-\setromanfont[Mapping=tex-text]{Times New Roman}
-\setsansfont[Scale=MatchLowercase]{Helvetica}
-% \setsansfont[Scale=MatchLowercase,Mapping=tex-text]{Futura}
-% \setmonofont[Scale=MatchLowercase]{Mo}
+%\setromanfont[Mapping=tex-text]{Adobe Caslon}
+%\setsansfont[Scale=MatchLowercase]{Gill Sans}
+%\setsansfont[Scale=MatchLowercase,Mapping=tex-text]{Futura}
+%\setmonofont[Scale=MatchLowercase]{Andale Mono}
 %\newfontfamily{\SYM}[Scale=0.9]{Zapf Dingbats}
 
 %% Khia additions
@@ -193,7 +197,7 @@
 
 %% url: for typesetting URLs and smart(er) hyphenation.
 %% \url{http://...} 
-\usepackage{url}
+\usepackage{xurl}
 \urlstyle{same}	
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -327,7 +331,7 @@
 %% Document meta-data: be sure to also change the \hypersetup information
 %%
 
-\title{Crosslinguistic (dis)similarity in Cantonese-English bilingual speech production}
+\title{Crosslinguistic (dis)similarity in {C}antonese-{E}nglish bilingual speech production}
 %\subtitle{If you want a subtitle}
 
 \author{Khia Anne Johnson}
@@ -336,25 +340,29 @@
 % What is this dissertation for?
 \degreetitle{Doctor of Philosophy}
 
-\institution{The University of British Columbia}
+\institution{{The University of British Columbia}}
 \campus{Vancouver}
 
-\faculty{{The Faculty of Arts}}
+\faculty{{The Faculty of Graduate and Postdoctoral Studies}}
 \department{Linguistics}
 \submissionmonth{December}
 \submissionyear{2021}
 
-% details of your examining committee
-\examiningcommittee{Molly Babel, Linguistics}{Supervisor}
-\examiningcommittee{Kathleen Currie Hall, Linguistics}{Supervisory Committee Member}
-\examiningcommittee{Márton Sóskuthy, Linguistics}{Supervisory Committee Member}
-% \examiningcommittee{Magnus Monolith, Other Department}{Additional Examiner}
 
-% details of your supervisory committee
+% details of your examining committee
+\examiningcommittee{Molly Babel, Linguistics, UBC}{Supervisor}
+\examiningcommittee{Kathleen Currie Hall, Linguistics, UBC}{Supervisory Committee Member}
+\examiningcommittee{Márton Sóskuthy, Linguistics, UBC}{Supervisory Committee Member}
+\examiningcommittee{TBD, Linguistics, UBC}{University Examiner}
+\examiningcommittee{TBD, Department, UBC}{University Examiner}
+\examiningcommittee{TBD, Department}{External Examiner}
+
+% % details of your supervisory committee
 % \supervisorycommittee{Ira Crater, Materials Engineering}%
 %     {Supervisory Committee Member}
 % \supervisorycommittee{Adeline Long, \textsc{CEO} of Aerial Machine
 %     Transportation, Inc.}{Supervisory Committee Member}
+
 
 %% hyperref package provides support for embedding meta-data in .PDF
 %% files
@@ -380,54 +388,54 @@
 
 \begin{document}
 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %% From Thesis Components: Tradtional Thesis
-% %% <http://www.grad.ubc.ca/current-students/dissertation-thesis-preparation/order-components>
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% From Thesis Components: Tradtional Thesis
+%% <http://www.grad.ubc.ca/current-students/dissertation-thesis-preparation/order-components>
 
-% % Preliminary Pages (numbered in lower case Roman numerals)
-% %    1. Title page (mandatory)
+% Preliminary Pages (numbered in lower case Roman numerals)
+%    1. Title page (mandatory)
 \maketitle
 
-% %    2. Committee page (mandatory): lists supervisory committee and,
-% %    if applicable, the examining committee
+%    2. Committee page (mandatory): lists supervisory committee and,
+%    if applicable, the examining committee
 \makecommitteepage
 
-% %    3. Abstract (mandatory - maximum 350 words)
+%    3. Abstract (mandatory - maximum 350 words)
 \include{0-abstract}
 \cleardoublepage
 
-% %    4. Lay Summary (Effective May 2017, mandatory - maximum 150 words)
+%    4. Lay Summary (Effective May 2017, mandatory - maximum 150 words)
 \include{0-laysummary}
 \cleardoublepage
 
-% %    5. Preface
+%    5. Preface
 \include{0-preface}
 \cleardoublepage
 
-% %    6. Table of contents (mandatory - list all items in the preliminary pages
-% %    starting with the abstract, followed by chapter headings and
-% %    subheadings, bibliographies and appendices)
+%    6. Table of contents (mandatory - list all items in the preliminary pages
+%    starting with the abstract, followed by chapter headings and
+%    subheadings, bibliographies and appendices)
 \tableofcontents
 \cleardoublepage	% required by tocloft package
 
-% %    7. List of tables (mandatory if thesis has tables)
+%    7. List of tables (mandatory if thesis has tables)
 \listoftables
 \cleardoublepage	% required by tocloft package
 
-% %    8. List of figures (mandatory if thesis has figures)
+%    8. List of figures (mandatory if thesis has figures)
 \listoffigures
 \cleardoublepage	% required by tocloft package
 
-% %    9. List of illustrations (mandatory if thesis has illustrations)
-% %   10. Lists of symbols, abbreviations or other (optional)
+%    9. List of illustrations (mandatory if thesis has illustrations)
+%   10. Lists of symbols, abbreviations or other (optional)
 
-% %   11. Glossary (optional)
+%%   11. Glossary (optional)
 % \input{0-glossary}	% always input, since other macros may rely on it
 
 \textspacing		% begin one-half or double spacing
 
-% % 12. Acknowledgements (optional)
-\include{0-ack}
+% 12. Acknowledgements (optional)
+% \include{0-ack}
 
 %   13. Dedication (optional)
 
@@ -445,7 +453,6 @@
 \include{3-voice-variability.tex}
 \include{4-ptk-uniformity.tex}
 \include{5-discussion.tex}
-% \include{6-conclusion.tex}
 
 %    3. Notes
 %    4. Footnotes
@@ -460,7 +467,7 @@
 % %    6. Appendices (including copies of all required UBC Research
 % %       Ethics Board's Certificates of Approval)
 % %\include{reb-coa}	% pdfpages is useful here
-% \include{7-appendix}
+% \include{6-appendix}
 
 \backmatter
 %    7. Index

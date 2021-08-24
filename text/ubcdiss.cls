@@ -236,7 +236,7 @@
 \newcommand{\advisortitle}[1]{%
     \ClassWarning{ubcdiss}{Ignoring \protect\advisortitle}}
 
-\renewcommand{\maketitle}{%
+    \renewcommand{\maketitle}{%
     % For some reason GPS thinks the title page should be page 1
     % but \frontmatter causes the page count to be reset.  So
     % we do it here, and forbid use of \frontmatter
