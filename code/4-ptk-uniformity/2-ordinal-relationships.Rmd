@@ -85,30 +85,29 @@ df %>%
 
 ## Visualizing ordinal relationships
 Ordinal relationships within talker by language, in graphical form -- probably wont include this in the paper
-```{r fig.width=5, fig.height=6.5}
+```{r fig.width=5.5, fig.height=6.5}
 df %>%
   filter(str_detect(talker, 'VM')) %>%
   group_by(talker, language, segment) %>%
   summarise(mean_vot = mean(vot_ms), se_vot = std.error(vot_ms), n=n()) %>%
   ungroup() %>%
-  mutate(segment = str_to_upper(segment)) %>%
-  ggplot(aes(y=mean_vot, x=talker, color=language, label=segment)) +
-    geom_text(fontface='bold', position=position_dodge(width = 0.75)) +
-    # geom_line(alpha=0.5, position=position_dodge(width = 0.75)) +
-    geom_errorbar(aes(ymin=mean_vot-se_vot, ymax=mean_vot+se_vot),) +
-    scale_color_viridis_d(option = 'magma', begin = 0, end = 0.7) +
-    # scale_color_manual(values = c('darkolivegreen','skyblue')) +
+  mutate(lower = mean_vot - se_vot, upper = mean_vot + se_vot) %>%
+  mutate(segment = str_to_upper(segment), language = if_else(language=='English', 'E', 'C')) %>%
+  ggplot(aes(y=mean_vot, x=language, color=segment, shape=segment)) +
+  geom_point(size = 2.5 , position=position_dodge(width = 0.750)) +
+    geom_errorbar(width=0.85, size=0.5 ,aes(ymin = lower, ymax = upper), position=position_dodge(width = 0.75)) +
+    scale_color_viridis_d(option = 'magma', begin = 0, end = 0.7, breaks = c('P','T','K')) +
+    scale_shape_discrete(breaks = c('P','T','K')) +
   ylab('Mean VOT (ms)') +
-  xlab('Talker') +
-  scale_y_continuous(limits = c(15, 85))+
+  xlab('') +
   coord_flip() +
+  facet_wrap(~talker, ncol=3, scales='free_x') +
     theme(
-      # axis.text = element_text(angle=90),
       panel.grid.major.x = element_line(color = 'gray', linetype='dotted'),
       legend.position = 'right'
     )
 
-# ggsave('../../text/figures/ch4_ordrel_vm_5in.png', height = 6.5, width = 5, units='in')
+ggsave('../../text/figures/ch4_ordrel_vm_5in.png', height = 6.5, width = 5, units='in')
 ```
 
 

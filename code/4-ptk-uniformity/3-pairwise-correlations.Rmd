@@ -55,10 +55,40 @@ dfsummary <- df %>%
   summarise(mvot = mean(vot_ms)) %>%
   ungroup() %>%
   pivot_wider(names_from = c('language','segment'), values_from = 'mvot') %>%
-  select(CanP=Cantonese_p, CanT=Cantonese_t, CanK=Cantonese_k, EngP=English_p, EngT=English_t, EngK=English_k)
+  select(
+    `Cantonese P`=Cantonese_p, 
+    `Cantonese T`=Cantonese_t, 
+    `Cantonese K`=Cantonese_k, 
+    `English P`=English_p, 
+    `English T`=English_t, 
+    `English K`=English_k)
  
 dfsummary
 ```
+
+
+Prep wide summary data frame and run correlation
+```{r}
+dfout <- corr.test(dfsummary, method='pearson', adjust = 'holm')
+```
+
+```{r}
+options(scipen = 999)
+
+dfout$ci %>%
+  rownames_to_column(var = 'comparison') %>%
+  left_join(dfout$ci2, by=c('r','p')) %>%
+  select(comparison, r, p.adj) %>%
+  separate(comparison, into = c('a', 'b'), sep='-') %>%
+  mutate(r = round(r, 2), p.adj = round(p.adj, 4)) %>%
+  kableExtra::kable()
+    
+```
+
+
+
+
+
 
 Run correlations with adjusted p-values
 ```{r}
@@ -68,6 +98,91 @@ output
 
 
 ### Data Viz: Mean VOT
+
+
+
+```{r}
+library(GGally)
+```
+
+```{r fig.width=6, fig.height=6}
+ggpairs(dfsummary,lower=list(continuous=GGally::wrap("smooth", alpha=0.6, size=1)),
+                  diag=list(continuous=GGally::wrap("densityDiag", alpha=0.5)),
+                  upper=list(continuous=GGally::wrap("cor", method="pearson", stars=F, size=5))) + 
+  xlab('Mean VOT') +
+  ylab('Mean VOT') +
+  geom_abline(intercept = 0, slope = 1)
+
+```
+
+```{r}
+colnames(dfsummary)
+library('ggExtra')
+```
+
+
+
+```{r fig.width=5, fig.height=5}
+
+jointplot <- function(dataframe, col1, name1, col2, name2, color='black') {
+  p <- ggplot(dataframe, aes(x=col1, y=col2)) +
+    geom_point(color=color) +
+    geom_smooth(method='lm', formula = 'y ~ x', color=color, fill=color) +
+    scale_x_continuous(limits = c(10,90)) + 
+    scale_y_continuous(limits = c(10,90)) +
+    xlab(paste(name1, '(Mean VOT)', sep = ' ')) +
+    ylab(paste(name2,'(Mean VOT)', sep = ' ')) +
+    theme(
+      axis.title.x = element_text(size=9),
+      axis.title.y = element_text(size=9)
+    )
+  p <- ggMarginal(p, type="histogram", fill=color, color='white')
+  return(p)
+  
+}
+
+cpt <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`Cantonese T`, 'Cantonese /t/', color='#000004FF')
+cpk <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`Cantonese K`, 'Cantonese /k/', color='#000004FF')
+ctk <- jointplot(dfsummary, dfsummary$`Cantonese T`, 'Cantonese /t/', dfsummary$`Cantonese K`, 'Cantonese /K/', color='#000004FF')
+ept <- jointplot(dfsummary, dfsummary$`English P`, 'English /p/', dfsummary$`English T`, 'English /t/', color='#5D177FFF')
+epk <- jointplot(dfsummary, dfsummary$`English P`, 'English /p/', dfsummary$`English K`, 'English /k/', color='#5D177FFF')
+etk <- jointplot(dfsummary, dfsummary$`English T`, 'English /t/', dfsummary$`English K`, 'English /K/', color='#5D177FFF')
+cep <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`English P`, 'English /p/', color='#D1426FFF')
+cet <- jointplot(dfsummary, dfsummary$`Cantonese T`, 'Cantonese /t/', dfsummary$`English T`, 'English /t/', color='#D1426FFF')
+cek <- jointplot(dfsummary, dfsummary$`Cantonese K`, 'Cantonese /k/', dfsummary$`English K`, 'English /K/', color='#D1426FFF')
+cpet <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`English T`, 'English /t/', color='#FEB77EFF')
+cpek <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`English K`, 'English /k/', color='#FEB77EFF')
+ctep <- jointplot(dfsummary, dfsummary$`Cantonese T`, 'Cantonese /t/', dfsummary$`English P`, 'English /p/', color='#FEB77EFF')
+ctek <- jointplot(dfsummary, dfsummary$`Cantonese T`, 'Cantonese /t/', dfsummary$`English K`, 'English /k/', color='#FEB77EFF')
+ckep <- jointplot(dfsummary, dfsummary$`Cantonese K`, 'Cantonese /k/', dfsummary$`English P`, 'English /p/', color='#FEB77EFF')
+cket <- jointplot(dfsummary, dfsummary$`Cantonese K`, 'Cantonese /k/', dfsummary$`English T`, 'English /t/', color='#FEB77EFF')
+
+```
+
+```{r}
+library(gridExtra)
+```
+
+```{r fig.width=7, fig.height=7}
+p <- grid.arrange(cpt, cpk, ctk, ept, epk, etk, cep, cet, cek, ncol=3)
+ggsave('../../text/figures/ch4_correlations1_5in.png', plot=p, height = 6, width = 6, units='in')
+```
+
+```{r}
+p <- grid.arrange(cpet, cpek, ctep, ctek, ckep, cket, ncol=3)
+ggsave('../../text/figures/ch4_correlations2_5in.png',plot=p, height = 4, width = 6, units='in')
+
+```
+
+
+
+```{r}
+pal <- viridis_pal(option='magma', begin=0, end=0.85)
+show_col(pal(4))
+pal(4)
+```
+
+
 
 Set up within-language plots
 ```{r fig.width=9, fig.height=3}
@@ -186,7 +301,8 @@ rdfout$ci %>%
   left_join(rdfout$ci2, by=c('r','p')) %>%
   select(comparison, r, p.adj) %>%
   separate(comparison, into = c('a', 'b'), sep='-') %>%
-  mutate(r = round(r, 2), p.adj = round(p.adj, 4))
+  mutate(r = round(r, 2), p.adj = round(p.adj, 4)) %>%
+  kableExtra::kable()
     
 ```
 

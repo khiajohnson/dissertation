@@ -39,7 +39,7 @@ To summarize, most work in crosslinguistic influence has focused on phonological
 
 The study described in this chapter focuses on assessing whether phonetically similar sounds share representation or not. Unlike prior work that tells sound categories apart, this chapter aims to tell sound categories together---that is, does a single category deploy to each language, or does each language have its own version. Testing directly for shared structure in this way means that the set of methods that rely on detecting and modulating differences is not appropriate. To this end, I extend the articulatory uniformity framework to the study of multilingual segment inventories. 
 
-Articulatory uniformity is conceptualized as a constraint on within-talker phonetic variation, in which articulatory gestures or phonological primitives are implemented systematically in speech production \citep{chodroff_2017_structure, faytak_2018_uniformity, menard_2008_invariance}. The core idea of the articulatory uniformity framework is that phonetic variation is highly structured. While \citet{chodroff_2017_structure} draw tight connections between uniformity and phonological features, \citet{faytak_2018_uniformity} emphasizes how talkers learn and reuse articulatory gestures. The articulatory account builds on earlier work by \citet{menard_2008_invariance}, who argue that the stability of the first formant in French vowel production is best accounted for by stability in the tongue height gesture. While the theoretical account varies somewhat by author, there is nothing to suggest that such accounts are incompatible. That is, both articulatory and phonological explanations are likely valid. Given the focus of this chapter on phonetic and psycholinguistic accounts of category formation and representation, the articulatory account is perhaps more appropriate. 
+Articulatory uniformity is conceptualized as a constraint on within-talker phonetic variation, in which articulatory gestures or phonological primitives are implemented systematically in speech production \citep{chodroff_2017_structure, faytak_2018_uniformity, menard_2008_invariance}. The core idea of the articulatory uniformity framework is that phonetic variation is highly structured. While \citet{chodroff_2017_structure} draw tight connections between uniformity and phonological features, \citet{faytak_2018_uniformity} emphasizes how talkers learn and reuse articulatory gestures. The articulatory account builds on earlier work by \citet{menard_2008_invariance}, who argue that the stability of the first formant in French vowel production is best accounted for by stability in the tongue height gesture. While the theoretical account varies somewhat by author, there is nothing to suggest that such accounts are incompatible. That is, both articulatory and phonological explanations are likely valid. Given the focus of this chapter on phonetic and psycholinguistic accounts of category formation and representation, the articulatory account is perhaps more appropriate. % something here from Lieberman 1988?? on stability and quantal regions?
 
 In this light, if a set of segments share an attribute, then talkers should implement the segments with the same phonetic target or articulatory gesture---which may or may not have an acoustic consequence. This systematicity has been observed for in vowel height \citep{menard_2008_invariance}, tongue shape \citep{faytak_2018_uniformity}, fricative peak frequency, and stop consonant VOT \citep{chodroff_2017_structure}. In the case of VOT in particular, the relationship between a laryngeal gesture and its acoustic consequence is clear. This allows for the extension of \citeauthor{menard_2008_invariance}'s \citeyearpar{menard_2008_invariance} argument regarding F1 and tongue height to VOT and its corresponding laryngeal gesture. Reusing the gesture across sounds that share the relevant attribute ``may simplify the somatosensory feedback needed to control the speech task`` \citep[][p. 26]{menard_2008_invariance}. In simple terms, reusing gestures is easier than the alternative in the case of high vowels. I posit that the same argument could easily be extended for long-lag stops. 
 
@@ -82,21 +82,16 @@ Of the initial sample, 14.1\% was excluded, resulting in 8,961 stops, summarized
   \end{tabular}
 \end{table}
 
+\section{Analysis \& Results}
+The articulatory uniformity framework offers strong theoretical grounds for interpreting the structure of VOT variation within and across talkers. This analysis qualifies and quantifies that structure from a few different perspectives. Section \ref{ch4:sec:ordrel} describes the ordinal relationship between each of the segments across talkers and languages. Section \ref{ch4:sec:correlations} reports on a series of pairwise correlations of talker means for each of the three segments in each language. Lastly, Section \ref{ch4:sec:lmem} comprises the results of a linear mixed effects model aimed at elicidating the role of language while accounting for variables known to impact VOT.
+
 % methods revised up to here
 
+\subsection{Ordinal relationships}\label{ch4:sec:ordrel}
 
-% COMPLETELY re-do the data viz for this section, using correlation plots as in Chodroff's work and from my ISBPAC poster
-% KCH: Figure 1 in its current form is quite hard to read — relatively small, and not zoomable without being excessively blurry.
+Prior work with lab and read speech strongly suggests an expected ordinal relationship for VOT across places of articulation, in which /p/ is consistently shorter than /k/ and /t/ tends to fall in the middle. The argument for this widely attested pattern is based on vocal tract aerodynamics and articulatory constraints \citep{cho_1999_vot}. One of the major contributions of \citet{chodroff_2017_structure} is that these relationships are tighter than would be expected from a purely ordinal perspective. While ordinal relationships are a starting place, they represent just one piece of the puzzle. 
 
-
-\section{Analysis \& Results}
-The articulatory uniformity framework offers strong theoretical grounds for interpreting the structure of VOT variation within and across talkers. This analysis qualifies and quantifies that structure from a few different perspectives. In all cases, the pattern of results is depicted by Figure XX which plots individuals' mean and standard errors for each of the three stops by language---showcasing both variability and commonalities.
-
-\subsection{Ordinal relationships}
-Prior work with lab and read speech strongly suggests an expected ordinal relationship for VOT across places of articulation: /p/ $<$ /t/ $<$ /k/. One of the major contributions of \citet{chodroff_2017_structure} is that these relationships are tighter than would be expected from a purely ordinal perspective. While ordinal relationships are a starting place, they represent just one piece of the puzzle. 
-
-The results suggest that \textit{puzzle} is an appropriate characterization, as talkers largely did not adhere to the expected order. Table \ref{tab:ordrel} reports the proportion of talkers whose mean VOT values followed the expected /p/ $<$ /t/ $<$ /k/ relationships. Prior work with connected speech reports rates of adherence in the 80-90\% range, except for English /t/ $<$ /k/ being drastically lower for native English speakers \citep{chodroff_2019_l2}. While the English /t/ $<$ /k/ comparison is remarkably low here (6\%), only English /p/ $<$ /t/ (82\%) falls in the range prior work suggests. This lack of adherence is apparent in the relative ordering or markers in Figure XX, though in many cases, the standard errors overlap, suggesting that a strict ordering by means may be inappropriate. Additionally, crossed lines in Figure XX indicated that many talkers are not internally consistent across languages. 
-
+The results suggest that \textit{puzzle} is an appropriate characterization, as talkers largely did not adhere to the expected order. While there is some reason to expect coronals not to pattern accordingly, the relationship between /p/ and /k/ is inconsistent across talkers. Table \ref{tab:ordrel} reports the proportion of talkers whose mean VOT values followed the expected /p/ $<$ /t/ $<$ /k/ relationships. Prior work with connected speech reports rates of adherence in the 80-90\% range, except for English /t/ $<$ /k/ being drastically lower for native English speakers \citep{chodroff_2019_l2}. While the English /t/ $<$ /k/ comparison is remarkably low here (6\%), only English /p/ $<$ /t/ (82\%) falls in the range that prior work suggests. This lack of adherence is apparent in the relative ordering or markers in Figures \ref{ch4:fig:ordrelvf} and \ref{ch4:fig:ordrelvm}, which depict the mean and standard error of VOT for each segment, language, and talker. In many cases, the standard errors for the different segments in a given talker's panel overlap, indicating that strict ordering may not be appropriate here. Additionally, talkers do not appear to be consistent across languages. For example, talker VF19B in Figure \ref{ch4:fig:ordrelvf} exhibits a clear  /p/ $<$ /t/ $<$ /k/ relationship in Cantonese, but a clear /p/ $<$ /k/ $<$ /t/ relationship in English. 
 
 \begin{table}[hb!]
 \caption{Proportion of talker means that adhered to expected ordinal relationship for VOT: /p/ $<$ /t/ $<$ /k/ VOT durations. Note that talker VM25A has no instances of Cantonese /p/ in the final sample.}
@@ -112,58 +107,89 @@ The results suggest that \textit{puzzle} is an appropriate characterization, as 
   \end{tabular}
 \end{table}
 
-\begin{table*}[tbh!]
-\caption{All 15 correlations based on mean residual VOT by talker and language. Each row indicates the comparison, Pearson's \textit{r}, and Holm-adjusted \textit{p}-value. The header row specifies the languages in each pairwise comparison in order: C(antonese) or E(nglish).}
-  \label{tab:correlations}
-  \centering
-  \begin{tabular}{lll|lll|lll|lll|lll}
-    \toprule
-    \textbf{C $\sim$ C} & \textit{\textbf{r}}    & \textit{\textbf{p}}     & \textbf{E $\sim$ E} & \textit{\textbf{r}} 		& \textit{\textbf{p}} 	 & \textbf{C $\sim$ E} & \textit{\textbf{r}}   & \textit{\textbf{p}}     & \textbf{C $\sim$ E} & \textit{\textbf{r}}    & \textit{\textbf{p}}    & \textbf{C $\sim$ E} & \textit{\textbf{r}} & \textit{\textbf{p}} \\
-    \midrule
-    p $\sim$ t & 0.59 & 0.003 & p $\sim$ t & 0.63 & $<$0.001 & p $\sim$ p & 0.57 & 0.006 & t $\sim$ p & 0.37 & 0.20 & k $\sim$ p & 0.59 & 0.003 \\
-    p $\sim$ k & 0.55 & 0.009 & p $\sim$ k & 0.70 & $<$0.001 & p $\sim$ t & 0.29 & 0.31 & t $\sim$ t & 0.35 & 0.21 & k $\sim$ t & 0.37 & 0.20 \\
-    t $\sim$ k & 0.34 & 0.21 & t $\sim$ k & 0.60 & 0.002 & p $\sim$ k & 0.29 & 0.31 & t $\sim$ k & 0.27 & 0.31 & k $\sim$ k & 0.54 & 0.009 \\
-    \bottomrule
-  \end{tabular}
-\end{table*}
+\begin{figure}[htbp]
+  \begin{center}
+  \includegraphics[width=0.9\linewidth]{figures/ch4_ordrel_vf_5in.png} 
+  \caption{This figure depicts the ordinal relationships for the female talkers. Each panel depicts the mean VOT and standard error for VOT for each segment, with E(nglish) and C(antonese) in separate rows.}
+  \label{ch4:fig:ordrelvf}
+  \end{center}
+\end{figure}
 
-\subsection{Pairwise correlations}
+\begin{figure}[htbp]
+  \begin{center}
+  \includegraphics[width=0.9\linewidth]{figures/ch4_ordrel_vm_5in.png} 
+  \caption{This figure depicts the ordinal relationships for the male talkers. Each panel depicts the mean VOT and standard error for VOT for each segment, with E(nglish) and C(antonese) in separate rows.}
+  \label{ch4:fig:ordrelvm}
+  \end{center}
+\end{figure}
+
+
+\subsection{Pairwise correlations}\label{ch4:sec:correlations}
 % I personally don’t quite understand enough about your correlation analysis…a failing on my part, but maybe helped through extended discussion, is how sufficient using the residuals is for correcting for speech rate.
-
-To examine the relationship between stops within and across languages, 15 pairwise Pearson's \textit{r} correlations were calculated across talker means and are reported along with Holm-adjusted \textit{p}-values, using the \textit{psych} \citep{revelle_2021_psych} package in R \citep{r_2021}. In each case, means were calculated over \textit{residual} VOT values from a simple linear regression in which VOT was predicted by average phone duration within the word---a proxy for speech rate calculated as the difference between the AutoVOT-estimated onset and the force-aligned word offset, divided by the number of segments in the canonical form of the word. Using residual VOT means mitigates the impact of talker- and language-specific speech rate for these comparisons. This consideration is important, as speech rate is known to influence VOT \citep{chodroff_2017_structure} and because prior work demonstrates both talker and language effects on speech rate \citep{bradlow_2017_rate}. 
 % it’s also unclear to me whether the talkers were paired with themselves within the correlations presented in Table 2 (i.e., are these analogous to the Chodroff and Wilson 2017 figures?)
 % did you do any correction for significance with 15 correlations?
 
-Table \ref{tab:correlations} summarizes the output of all 15 correlations. While there is some evidence for both within- and across-language structured variation, the correlations reported here are considerably lower than prior work on English connected speech. Similar within-language comparisons had $r>0.7$ \citep{chodroff_2017_structure,chodroff_2019_l2}. With the exception of the English /p/ $\sim$ /k/ ($r=0.70$, $p<0.001$), all of the correlations were either moderate ($0.5<r<0.7$; $p<0.01$) or not significant. Within-language correlations occurred more consistently occurred (5 of 6 significant) than across-language comparisons (3 of 9). While these relationships indicate some degree of articulatory reuse, the overall picture is not particularly compelling.
+To examine the relationship between stops within and across languages, 15 pairwise Pearson's \textit{r} correlations were calculated across talker means. Each correlation compares talkers means for two different segments. The full pairwise correlations include three within English, three within Cantonese, and nine comparing English to Cantonese. These correlations are reported along with Holm-adjusted \textit{p}-values to account for multiple comparisons. This analysis uses the \textit{psych} \citep{revelle_2021_psych} package in R \citep{r_2021}. As in \citet{chodroff_2017_structure}, this correlation analysis aims to elucidate within-talker invariance and between-talker variability. While using means ignores information about within-category variability, prior work sets up strong, clear expectations about how the mean values for long-lag VOT pattern \citep{chodroff_2017_structure, cho_1999_vot}. Additionally, Section \ref{ch4:sec:lmem} digs into individual differences and variability, thus addressing such concerns \citep[see][]{haines_2020_theoretically}.
 
-% \begin{table}[hbt]
-% \caption{Correlations based on mean residual VOT by talker and language. Each row indicates the comparison, Pearson's \textit{r}, and Holm-adjusted p-value.}
-%   \label{tab:correlations}
-%   \centering
-%   \begin{tabular}{lll}
-%     \toprule
-% \textbf{Comparison}			& \textbf{\textit{r}}	& \textbf{\textit{p}} \\
-% \midrule
-% Cantonese /p/ $\sim$ Cantonese /t/   &	0.59	&	0.004 \\
-% Cantonese /p/ $\sim$ Cantonese /k/   &	0.54	&	0.009 \\
-% Cantonese /t/ $\sim$ Cantonese /k/   &	0.33	&	0.28 \\
-% English /p/ $\sim$ English /t/	     &	0.58	&	0.004 \\
-% English /p/ $\sim$ English /k/	     &	0.75 	&	$<$0.001 \\
-% English /t/ $\sim$ English /k/	     &	0.57	&	0.005 \\
-% Cantonese /p/ $\sim$ English /p/	 &	0.57	&	0.006 \\
-% Cantonese /t/ $\sim$ English /t/	 &	0.31	&	0.29 \\
-% Cantonese /k/ $\sim$ English /k/	 &	0.55	&	0.006 \\
-% Cantonese /p/ $\sim$ English /t/	 &	0.23	&	0.33 \\
-% Cantonese /p/ $\sim$ English /k/	 &	0.35	&	0.29 \\
-% Cantonese /t/ $\sim$ English /p/	 &	0.43	&	0.08 \\
-% Cantonese /t/ $\sim$ English /k/	 &	0.31	&	0.29 \\
-% Cantonese /k/ $\sim$ English /p/	 &	0.56	&	0.006 \\
-% Cantonese /k/ $\sim$ English /t/	 &	0.24	&	0.33 \\
-%     \bottomrule
-%   \end{tabular}
-% \end{table}
+Table \ref{ch4:tab:correlations} summarizes the output of all 15 correlations in text form. Figures \ref{ch4:fig:correlations1} and \ref{ch4:fig:correlations2} depict each of the 15 correlations in the fashion of \cite{chodroff_2017_structure}. While there is some evidence for both within- and across-language structured variation, the correlations reported here are considerably lower than prior work on English read speech. Similar within-language comparisons had $r>0.7$ \citep{chodroff_2017_structure, chodroff_2019_l2}. With the exception of the English /p/ $\sim$ /k/ ($r=0.70$, $p<0.001$), all of the correlations were either moderate ($0.5<r<0.7$; $p<0.01$) or not significant. Within-English correlations were the most consistent---all three had \textit{r} at or above 0.65 (p $<$ 0.001). Of the within-Cantonese correlations only /p/ $\sim$ /t/ was significant (\textit{r}$=$ 0.59; \textit{p}$=$0.003), though the correlation for /p/ $\sim$ /k/ was marginal (\textit{r}$=$ 0.44; \textit{p}$=$0.08). Two of three across-language correlations at the same place of articulation were significant, with moderate \textit{r} values (/p/ $\sim$ /p/: \textit{r}$=$0.62, \textit{p}$=$0.001; /k/ $\sim$ /k/: \textit{r}$=$0.57, \textit{p}$=$0.004). Of the across-language comparisons that do not share a place of articulation, only one was significant---Cantonese /k/ $\sim$ English /p/ (\textit{r}$=$0.58, \textit{p}$=$0.003).
 
-\subsection{Linear mixed effect model}
+
+\begin{figure}[htbp]
+  \begin{center}
+  \includegraphics[width=0.9\linewidth]{figures/ch4_correlations1_5in.png} 
+  \caption{Correlations!}
+  \label{ch4:fig:correlations1}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+  \includegraphics[width=0.9\linewidth]{figures/ch4_correlations2_5in.png} 
+  \caption{Correlations!}
+  \label{ch4:fig:correlations2}
+  \end{center}
+\end{figure}
+
+\begin{table}[htbp]
+  \caption{All 15 correlations based on raw mean VOT---and separately, VOT residuals after accounting for speaking rate---for each talker, language, and segment. Each row indicates the comparison, Pearson's \textit{r}, and the Holm-adjusted \textit{p}-value given 15 comparisons.}
+    \label{ch4:tab:correlations}
+    \centering 
+    \footnotesize
+    \begin{tabular}{ll|ll|ll}
+      \toprule
+      &   & \multicolumn{2}{l|}{\textbf{Raw}} & \multicolumn{2}{l}{\textbf{Residualized}} \\
+      \textbf{Type}     & \textbf{Comparison} & \textit{r}        & \textit{p}       & \textit{r}            & \textit{p}            \\
+    \midrule
+    Within-Cantonese  & Cantonese /p/ $\sim$ Cantonese /t/    & 0.59    & 0.003       & 0.59   & 0.003    \\
+    Within-Cantonese  & Cantonese /p/ $\sim$ Cantonese /k/    & 0.44    & 0.08        & 0.55   & 0.01     \\
+    Within-Cantonese  & Cantonese /t/ $\sim$ Cantonese /k/    & 0.38    & 0.11        & 0.34   & 0.21     \\
+    \midrule
+    Within-English    & English /p/   $\sim$  English /t/     & 0.65    & $<$0.001    & 0.63   & 0.001    \\
+    Within-English    & English /p/   $\sim$  English /k/     & 0.70    & $<$0.001    & 0.70   & $<$0.001 \\
+    Within-English    & English /t/   $\sim$  English /k/     & 0.66    & $<$0.001    & 0.60   & 0.002    \\
+    \midrule
+    Across-language   & Cantonese /p/  $\sim$ English /p/     & 0.62    & 0.001       & 0.57   & 0.01    \\
+    Across-language   & Cantonese /t/  $\sim$ English /t/     & 0.40    & 0.11        & 0.35   & 0.21    \\
+    Across-language   & Cantonese /k/  $\sim$ English /k/     & 0.57    & 0.004       & 0.54   & 0.01    \\
+    \midrule
+    Across-language   & Cantonese /p/  $\sim$ English /t/     & 0.41    & 0.11        & 0.29   & 0.31    \\
+    Across-language   & Cantonese /p/  $\sim$ English /k/     & 0.40    & 0.11        & 0.29   & 0.31    \\
+    Across-language   & Cantonese /t/  $\sim$ English /p/     & 0.43    & 0.08        & 0.37   & 0.20    \\
+    Across-language   & Cantonese /t/  $\sim$ English /k/     & 0.37    & 0.11        & 0.27   & 0.31    \\
+    Across-language   & Cantonese /k/  $\sim$ English /p/     & 0.58    & 0.003       & 0.59   & 0.003   \\
+    Across-language   & Cantonese /k/  $\sim$ English /t/     & 0.38    & 0.11        & 0.37   & 0.20    \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+
+\citet{chodroff_2017_structure} also repeat the correlation analysis in a way the coarsely accounts for speaking rate. This consideration is important, as the local speaking rate is known to influence long-lag VOT in spontaneous speech \citep{stuartsmith_2015_private} and because prior work demonstrates both talker and language effects on speech rate \citep{bradlow_2017_rate}. In comparing the two versions of the correlation analysis, \citeauthor{chodroff_2017_structure} found that ``the magnitudes of the correlations among voiceless stops did not deviate from the original magnitudes, demonstrating that differences among talkers in the realization of these sounds cannot be reduced to talker-specific speaking rates'' \citeyearpar[][p. 34]{chodroff_2017_structure}. 
+
+I conducted a similar analysis here, using means calculated over \textit{residual} VOT values from a simple linear regression in which VOT was predicted by average phone duration within the word. Average phone duration is a proxy for speech rate calculated as the difference between the AutoVOT-estimated onset and the force-aligned word offset, divided by the number of segments in the canonical form of the word. The results---Pearson's \textit{r} and Holm-adjusted \textit{p} values---are reported in Table \ref{ch4:tab:correlations}. Qualitatively, the results mostly mirror the correlations based on raw VOT, though there are some differences in significance and magnitude. This difference can likely be attributed to the generally weak correlations found. 
+
+While these relationships indicate some degree of articulatory reuse, the overall picture is far from compelling, particularly when considered alongside the results of the analysis of the ordinal relationships in Section \ref{ch4:sec:ordrel}. Compared to prior work, these correlations are less consistent and generally weaker. Section \ref{ch4:sec:lmem} digs into why this might be the case. 
+
+
+\subsection{Linear mixed effect model}\label{ch4:sec:lmem}
 % The interpretation of the linear ME model needs to be fleshed out and related more clearly to your original research question(s)
 % Frame this section as being motivated by the lack of strong uniformity, and by Chodroff's analysis of the random effects structure
 
