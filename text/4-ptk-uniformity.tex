@@ -133,7 +133,6 @@ To examine the relationship between stops within and across languages, 15 pairwi
 
 Table \ref{ch4:tab:correlations} summarizes the output of all 15 correlations in text form. Figures \ref{ch4:fig:correlations1} and \ref{ch4:fig:correlations2} depict each of the 15 correlations in the fashion of \cite{chodroff_2017_structure}. While there is some evidence for both within- and across-language structured variation, the correlations reported here are considerably lower than prior work on English read speech. Similar within-language comparisons had $r>0.7$ \citep{chodroff_2017_structure, chodroff_2019_l2}. With the exception of the English /p/ $\sim$ /k/ ($r=0.70$, $p<0.001$), all of the correlations were either moderate ($0.5<r<0.7$; $p<0.01$) or not significant. Within-English correlations were the most consistent---all three had \textit{r} at or above 0.65 (p $<$ 0.001). Of the within-Cantonese correlations only /p/ $\sim$ /t/ was significant (\textit{r}$=$ 0.59; \textit{p}$=$0.003), though the correlation for /p/ $\sim$ /k/ was marginal (\textit{r}$=$ 0.44; \textit{p}$=$0.08). Two of three across-language correlations at the same place of articulation were significant, with moderate \textit{r} values (/p/ $\sim$ /p/: \textit{r}$=$0.62, \textit{p}$=$0.001; /k/ $\sim$ /k/: \textit{r}$=$0.57, \textit{p}$=$0.004). Of the across-language comparisons that do not share a place of articulation, only one was significant---Cantonese /k/ $\sim$ English /p/ (\textit{r}$=$0.58, \textit{p}$=$0.003).
 
-
 \begin{figure}[htbp]
   \begin{center}
   \includegraphics[width=0.9\linewidth]{figures/ch4_correlations1_5in.png} 
@@ -192,9 +191,63 @@ While these relationships indicate some degree of articulatory reuse, the overal
 \subsection{Linear mixed effect model}\label{ch4:sec:lmem}
 % The interpretation of the linear ME model needs to be fleshed out and related more clearly to your original research question(s)
 % Frame this section as being motivated by the lack of strong uniformity, and by Chodroff's analysis of the random effects structure
+To better account for variation due to known factors such as speech rate and the presence of a preceding pause, a linear mixed-effects model was fit with the \textit{lme4} package \citep{bates_2015_lme4} in R \citep{r_2021}. The model's aims were two-fold: estimating the effect of language by segment and elucidating the sources of variation in the random effects structure. Analyzing the data in this way mitigates the issues with conducting statistical tests on talker means, which ignores much of the variation in the data \citep{haines_2020_theoretically}. The model's lmer formula was: VOT $\sim$ 1 $+$ Place $\times$ Language $+$ Average Phone Duration $+$ Preceding Pause $+$ (Place $\times$ Language $|$ Talker) $+$ (1 $|$ Word). The parameters were specified as follows \hl{I would have like to do everything Bayesian in my thesis but do not feel like I have the time.}
+
+\begin{description}
+  \item[VOT] was the dependent variable---it was standardized.
+  \item[Average Phone Duration] represents the average duration of phones within the word. It was calculated as the difference between the word's AutoVOT-estimated onset and the force-aligned word offset, divided by the number of segments in the canonical form of the word. As noted earlier, average phone duration serves as a proxy for local speaking rate. A word-internal measure is desirable, as many tokens were preceded by a pause and thus lack the preceding context from which to calculate it. Average phone duration was also standardized. 
+  \item[Preceding Pause] indicates whether or not the token occurred after a pause or not. Pauses were defined as X. Preceding pause is a binary variable with weighted effect coding (False $=-0.33$, True $=1$).
+  \item[Language] is a binary variable indicating whether a token occurred in an English or Cantonese word. It was weighted effect coded (Cantonese $=-1.61$, English $=1$). 
+  \item[Place] is a categorical variable indicating whether a token was produced with a labial, coronal, or dorsal place of articulation. Place had three levels and was weighted effect coded (Place T: /p/ $=-1.92$, /t/ $=1$, /k/ $=0$ ; Place K: /p/ $=-3.44$, /t/ $=10$, /k/ $=1$).
+\end{description}
+
+The interaction for Language $\times$ Place was included in the model---it directly addresses the research question relating to whether or not bilinguals maintain a difference across languages for these sounds. As apparent in the above list, the categorical fixed effects all employed weighted effect coding, using the \textit{wec} R package \citep{nieuwenhuis_2017_weighted}. This decision follows \citet{chodroff_2017_structure} and facilitates the interpretation of the simple effects in light of the interaction term \citep{brehm_2021_contrasts}. Additionally, random intercepts for Talker and Word were included, as were by-Talker slopes for Language, Place, and their interaction. While this does not represent the maximal model \citep{barr_2013_maximal}, it instead follows guidelines for parsimonious model building \citep{bates_2018_parsimonious}, in which the parameters of direct interest are included as random slopes, and the controlling parameters are not.
+
+\hl{Models had convergence issues mehhh}
+
+\begin{table}[htbp]
+  \caption{Fixed-effects results from the linear mixed effects model.}
+    \label{ch4:tab:lmemfixed}
+    \centering 
+    \begin{tabular}{llll}
+      \toprule
+      \textbf{Fixed Effect} & \textbf{$\beta$} &  \textbf{\textit{SE}}  &  \textbf{\textit{p}} \\ 
+      \midrule
+      Intercept                 			      &	0.19   &  0.05 &  $<$ 0.001  \\
+      Place (K)                   		      & -0.02   &  0.03 &  0.41   	\\
+      Place (T)                    		      &	0.05   &  0.04 &  0.22  		\\
+      Language (English)            		    &	0.16   &  0.03 &  $<$ 0.001	\\
+      Average Phone Duration                &	0.32   &  0.01 &  $<$ 0.001	\\
+      Preceding Pause (True)         		    &	0.12   &  0.02 &  $<$ 0.001	\\
+      Place (K) $\times$ Language (English) &  0.04   &  0.02 &  0.04		\\
+      Place (T) $\times$ Language (English) & -0.01   &  0.03 &  0.69		\\
+      \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+  \caption{Random effects results from the linear mixed effects model.}
+    \label{ch4:tab:lmemrandom}
+    \centering 
+    \begin{tabular}{llll}
+      \toprule
+      \textbf{Group} & \textbf{Random effect} &	\textbf{\textit{SD}}   \\
+      \midrule
+      Talker  & Intercept              				&	0.24 \\
+              & Place (K)                			&   0.07 \\
+              & Place (T)                 			&	0.10 \\
+              & Language (English)          			&	0.07 \\
+              & Place (K) $\times$ Language (English) &	0.05 \\
+              & Place (T) $\times$ Language (English) &	0.07 \\
+      \midrule
+      Word     & Intercept              				&	0.44 \\
+      \midrule
+      Residual &                         				&   0.77 \\ 
+      \bottomrule
+    \end{tabular}
+\end{table}
 
 % Add full table of LME results and some data viz
-In an effort to better account for variation due to known factors such as speech rate and the presence of a preceding pause, a linear mixed-effects model was fit with the \textit{lme4} package \citep{bates_2015_lme4} in R \citep{r_2021}. The aims of the model were two-fold: estimating the effect of language by segment, and elucidating the sources of variation in the random effects structure. The dependent variable, VOT (standardized) was predicted by Average Phone Duration (standardized), Preceding Pause (False $=-0.33$, True $=1$), Language (Cantonese $=-1.61$, English $=1$), Place of Articulation (Place T: /p/ $=-1.92$, /t/ $=1$, /k/ $=0$ ; Place K: /p/ $=-3.44$, /t/ $=10$, /k/ $=1$), and the Language $\times$ Place interaction. As likely apparent from the parenthetical values, all categorical fixed effects were weighted effect coded, following \citet{chodroff_2017_structure}, using the  \textit{wec} package \citep{nieuwenhuis_2017_weighted}. Random intercepts for Talker and Word were included, as were by-Talker slopes for Language, Place, and their interaction.\footnote{Formula: VOT $\sim$ 1 $+$ Place $\times$ Language $+$ Average Phone Duration $+$ Preceding Pause $+$ (Place $\times$ Language $|$ Talker) $+$ (1 $|$ Word).}
 
 At an $\alpha=0.01$ threshold, the model returned a significant intercept ($\beta=0.18$, $SE=0.49$, $p<0.001$), significant main effects for Average Phone Duration ($\beta=0.32$, $SE=0.01$, $p<0.001$) and Preceding Pause (True; $\beta=0.12$, $SE=0.02$, $p<0.001$), as well as significant simple effect for Language (English; $\beta=0.15$, $SE=0.03$, $p<0.001$), indicating that VOT was longer at slower speech rates, after pauses, and in English, compared to the weighted mean. Neither Place nor its interaction with Language was significant. As one of the linear mixed-effects model goals was to assess the effect of Language across places of articulation, pairwise post-hoc comparisons were computed for Language $\times$ Place using the \textit{emmeans} package \citep{lenth_2021_emmeans}, with a confidence level of 0.95, and the Kenward-Roger degrees-of-freedom method. The contrast between languages was significant for /t/ ($\beta=-0.38$, $SE=0.09$, $p<0.001$) and /k/ ($\beta=-0.53$, $SE=0.10$, $p<0.001$), but not for /p/ ($\beta=-0.09$, $SE=0.11$, $p=0.39$): VOT is consistently longer in English for /t/ and /k/.
 

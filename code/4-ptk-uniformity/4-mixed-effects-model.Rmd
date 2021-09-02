@@ -16,6 +16,22 @@ library(lmerTest)
 library(optimx)
 library(wec)
 library(emmeans)
+
+options(scipen=999)
+
+theme_set(
+  theme_clean() + 
+  theme(
+      legend.title = element_blank(),
+      legend.text = element_text(size=8),
+      legend.position = 'bottom',
+      axis.title.x = element_text(size = 8, face='bold'),
+      axis.title.y = element_text(size = 8, face='bold'),
+      axis.text.x = element_text(size = 8),
+      axis.text.y = element_text(size = 8),
+      strip.text = element_text(size = 8, face='bold'),
+      )
+  )
 ```
 
 ```{r}
@@ -49,16 +65,44 @@ Inspect the dataframe
 df
 ```
 
-## Model
 ```{r}
-options(scipen=999)
+library(brms)
 ```
+
+```{r}
+get_prior(
+  formula = vot_ms ~ 0 + segment * language + (0 + segment * language|talker),
+  family = lognormal(),
+  data = df
+)
+```
+
+```{r}
+m1.2  <- 
+  brm(formula = vot_z ~ 0 + segment * language + (0 + segment * language|talker),
+      family = gaussian(),
+      data = df,
+      prior = prior(normal(0, 1), class = b),
+      chains = 2, iter = 2000, warmup = 1000, cores =2,
+      file = 'fits/m1.interaction'
+  )
+```
+
+```{r}
+summary(m1.2)
+```
+
+
+
+## Frequentist model
+
 
 ```{r}
 mod <- lmer(
   formula = vot_z ~ 1 + segment * language + avg_phone_dur_z + is_post_pausal + (segment * language | talker) + (1 | word),
   data = df,
-  control = lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE))
+  control = lmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5))
+  #lmerControl(optimizer = "optimx", calc.derivs = FALSE, optCtrl = list(method = "nlminb", starttests = FALSE, kkt = FALSE))
   )
 ```
 
@@ -66,20 +110,30 @@ control = lmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5))
 
 
 ```{r}
-#AF1 <- allFit(mod, verbose=TRUE, parallel = "multicore")
+AF1 <- allFit(mod, verbose=TRUE, parallel = "multicore")
 #saveRDS(AF1, 'fits/allFit_vot_uniformity.rds')
 AF1 <- readRDS('fits/allFit_vot_uniformity.rds')
+
+AF1$bobyqa
 ```
 
 There were no warnings or convergence issues with the bobyqa optimizer (or: optimx.L-BFGS-B; nloptwrap.NLOPT_LN_BOBYQA); others had "Model failed to converge with 1 negative eigenvalue" like errors
 ```{r}
 mod_r1 <- AF1$bobyqa
-mod_r1
+summary(mod_r1)
 ```
+
+
+```{r fig.width=4, fig.height=4}
+library("car")
+qqPlot(resid(mod_r1))
+```
+
 
 Ran the pairwise comparisons on the science computer, since it takes a long time (output pasted below)
 ```{r}
-# emm <- emmeans(mod_r1, pairwise ~ language | segment, pbkrtest.limit = 8961)
-emm <- readRDS('fits/emm_vot_uniformity.rds')
+library(emmeans)
+emm <- emmeans(mod_r1, pairwise ~ language | segment, confid)
+# emm <- readRDS('fits/emm_vot_uniformity.rds')
 summary(emm)
 ```
