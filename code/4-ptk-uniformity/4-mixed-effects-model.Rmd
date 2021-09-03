@@ -16,6 +16,8 @@ library(lmerTest)
 library(optimx)
 library(wec)
 library(emmeans)
+library(brms)
+library(ggthemes)
 
 options(scipen=999)
 
@@ -39,6 +41,12 @@ df <- read_csv('dfs/ptk_clean_20210602.csv')
 df
 ```
 
+```{r}
+df %>%
+  ggplot(aes(x=vot_ms)) + 
+  geom_density()
+```
+
 Center VOT and standardize average phone duration
 ```{r}
 df$vot_z <- scale(df$vot_ms, center=TRUE, scale=TRUE)
@@ -50,53 +58,92 @@ Set up and inspect weighted effect coding
 df$is_post_pausal <- as_factor(df$is_post_pausal)
 contrasts(df$is_post_pausal) <- contr.wec(x=df$is_post_pausal, omitted = FALSE)
 contrasts(df$is_post_pausal)
-
-df$segment <- as_factor(df$segment)
-contrasts(df$segment) <- contr.wec(x=df$segment, omitted = 'p')
-contrasts(df$segment)
-
-df$language <- as_factor(df$language)
-contrasts(df$language) <-  contr.wec(x=df$language, omitted = 'Cantonese')
-contrasts(df$language)
+# 
+# df$segment <- as_factor(df$segment)
+# contrasts(df$segment) <- contr.wec(x=df$segment, omitted = 'p')
+# contrasts(df$segment)
+# 
+# df$language <- as_factor(df$language)
+# contrasts(df$language) <-  contr.wec(x=df$language, omitted = 'Cantonese')
+# contrasts(df$language)
 ```
 
 Inspect the dataframe
 ```{r}
-df
+df <- df %>%
+  mutate(seg = paste(language, str_to_upper(segment), sep = '_'))
 ```
 
-```{r}
-library(brms)
-```
 
 ```{r}
 get_prior(
-  formula = vot_ms ~ 0 + segment * language + (0 + segment * language|talker),
+  formula = vot_ms ~ 0 + seg + is_post_pausal + avg_phone_dur_z + (0 + seg | talker) + (1|word),
   family = lognormal(),
   data = df
 )
 ```
 
 ```{r}
-m1.2  <- 
-  brm(formula = vot_z ~ 0 + segment * language + (0 + segment * language|talker),
+m <- 
+  brm(formula = vot_ms ~ 0 + seg + is_post_pausal + avg_phone_dur_z + (0 + seg | talker) + (1 | word),
       family = gaussian(),
       data = df,
       prior = prior(normal(0, 1), class = b),
-      chains = 2, iter = 2000, warmup = 1000, cores =2,
-      file = 'fits/m1.interaction'
+      chains = 5, cores = 5, iter = 2000, warmup = 1000,
+      file = 'fits/m1.v7'
   )
 ```
 
+
 ```{r}
-summary(m1.2)
+m1.1 %>%
+  spread_draws(`b_.*`, regex = TRUE) %>%
+  select(b_segCantonese_K:b_avg_phone_dur_z) %>%
+  pivot_longer(b_segCantonese_K:b_avg_phone_dur_z) %>%
+  ggplot(aes(x=value)) +
+    geom_density() +
+    facet_wrap(~name)
+
 ```
 
+
+```{r}
+library(tidybayes)
+```
+
+
+```{r}
+m1.1 %>%
+  get_variables()
+
+draws <- m1.1 %>%
+  spread_draws(r_talker[talker,segment]) %>%
+    separate(segment, into = c('language', 'phone')) %>%
+    mutate(
+      language = str_replace(language, 'seg', ''),
+      phone = as_factor(phone))
+
+levels(draws$phone) <- c('P', 'T', 'K')
+
+```
+
+```{r}
+fitted
+```
+
+
+```{r fig.width=8, fig.height=10}
+draws %>%
+  ggplot(aes(y = phone, x = r_talker, color=language)) +
+  stat_halfeye() +
+  facet_wrap(~talker)
+
+```
 
 
 ## Frequentist model
 
-
+Didn't converge -- going bayesian
 ```{r}
 mod <- lmer(
   formula = vot_z ~ 1 + segment * language + avg_phone_dur_z + is_post_pausal + (segment * language | talker) + (1 | word),
@@ -106,27 +153,15 @@ mod <- lmer(
   )
 ```
 
-control = lmerControl(optimizer="bobyqa",optCtrl=list(maxfun=2e5))
-
-
 ```{r}
-AF1 <- allFit(mod, verbose=TRUE, parallel = "multicore")
+# AF1 <- allFit(mod, verbose=TRUE, parallel = "multicore")
 #saveRDS(AF1, 'fits/allFit_vot_uniformity.rds')
 AF1 <- readRDS('fits/allFit_vot_uniformity.rds')
 
-AF1$bobyqa
-```
+#There were no warnings or convergence issues with the bobyqa optimizer (or: optimx.L-BFGS-B; nloptwrap.NLOPT_LN_BOBYQA); others had "Model failed to converge with 1 negative eigenvalue" like errors
 
-There were no warnings or convergence issues with the bobyqa optimizer (or: optimx.L-BFGS-B; nloptwrap.NLOPT_LN_BOBYQA); others had "Model failed to converge with 1 negative eigenvalue" like errors
-```{r}
 mod_r1 <- AF1$bobyqa
 summary(mod_r1)
-```
-
-
-```{r fig.width=4, fig.height=4}
-library("car")
-qqPlot(resid(mod_r1))
 ```
 
 
