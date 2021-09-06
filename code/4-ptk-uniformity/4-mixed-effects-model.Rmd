@@ -58,40 +58,68 @@ Set up and inspect weighted effect coding
 df$is_post_pausal <- as_factor(df$is_post_pausal)
 contrasts(df$is_post_pausal) <- contr.wec(x=df$is_post_pausal, omitted = FALSE)
 contrasts(df$is_post_pausal)
-# 
-# df$segment <- as_factor(df$segment)
-# contrasts(df$segment) <- contr.wec(x=df$segment, omitted = 'p')
-# contrasts(df$segment)
-# 
-# df$language <- as_factor(df$language)
-# contrasts(df$language) <-  contr.wec(x=df$language, omitted = 'Cantonese')
-# contrasts(df$language)
+
+df$segment <- as_factor(df$segment)
+contrasts(df$segment) <- contr.wec(x=df$segment, omitted = 'p')
+contrasts(df$segment)
+
+df$language <- as_factor(df$language)
+contrasts(df$language) <-  contr.wec(x=df$language, omitted = 'Cantonese')
+contrasts(df$language)
 ```
 
 Inspect the dataframe
 ```{r}
 df <- df %>%
-  mutate(seg = paste(language, str_to_upper(segment), sep = '_'))
+  mutate(seg = as_factor(paste(language, str_to_upper(segment), sep = '_')))
+
+levels(df$seg) <- c('Cantonese_P', 'Cantonese_T', 'Cantonese_K', 'English_P', 'English_T', 'English_K')
+
+contrasts(df$seg)
+
 ```
 
-
+Follows Krushke's approach from https://solomonkurz.netlify.app/post/2020-12-09-multilevel-models-and-the-index-variable-approach/ 
 ```{r}
 get_prior(
-  formula = vot_ms ~ 0 + seg + is_post_pausal + avg_phone_dur_z + (0 + seg | talker) + (1|word),
-  family = lognormal(),
-  data = df
+    formula = vot_z ~ 0 + seg + avg_phone_dur_z + is_post_pausal + (0 + seg | talker) + (1 | word),
+    family = gaussian(),
+    data = df
 )
 ```
 
+fit2 <- 
+  brm(data = d, 
+      family = binomial,
+      pulled_left | trials(1) ~ 1 + (1 | actor) + (1 | treatment) + (1 | actor:treatment),
+      prior = c(prior(normal(0, 1), class = Intercept),
+                prior(exponential(1), class = sd)),
+      cores = 4, seed = 1)
+
 ```{r}
 m <- 
-  brm(formula = vot_ms ~ 0 + seg + is_post_pausal + avg_phone_dur_z + (0 + seg | talker) + (1 | word),
-      family = gaussian(),
-      data = df,
-      prior = prior(normal(0, 1), class = b),
-      chains = 5, cores = 5, iter = 2000, warmup = 1000,
-      file = 'fits/m1.v7'
+  brm(
+    formula = vot_ms ~ 0 + seg + avg_phone_dur_ms + is_post_pausal + (0 + seg | talker) + (1 | word),
+    family = gaussian(),
+    data = df,
+    prior = prior(normal(0, 1), class = b),
+    chains = 5, cores = 5, iter = 2000, warmup = 1000,
+    file = 'fits/m.gaussian.1'
   )
+summary(m)
+```
+
+```{r}
+posterior_samples(m) %>% 
+  select(starts_with("sd")) %>% 
+  pivot_longer(everything()) %>% 
+  ggplot(aes(x = value, y = name)) +
+  stat_halfeye(.width = .95, size = 1/2) +
+  scale_y_discrete(NULL, labels = ggplot2:::parse_safe) +
+  xlab("marginal posterior (log-odds scale)") +
+  theme(axis.text.y = element_text(hjust = 0),
+        axis.ticks.y = element_blank(),
+        panel.grid = element_blank())
 ```
 
 
@@ -113,9 +141,12 @@ library(tidybayes)
 
 
 ```{r}
-m1.1 %>%
+m %>%
   get_variables()
+```
 
+
+```{r}
 draws <- m1.1 %>%
   spread_draws(r_talker[talker,segment]) %>%
     separate(segment, into = c('language', 'phone')) %>%
