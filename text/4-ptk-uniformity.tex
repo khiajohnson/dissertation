@@ -209,11 +209,13 @@ In line with how Bayesian models emphasize parameter estimation in a probabilist
 
 \subsubsection{Modeling multilingual VOT}\label{ch4:sec:model}
 
-VOT was modeled with a multilevel linear model using the formula in \ref{ch4:num:formula}. While this does not represent the maximal model \citep{barr_2013_maximal}, it instead follows guidelines for parsimonious model building \citep{bates_2018_parsimonious}, in which the parameters of direct interest are included as random slopes, and the controlling parameters are not.
+VOT was modeled using a multilevel generallized linear with a log-normal repsonse variable distribution. While the formula in \ref{ch4:num:formula} does not represent the maximal model \citep{barr_2013_maximal}, it instead follows guidelines for parsimonious model building \citep{bates_2018_parsimonious}, in which the parameters of direct interest are included as random slopes, and the controlling parameters are not.
 
 \begin{equation}\label{ch4:num:formula}
-  \text{VOT} \sim 0 + \text{Phone} + \text{APD} + (0 + \text{Phone} + \text{APD }|\text{ Talker}) + (1 | \text{Pause}) + (1 | \text{Word})
+  \text{VOT (ms)} \sim 1 + \text{Place} \times \text{Language} + \text{APD} + \text{Pause} (1 + \text{Place} \times \text{Language }|\text{ Talker}) + (1\text{ }| \text{ Word})
 \end{equation}
+
+%     formula = vot_ms ~ 1 + segment * language + avg_phone_dur_z + is_post_pausal + (1 + segment * language | talker) + (1 | word),
 
 
 % The interpretation of the linear ME model needs to be fleshed out and related more clearly to your original research question(s)
@@ -226,7 +228,9 @@ Details about how the parameters were specified are as follows.
 
 \begin{description}
   \item[VOT] was the dependent variable---it was standardized, in order to facilite prior and ROPE specification. 
-  \item[Phone] encodes both place of articulation and language, such that there are six levels---one for each phone in each language. Phone uses index variable coding, as advocated for by \citet{mcelreath_2020_sr}. This means that the model estimates a separate intercept for each of the phones, but not an overall intercept. Ultimately, this facilitates the comparisons of interest.  
+  % \item[Phone] encodes both place of articulation and language, such that there are six levels---one for each phone in each language. Phone uses index variable coding, as advocated for by \citet{mcelreath_2020_sr}. This means that the model estimates a separate intercept for each of the phones, but not an overall intercept. Ultimately, this facilitates the comparisons of interest.
+  \item[Place] \hl{get from old version!}
+  \item[Language] \hl{get from old version!}
   \item[Average Phone Duration, ``APD'',] represents the average duration of phones within the word. It was calculated as the difference between the word's AutoVOT-estimated onset and the force-aligned word offset, divided by the number of segments in the canonical form of the word. As noted earlier, average phone duration serves as a proxy for local speaking rate. A word-internal measure is desirable, as many tokens were preceded by a pause and thus lack the preceding context from which to calculate it. Average phone duration was also standardized. 
   \item[(Preceding) Pause] indicates whether or not the token occurred after a pause or not. Pauses were defined as X. Preceding pause was treated as a grouping parameter.
   \item[Word] ... 

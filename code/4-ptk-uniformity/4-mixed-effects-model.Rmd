@@ -18,6 +18,7 @@ library(wec)
 library(emmeans)
 library(brms)
 library(ggthemes)
+library(tidybayes)
 
 options(scipen=999)
 
@@ -43,8 +44,9 @@ df
 
 ```{r}
 df %>%
-  ggplot(aes(x=vot_ms)) + 
-  geom_density()
+  ggplot(aes(x=vot_ms, color = language, fill=language)) + 
+  geom_histogram(alpha=0.5)  +
+  facet_grid(~segment)
 ```
 
 Center VOT and standardize average phone duration
@@ -68,48 +70,32 @@ contrasts(df$language) <-  contr.wec(x=df$language, omitted = 'Cantonese')
 contrasts(df$language)
 ```
 
-Inspect the dataframe
-```{r}
-df <- df %>%
-  mutate(seg = as_factor(paste(language, str_to_upper(segment), sep = '_')))
-
-levels(df$seg) <- c('Cantonese_P', 'Cantonese_T', 'Cantonese_K', 'English_P', 'English_T', 'English_K')
-
-contrasts(df$seg)
-
-```
-
 Follows Krushke's approach from https://solomonkurz.netlify.app/post/2020-12-09-multilevel-models-and-the-index-variable-approach/ 
 ```{r}
 get_prior(
-    formula = vot_z ~ 0 + seg + avg_phone_dur_z + is_post_pausal + (0 + seg | talker) + (1 | word),
-    family = gaussian(),
+    formula = vot_ms ~ 1 + segment * language + avg_phone_dur_z + is_post_pausal + (1 + segment * language | talker) + (1 | word),
+    family = lognormal(),
     data = df
 )
 ```
 
-fit2 <- 
-  brm(data = d, 
-      family = binomial,
-      pulled_left | trials(1) ~ 1 + (1 | actor) + (1 | treatment) + (1 | actor:treatment),
-      prior = c(prior(normal(0, 1), class = Intercept),
-                prior(exponential(1), class = sd)),
-      cores = 4, seed = 1)
-
 ```{r}
 m <- 
   brm(
-    formula = vot_ms ~ 0 + seg + avg_phone_dur_ms + is_post_pausal + (0 + seg | talker) + (1 | word),
+    formula = vot_ms ~ 1 + segment * language + avg_phone_dur_z + is_post_pausal + (1 + segment * language | talker) + (1 | word),
     family = gaussian(),
     data = df,
-    prior = prior(normal(0, 1), class = b),
-    chains = 5, cores = 5, iter = 2000, warmup = 1000,
-    file = 'fits/m.gaussian.1'
+    prior = c(
+      prior(normal(4, 0.5), class = Intercept), # in log ms, this restrict the mean mostly to the 20 to 148 ms range
+      prior(normal(0, 1), class = b), # everything else is normalized
+      prior(lkj(2), class = cor) # what mcelreath does
+      ),
+    chains = 4, cores = 4, iter = 5000, warmup = 2500,
+    file = 'fits/m.gaussian.3'
   )
-summary(m)
 ```
 
-```{r}
+```{r fig.height=8}
 posterior_samples(m) %>% 
   select(starts_with("sd")) %>% 
   pivot_longer(everything()) %>% 
@@ -122,54 +108,27 @@ posterior_samples(m) %>%
         panel.grid = element_blank())
 ```
 
-
-```{r}
-m1.1 %>%
-  spread_draws(`b_.*`, regex = TRUE) %>%
-  select(b_segCantonese_K:b_avg_phone_dur_z) %>%
-  pivot_longer(b_segCantonese_K:b_avg_phone_dur_z) %>%
-  ggplot(aes(x=value)) +
-    geom_density() +
-    facet_wrap(~name)
-
-```
-
-
-```{r}
-library(tidybayes)
-```
-
-
+Get variable names for use in later plotting
 ```{r}
 m %>%
-  get_variables()
+  get_variables %>%
+  head(100)
 ```
 
-
+Model checks
 ```{r}
-draws <- m1.1 %>%
-  spread_draws(r_talker[talker,segment]) %>%
-    separate(segment, into = c('language', 'phone')) %>%
-    mutate(
-      language = str_replace(language, 'seg', ''),
-      phone = as_factor(phone))
-
-levels(draws$phone) <- c('P', 'T', 'K')
-
+mcmc_plot(m, type='rhat_hist')
+mcmc_plot(m, type='neff_hist')
 ```
 
 ```{r}
-fitted
+plot(m)
 ```
 
-
-```{r fig.width=8, fig.height=10}
-draws %>%
-  ggplot(aes(y = phone, x = r_talker, color=language)) +
-  stat_halfeye() +
-  facet_wrap(~talker)
-
+```{r}
+m
 ```
+
 
 
 ## Frequentist model
