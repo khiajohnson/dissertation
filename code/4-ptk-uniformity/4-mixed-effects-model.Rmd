@@ -42,17 +42,13 @@ df <- read_csv('dfs/ptk_clean_20210602.csv')
 df
 ```
 
-```{r}
-df %>%
-  ggplot(aes(x=vot_ms, color = language, fill=language)) + 
-  geom_histogram(alpha=0.5)  +
-  facet_grid(~segment)
-```
 
 Center VOT and standardize average phone duration
 ```{r}
 df$vot_z <- scale(df$vot_ms, center=TRUE, scale=TRUE)
-df$avg_phone_dur_z <- scale(df$avg_phone_dur_ms, center=TRUE, scale=TRUE)
+df$vot_scaled <- scale(df$vot_ms, center=FALSE, scale=TRUE)
+
+df$apd_z <- scale(df$avg_phone_dur_ms, center=TRUE, scale=TRUE)
 ```
 
 Set up and inspect weighted effect coding
@@ -70,10 +66,31 @@ contrasts(df$language) <-  contr.wec(x=df$language, omitted = 'Cantonese')
 contrasts(df$language)
 ```
 
+
+```{r}
+df <- df %>%
+  mutate(phone = as_factor(paste(str_sub(language, start = 1L, end = 3L), str_to_upper(segment), sep = '')),
+         pause = is_post_pausal)
+
+levels(df$phone) <- c('CanP', 'CanT', 'CanK', 'EngP', 'EngT', 'EngK')
+```
+
+```{r}
+df %>%
+  ggplot(aes(x=vot_scaled)) +
+  geom_histogram()
+
+df %>%
+  ggplot(aes(x=vot_ms)) +
+  geom_histogram()
+```
+
+
+
 Follows Krushke's approach from https://solomonkurz.netlify.app/post/2020-12-09-multilevel-models-and-the-index-variable-approach/ 
 ```{r}
 get_prior(
-    formula = vot_ms ~ 1 + segment * language + avg_phone_dur_z + is_post_pausal + (1 + segment * language | talker) + (1 | word),
+    formula = vot_scaled ~ 0 + phone + apd_z + pause + (0 + phone | talker) + (1 | word),
     family = lognormal(),
     data = df
 )
@@ -82,37 +99,24 @@ get_prior(
 ```{r}
 m <- 
   brm(
-    formula = vot_ms ~ 1 + segment * language + avg_phone_dur_z + is_post_pausal + (1 + segment * language | talker) + (1 | word),
-    family = gaussian(),
+    formula = vot_scaled ~ 0 + phone + apd_z + pause + (0 + phone | talker) + (1 | word),
+    family = lognormal(),
     data = df,
     prior = c(
-      prior(normal(4, 0.5), class = Intercept), # in log ms, this restrict the mean mostly to the 20 to 148 ms range
-      prior(normal(0, 1), class = b), # everything else is normalized
+      # prior(lognormal(0, 1), class = b, coef = phoneCanP), # restricting to pos values given index var coding
+      # prior(lognormal(0, 1), class = b, coef = phoneCanT), # note that values *scaled* but not centered
+      # prior(lognormal(0, 1), class = b, coef = phoneCanK),
+      # prior(lognormal(0, 1), class = b, coef = phoneEngP),
+      # prior(lognormal(0, 1), class = b, coef = phoneEngT),
+      # prior(lognormal(0, 1), class = b, coef = phoneEngK),
+      # prior(normal(0, 1), class = b, coef = apd_z), 
+      # prior(normal(0, 1), class = b, coef = pauseTRUE),
+      prior(normal(0, 1), class = b),
       prior(lkj(2), class = cor) # what mcelreath does
       ),
-    chains = 4, cores = 4, iter = 5000, warmup = 2500,
-    file = 'fits/m.gaussian.3'
+    chains = 4, cores = 4, iter = 2000, warmup = 1000,
+    file = 'fits/m.lognormal.1'
   )
-```
-
-```{r fig.height=8}
-posterior_samples(m) %>% 
-  select(starts_with("sd")) %>% 
-  pivot_longer(everything()) %>% 
-  ggplot(aes(x = value, y = name)) +
-  stat_halfeye(.width = .95, size = 1/2) +
-  scale_y_discrete(NULL, labels = ggplot2:::parse_safe) +
-  xlab("marginal posterior (log-odds scale)") +
-  theme(axis.text.y = element_text(hjust = 0),
-        axis.ticks.y = element_blank(),
-        panel.grid = element_blank())
-```
-
-Get variable names for use in later plotting
-```{r}
-m %>%
-  get_variables %>%
-  head(100)
 ```
 
 Model checks
@@ -122,11 +126,58 @@ mcmc_plot(m, type='neff_hist')
 ```
 
 ```{r}
-plot(m)
+summary(m)
 ```
 
 ```{r}
-m
+exp(-0.33)
+```
+
+```{r fig.height=5, fig.width=5}
+posterior_samples(m) %>% 
+  select(starts_with("sd")) %>% 
+  pivot_longer(everything()) %>% 
+  ggplot(aes(x = value, y = name)) +
+  stat_halfeye(.width = .95, size = 1/2) +
+  scale_y_discrete(NULL, labels = ggplot2:::parse_safe)
+```
+
+Get variable names for use in later plotting
+```{r}
+m %>%
+  get_variables %>%
+  head(32)
+```
+
+```{r}
+sd(df$vot_ms)
+```
+
+
+```{r fig.height=5, fig.width=5}
+posterior_samples(m) %>% 
+  select(starts_with("b_")) %>% 
+  pivot_longer(everything()) %>% 
+  filter(name != 'b_Intercept') %>%
+  mutate(expval = exp(value)*sd(df$vot_ms)) %>%
+  ggplot(aes(x = expval, y = name)) +
+  stat_halfeye(.width = .95, size = 1/2) +
+  scale_y_discrete(NULL, labels = ggplot2:::parse_safe)
+```
+
+
+```{r fig.width=10, fig.height=8}
+levels(df$segment) <- c('p', 't', 'k')
+
+df %>%
+  ggplot(aes(y=vot_ms, x=segment, fill=language)) +
+  geom_boxplot(alpha=0.5) +
+  scale_fill_colorblind() +
+  facet_wrap(~talker)
+```
+
+```{r}
+
 ```
 
 
