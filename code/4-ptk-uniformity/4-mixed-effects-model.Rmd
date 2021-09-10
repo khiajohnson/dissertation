@@ -19,6 +19,7 @@ library(emmeans)
 library(brms)
 library(ggthemes)
 library(tidybayes)
+library(bayesplot)
 
 options(scipen=999)
 
@@ -76,20 +77,8 @@ df %>%
   geom_histogram()
 ```
 
-```{r}
-df
-```
-
 
 Same model structure as before, but bayesian and lognormal
-```{r}
-get_prior(
-  vot_scaled ~ 1 + segment * language + apd_z + is_post_pausal + (1 + segment * language | talker) + (1 | word),
-  family = lognormal(),
-  data = df
-)
-```
-
 ```{r}
 m <- 
   brm(
@@ -106,18 +95,26 @@ m <-
   )
 ```
 
-
-```{r}
-summary(m)
-```
-
-
 Model checks
 ```{r}
 mcmc_plot(m, type='rhat_hist')
 mcmc_plot(m, type='neff_hist')
 ```
 
+Get variable names for use in later plotting
+```{r}
+as_tibble(get_variables(m))
+```
+
+```{r}
+posterior_samples(m) %>% 
+  select(starts_with("b_")) %>% 
+  pivot_longer(everything()) %>% 
+  filter(name != 'b_Intercept') %>%
+  ggplot(aes(x = value, y = name)) +
+  stat_halfeye(.width = .95, size = 1/2) +
+  scale_y_discrete(NULL, labels = ggplot2:::parse_safe)
+```
 
 ```{r }
 posterior_samples(m) %>% 
@@ -126,11 +123,6 @@ posterior_samples(m) %>%
   ggplot(aes(x = value, y = name)) +
   stat_halfeye(.width = .95, size = 1/2) +
   scale_y_discrete(NULL, labels = ggplot2:::parse_safe)
-```
-
-Get variable names for use in later plotting
-```{r}
-as_tibble(get_variables(m))
 ```
 
 ```{r fig.height=10, fig.width=5}
@@ -149,25 +141,16 @@ posterior_samples(m) %>%
 
 
 
+
+
+
 ```{r}
-posterior_samples(m) %>% 
-  select(starts_with("b_")) %>% 
-  pivot_longer(everything()) %>% 
-  filter(name != 'b_Intercept') %>%
-  ggplot(aes(x = value, y = name)) +
-  stat_halfeye(.width = .95, size = 1/2) +
-  scale_y_discrete(NULL, labels = ggplot2:::parse_safe)
-```
-
-
-```{r fig.width=10, fig.height=8}
 levels(df$segment) <- c('p', 't', 'k')
 
 df %>%
   ggplot(aes(y=vot_ms, x=segment, fill=language)) +
   geom_boxplot(alpha=0.5) +
-  scale_fill_colorblind() +
-  facet_wrap(~talker)
+  scale_fill_colorblind()
 ```
 
 
