@@ -66,15 +66,6 @@ contrasts(df$language) <-  contr.wec(x=df$language, omitted = 'Cantonese')
 contrasts(df$language)
 ```
 
-
-```{r}
-df <- df %>%
-  mutate(phone = as_factor(paste(str_sub(language, start = 1L, end = 3L), str_to_upper(segment), sep = '')),
-         pause = is_post_pausal)
-
-levels(df$phone) <- c('CanP', 'CanT', 'CanK', 'EngP', 'EngT', 'EngK')
-```
-
 ```{r}
 df %>%
   ggplot(aes(x=vot_scaled)) +
@@ -85,39 +76,41 @@ df %>%
   geom_histogram()
 ```
 
+```{r}
+df
+```
 
 
-Follows Krushke's approach from https://solomonkurz.netlify.app/post/2020-12-09-multilevel-models-and-the-index-variable-approach/ 
+Same model structure as before, but bayesian and lognormal
 ```{r}
 get_prior(
-    formula = vot_scaled ~ 0 + phone + apd_z + pause + (0 + phone | talker) + (1 | word),
-    family = lognormal(),
-    data = df
+  vot_scaled ~ 1 + segment * language + apd_z + is_post_pausal + (1 + segment * language | talker) + (1 | word),
+  family = lognormal(),
+  data = df
 )
 ```
 
 ```{r}
 m <- 
   brm(
-    formula = vot_scaled ~ 0 + phone + apd_z + pause + (0 + phone | talker) + (1 | word),
+  vot_scaled ~ 1 + segment * language + apd_z + is_post_pausal + (1 + segment * language | talker) + (1 | word),
     family = lognormal(),
     data = df,
     prior = c(
-      # prior(lognormal(0, 1), class = b, coef = phoneCanP), # restricting to pos values given index var coding
-      # prior(lognormal(0, 1), class = b, coef = phoneCanT), # note that values *scaled* but not centered
-      # prior(lognormal(0, 1), class = b, coef = phoneCanK),
-      # prior(lognormal(0, 1), class = b, coef = phoneEngP),
-      # prior(lognormal(0, 1), class = b, coef = phoneEngT),
-      # prior(lognormal(0, 1), class = b, coef = phoneEngK),
-      # prior(normal(0, 1), class = b, coef = apd_z), 
-      # prior(normal(0, 1), class = b, coef = pauseTRUE),
+      prior(student_t(3, 0, 2.5), class = Intercept),
       prior(normal(0, 1), class = b),
-      prior(lkj(2), class = cor) # what mcelreath does
+      prior(lkj(2), class = cor) 
       ),
-    chains = 4, cores = 4, iter = 2000, warmup = 1000,
-    file = 'fits/m.lognormal.1'
+    chains = 4, cores = 4, iter = 5000, warmup = 2500,
+    file = 'fits/m.lognormal.final'
   )
 ```
+
+
+```{r}
+summary(m)
+```
+
 
 Model checks
 ```{r}
@@ -125,15 +118,8 @@ mcmc_plot(m, type='rhat_hist')
 mcmc_plot(m, type='neff_hist')
 ```
 
-```{r}
-summary(m)
-```
 
-```{r}
-exp(-0.33)
-```
-
-```{r fig.height=5, fig.width=5}
+```{r }
 posterior_samples(m) %>% 
   select(starts_with("sd")) %>% 
   pivot_longer(everything()) %>% 
@@ -144,23 +130,31 @@ posterior_samples(m) %>%
 
 Get variable names for use in later plotting
 ```{r}
-m %>%
-  get_variables %>%
-  head(32)
+as_tibble(get_variables(m))
 ```
+
+```{r fig.height=10, fig.width=5}
+posterior_samples(m) %>% 
+  select(starts_with("r_talker")) %>% 
+  pivot_longer(everything()) %>% 
+  separate(name, into = c('talker', 'parameter'), sep = ',') %>%
+  mutate(talker = str_replace(talker, 'r_talker\\[', ''),
+         parameter = str_replace(parameter, '\\]','')) %>%
+  
+  ggplot(aes(x = value, y = talker, fill = parameter)) +
+  stat_halfeye(.width = .95, size = 1/2, alpha=0.5) +
+  scale_y_discrete(NULL, labels = ggplot2:::parse_safe) +
+  scale_fill_colorblind()
+```
+
+
 
 ```{r}
-sd(df$vot_ms)
-```
-
-
-```{r fig.height=5, fig.width=5}
 posterior_samples(m) %>% 
   select(starts_with("b_")) %>% 
   pivot_longer(everything()) %>% 
   filter(name != 'b_Intercept') %>%
-  mutate(expval = exp(value)*sd(df$vot_ms)) %>%
-  ggplot(aes(x = expval, y = name)) +
+  ggplot(aes(x = value, y = name)) +
   stat_halfeye(.width = .95, size = 1/2) +
   scale_y_discrete(NULL, labels = ggplot2:::parse_safe)
 ```
@@ -176,9 +170,15 @@ df %>%
   facet_wrap(~talker)
 ```
 
-```{r}
 
-```
+
+
+
+
+
+
+
+
 
 
 
