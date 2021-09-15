@@ -142,13 +142,13 @@ cket <- jointplot(dfsummary, dfsummary$`Cantonese K`, 'Cantonese /k/', dfsummary
 ```
 
 ```{r}
-p <- grid.arrange(cpt, cpk, ctk, ept, epk, etk, cep, cet, cek, ncol=3)
-ggsave('../../text/figures/ch4_correlations1_5in.png', plot=p, height = 6, width = 6, units='in')
+p <- grid.arrange(cpt, cpk, ctk, ept, epk, etk, ncol=3)
+ggsave('../../text/figures/ch4_correlations1_5in.png', plot=p, height = 4, width = 6, units='in')
 ```
 
 ```{r}
-p <- grid.arrange(cpet, cpek, ctep, ctek, ckep, cket, ncol=3)
-ggsave('../../text/figures/ch4_correlations2_5in.png',plot=p, height = 4, width = 6, units='in')
+p <- grid.arrange(cep, cet, cek, cpet, cpek, ctep, ctek, ckep, cket, ncol=3)
+ggsave('../../text/figures/ch4_correlations2_5in.png',plot=p, height = 6, width = 6, units='in')
 
 ```
 
