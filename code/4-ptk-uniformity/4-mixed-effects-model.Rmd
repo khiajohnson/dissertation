@@ -147,6 +147,11 @@ summary(m)
 ```
 
 ```{r}
+0.16*sd(df$vot_ms)
+```
+
+
+```{r}
 popsamples <- posterior_samples(m) %>% 
   select(
     Intercept = b_Intercept,
