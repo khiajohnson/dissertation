@@ -137,6 +137,11 @@ round(fixef(m),2)
 ```
 
 ```{r}
+m
+```
+
+
+```{r}
 summary(m)
 
 ```
@@ -221,21 +226,52 @@ ggsave('../../text/figures/ch4_grppar_5in.png', height = 3, width = 5, units='in
 ```
 
 ```{r fig.height=10, fig.width=12}
-posterior_samples(m) %>% 
+rsamples <- posterior_samples(m) %>% 
   select(starts_with("r_talker")) %>% 
   pivot_longer(everything()) %>% 
   separate(name, into = c('talker', 'parameter'), sep = ',') %>%
   mutate(talker = str_replace(talker, 'r_talker\\[', ''),
-         parameter = str_replace(parameter, '\\]','')) %>%
-  ggplot(aes(x = value, y = talker, fill = parameter)) +
-  stat_halfeye(.width = .95, size = 1/2, alpha=0.5) +
-  scale_y_discrete(NULL, labels = ggplot2:::parse_safe) +
-  scale_fill_colorblind() + 
-  geom_vline(xintercept = 0) +
-  annotate("rect", xmin=-0.1, xmax=0.1, ymin=-Inf, ymax=Inf, fill = 'black' , alpha=0.5)
+         parameter = str_replace(parameter, '\\]',''),
+         parameter = str_replace(parameter, 'languageEnglish', 'Langauge (English)'),
+         parameter = str_replace(parameter, 'segmentk', 'Place (K)'),
+         parameter = str_replace(parameter, 'segmentt', 'Place (T)'),
+         parameter = str_replace(parameter, ':', ' ×\n'),
+         parameter = as_factor(parameter)
+         )
 
-  # facet_wrap(~parameter, ncol=6)
+levels(rsamples$parameter) <- c("Intercept", "Place (T)", "Place (K)", "Langauge (English)", "Place (T) ×\nLangauge (English)", "Place (K) ×\nLangauge (English)")
 ```
+
+```{r fig.width=5, fig.height=7}
+rsamples %>%
+  ggplot(aes(x = value, y = talker, ))+#color = parameter)) +
+  stat_pointinterval(shape=18) +
+  geom_vline(xintercept = 0) +
+  scale_y_discrete(limits = rev) +
+  annotate("rect", xmin=-0.1, xmax=0.1, ymin=0, ymax=Inf, fill = '#FEB77EFF' , alpha=0.5) +
+  facet_wrap(~parameter, ncol=3) +
+  ylab('Talker') + 
+  xlab('Estimate')
+
+ggsave('../../text/figures/ch4_grpparvar_5in.png', height = 8.05, width = 5.75, units='in')
+
+```
+
+```{r}
+7*1.15
+5*1.15
+```
+
+
+```{r}
+posterior_samples(m) %>% 
+  select(starts_with("r_word")) %>% 
+  pivot_longer(everything()) %>%
+  group_by(name) %>%
+  summarise(mv=mean(value)) %>%
+  arrange(desc(mv))
+```
+
 
 This makes for a ~5 ms interval that tracks with the gradient effects in McMurray et al (2002)
 ```{r}

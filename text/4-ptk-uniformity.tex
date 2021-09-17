@@ -244,6 +244,17 @@ One of the main benefits of multilevel modeling is partial pooling, where inform
 
 The interaction for Language $\times$ Place was included in the model---it directly addresses the research question relating to whether or not bilinguals maintain a difference across languages for these sounds. Additionally, the model includes partial pooling (i.e., random intercepts) for Word and Talker, as well as for the Language, Place, and Language $\times$ Place terms (i.e., random slopes). 
 
+As noted above, the priors were set to be weakly informative and regularizing, motivated by the discussions in \citet{gelman_2017_prior} and \citet{mcelreath_2020_sr}. Specifically, the priors were set at follows: 
+
+\begin{description}
+	\item[Intercept] Student's \textit{t} distribution with $\nu = 3$, $\mu = 0$, and $\sigma = 2.5$
+	\item[Population-level parameters] Normal distribution with $\mu = 0$ and $\sigma = 1$
+	\item[Group-level standard deviations] Half Student's \textit{t} distribution with $\nu = 3$, $\mu = 0$, and $\sigma = 2.5$
+	\item[Group-level correlations] LKJ distribution with $\eta=2$
+\end{description}
+
+The model was fit using four chains with 5000 iterations (2500 warmup) for a total of 10,000 post-warmup samples. The chains were well-mixed, based on a visual inspection of trace plots, a lack of divergent transitions, and r-hat values below 1.05. Additionally, the effective sample size was sufficiently large for all parameters \citep[for discussion, see][]{vasishth_2018_bayesian}.
+
 \subsubsection{Results}\label{ch4:sec:results}
 
 A summary of the model's population-level parameters is provided numerically in Table \ref{ch4:tab:poppar} and visually in Figure \ref{ch4:fig:poppar}. \hl{Including all of these is probably not necessary, thoughts?} The population parameters indicate that VOT is modulated by language, local speaking rate, and the presence of a preceding pause. Recall that the categorical population-level parameters were weighted effect coded---this facilitates the interpretation of simple effects in the presence of interaction terms.
@@ -289,7 +300,7 @@ The control parameters behaved as expected. VOT was longer when the local speaki
   \end{center}
 \end{figure}
 
-While the main takeaway from the population parameters is the difference in VOT across languages, the model also offers insight into the sources of variation in this population. A summary of the variability in the model's grouping parameters is provided numerically in Table \ref{ch4:tab:grppar} and visually in Figure \ref{ch4:fig:grppar}.
+While the main takeaway from the population parameters is the difference in VOT across languages, the model also offers insight into the sources of variation in this population. A summary of the variability in the model's grouping parameters is provided numerically in Table \ref{ch4:tab:grppar} and visually in Figure \ref{ch4:fig:grppar}. The largest source of variability in the model is in the Word intercepts ($\beta=$ 0.44). The second-largest source of variability is in the Talker intercepts ($\beta=$ 0.25). While there is variability across talkers in the random slopes, few are meaningfully different from the corresponding population-level parameters---this is evident in Figure \ref{ch4:fig:grpparvar}, which depicts the by-Talker intercept and slope deviations from the model. A sizable plurality of talker intercept posterior distributions falls outside of the ROPE, while the vast majority of the by-talker slopes overlap substantially or fall entirely within the ROPE. In line with \citet{chodroff_2017_structure}, this result highlights between-talker variability and within-talker stability. 
 
 \begin{table}[htbp]
   \caption{Group parameter variability summary.}
@@ -320,17 +331,13 @@ While the main takeaway from the population parameters is the difference in VOT 
   \end{center}
 \end{figure}
 
-
-
-% Add full table of LME results and some data viz
-
-% At an $\alpha=0.01$ threshold, the model returned a significant intercept ($\beta=0.18$, $SE=0.49$, $p<0.001$), significant main effects for Average Phone Duration ($\beta=0.32$, $SE=0.01$, $p<0.001$) and Preceding Pause (True; $\beta=0.12$, $SE=0.02$, $p<0.001$), as well as significant simple effect for Language (English; $\beta=0.15$, $SE=0.03$, $p<0.001$), indicating that VOT was longer at slower speech rates, after pauses, and in English, compared to the weighted mean. Neither Place nor its interaction with Language was significant. As one of the linear mixed-effects model goals was to assess the effect of Language across places of articulation, pairwise post-hoc comparisons were computed for Language $\times$ Place using the \textit{emmeans} package \citep{lenth_2021_emmeans}, with a confidence level of 0.95, and the Kenward-Roger degrees-of-freedom method. The contrast between languages was significant for /t/ ($\beta=-0.38$, $SE=0.09$, $p<0.001$) and /k/ ($\beta=-0.53$, $SE=0.10$, $p<0.001$), but not for /p/ ($\beta=-0.09$, $SE=0.11$, $p=0.39$): VOT is consistently longer in English for /t/ and /k/.
-
-% The second goal of the mixed-effects analysis was to gain insight into the sources of variation through the random effects structure. Of the random effects, the intercepts for Word ($SD=0.20$) and Talker ($SD=0.06$) accounted for the most variation, followed by the by-Talker slope standard deviations for Language ($SD=0.005$), Place T ($SD=0.01$), Place T $\times$ Language ($SD=0.005$), Place K ($SD=0.004$) and Place K $\times$ Language ($SD=0.002$). Talkers and words differ substantially in mean VOT, while the slopes for Place and Language effects appear more consistent across talkers.
-
-
-
-
+\begin{figure}[htbp]
+  \begin{center}
+  \includegraphics[width=0.9\linewidth]{figures/ch4_grpparvar_5in.png} 
+  \caption{This figure...}
+  \label{ch4:fig:grpparvar}
+  \end{center}
+\end{figure}
 
 \section{Discussion}
 % ADD:
