@@ -196,29 +196,36 @@ While these relationships indicate some degree of articulatory reuse, the overal
 
 The next steps in \citeauthor{chodroff_2017_structure}'s \citeyearpar{chodroff_2017_structure} methods focus on validating the strength of the correlations. Their approach includes estimating confidence intervals for the correlations using a bootstrap procedure. In a later paper, \citet{chodroff_2019_covariation} simulate what would emerge from a purely ordinal relationship between stops and demonstrate that the observed correlations are much stronger—ultimately arguing for a uniformity constraint on phonetic variation. Given that the correlations found in this chapter are drastically lower and largely do not adhere to the expected ordinal relationships, the remainder of this analysis takes a different approach.
 
-\subsection{Linear mixed effect model}\label{ch4:sec:lmem}
+\subsection{Linear mixed-effects model}\label{ch4:sec:lmem}
 
-The analysis in the section leverages a Bayesian multilevel linear model to elucidate the sources of variation within and across talkers. As Bayesian modeling emphasizes the estimation of effect magnitudes, the model can be used to assess how talker's sound categories compare to one another while simultaneously accounting for factors known to influence long-lag VOT. This modeling approach is more in line with the generative modeling approach advocated for by \citet{haines_2020_theoretically}---in a way that the correlation and ordinal relationships analyses in the preceding sections are not. This section proceeds as follows. Section \ref{ch4:sec:bayesianinference} describes Bayesian modeling and inference in broad terms and points the reader towards sources for further reading. Section \ref{ch4:sec:model} motivates and describes the structure of the model used in this chapter. Lastly, Section \ref{ch4:sec:results} reports the results of the model. All code used in this analysis is available at \hl{a GitHub repository that will be made public later on}.
+The analysis in the section leverages a Bayesian multilevel linear model to elucidate the sources of variation within and across talkers. As Bayesian modeling emphasizes the estimation of effect magnitudes, the model can be used to assess how talker's sound categories compare to one another while simultaneously accounting for factors known to influence long-lag VOT. This modeling approach is more in line with the generative modeling approach advocated for by \citet{haines_2020_theoretically}---in a way that the correlation and ordinal relationships analyses in the preceding sections are not. Specifically, this approach retains the variation lost when working with means and also uses a response variable distribution that aligns with the constraints of the variable in question. 
+
+This section proceeds as follows. Section \ref{ch4:sec:bayesianinference} describes Bayesian modeling and inference in broad terms and points the reader towards sources for further reading on the topic. Section \ref{ch4:sec:model} motivates and describes the structure of the model used in this chapter. Lastly, Section \ref{ch4:sec:results} reports the results of the model. All code used in this analysis is available at \hl{a GitHub repository that will be made public later on}.
 
 \subsubsection{Bayesian inference}\label{ch4:sec:bayesianinference}
-The corpus sample was analyzed with a Bayesian multilevel linear model using the brms package in R \citep{burkner_2017_brms,r_2021}. The brms package provides a simple, formula-based interface to Stan---a widely used probabilistic programming language for estimating Bayesian statistical models \citep{stan_2021}. Bayesian models are desirable in the case of modeling multilingual VOT for both practical and theoretical reasons. Practically, they are not subject to the convergence problems that plague complex frequentist models. Theoretically, they allow for graded statements regarding the strength of evidence for all parameters, both population level (i.e., fixed effects) and group level (i.e., random effects) parameters. While there are many other benefits, readers are referred to \citeauthor{vasishth_2018_bayesian}'s \citeyearpar{vasishth_2018_bayesian} recent in-depth tutorial paper on Bayesian modeling in the phonetic sciences for further argumentation. 
+
+The corpus sample was analyzed with a Bayesian multilevel generalized linear model using the brms package in R \citep{burkner_2017_brms, r_2021}. The brms package provides a simple, formula-based interface to Stan---a widely used probabilistic programming language for estimating Bayesian statistical models via Hamiltonian Monte Carlo and No-U-Turn Sampling \citep{stan_2021}. Bayesian models are desirable in the case of modeling multilingual VOT for both practical and theoretical reasons. Practically, they are not subject to the convergence problems that plague comparable frequentist models. Theoretically, they allow for graded statements regarding the strength of evidence for all parameters, both population-level (i.e., fixed effects) and group-level (i.e., random effects) parameters. While there are many other benefits, readers are referred to \citeauthor{vasishth_2018_bayesian}'s \citeyearpar{vasishth_2018_bayesian} recent in-depth tutorial paper on Bayesian modeling in the phonetic sciences for further argumentation. 
 
 Inference in Bayesian models is based on the posterior distributions of parameters in the model, which reflect the range and probability of credible values for parameters. The posterior combines information from prior knowledge and the likelihood of observing the data given the specified model. While some Bayesian models use detailed and specific prior knowledge, it is perhaps more common to use weakly informative, regularizing priors \citep{gelman_2017_prior}, which constrain the parameter space to possible values and down weight extreme or unlikely values. The model described in the next section uses regularizing priors. 
 
-In line with how Bayesian models emphasize parameter estimation in a probabilistic framework, it is also possible to compare parameters. \citet{gelman_2012_multiple} argues that because of the rich probabilistic information in each parameter's posterior distribution, making multiple comparisons within the model is not problematic, as it is in the case of frequentist statistics. Further, while parameter estimation remains the focus, there are decision criteria that facilitate determining whether the difference between two parameters is important or not. One such technique is to use \citeauthor{kruschke_2011_rope}'s \citeyearpar{kruschke_2011_rope} ROPE+HDI method. The ROPE is a ``region of practical equivalence'' surrounding the null value. The HDI is the highest density interval typically used to describe Bayesian posterior distributions. \citeauthor{kruschke_2011_rope}'s \citeyearpar{kruschke_2011_rope} decision criterion is simple: if the HDI falls entirely within the ROPE, then the null value can be accepted; if the HDI falls entirely outside the ROPE, then it can be rejected; if there is overlap, then a decision should be withheld. In the case of standardized data, \citet{kruschke_2011_rope} recommends the convention of setting a ROPE to be [$-$0.1, 0.1]---half the size of a small Cohen's \textit{d} effect. While Bayesians tend to shy away from using decision criteria, it nonetheless provides a useful scaffolding for interpreting the magnitudes of standardized effects, when presented alongside the full posterior distributions. 
+While Bayesian modeling typically emphasizes parameter estimation in a probabilistic framework, there are decision criteria that facilitate hypothesis testing. One such technique is to use \citeauthor{kruschke_2011_rope}'s \citeyearpar{kruschke_2011_rope} ROPE+HDI method. The ROPE is a ``region of practical equivalence'' surrounding the null value. The HDI is the highest density interval typically used to describe Bayesian posterior distributions. \citeauthor{kruschke_2011_rope}'s \citeyearpar{kruschke_2011_rope} decision criterion is simple: if the HDI falls entirely within the ROPE, then the null value can be accepted; if the HDI falls entirely outside the ROPE, then it can be rejected; if there is overlap, then a decision should be withheld. In the case of standardized data, \citet{kruschke_2011_rope} recommends the convention of setting a ROPE to be [$-$0.1, 0.1]---half the size of a small Cohen's \textit{d} effect. While Bayesians tend to shy away from using decision criteria, it nonetheless provides a useful scaffolding for interpreting the magnitudes of standardized effects, when presented alongside the full posterior distributions. 
+
+% In line with how Bayesian models emphasize parameter estimation in a probabilistic framework, it is also possible to compare parameters. \citet{gelman_2012_multiple} argues that because of the rich probabilistic information in each parameter's posterior distribution, making multiple comparisons within the model is not problematic, as it is in the case of frequentist statistics. 
 
 \subsubsection{Modeling multilingual VOT}\label{ch4:sec:model}
 
-VOT was modeled using a multilevel generallized linear with a log-normal repsonse variable distribution. Using a log-normal response distribution is appropriate in the case of VOT, as possible long-lag VOT values are positive. Given this lower bound, it follows that the distribution will have a right tail. This is refelcted in prior work log-transforming VOT prior to linear modeling \citep[e.g.,][]{stuartsmith_2015_private}. It also represents one of the key tenets of building theoretically informed models, as advocated for by \citet{haines_2020_theoretically}. The model used in this section was the following:
+VOT was modeled using a Bayesian multilevel linear mixed-effects model. The model used in this section is provided in \ref{ch4:num:formula}. While the model is not the maximal model \citep{barr_2013_maximal}, it instead follows guidelines for parsimonious model building \citep{bates_2018_parsimonious}, in which the parameters of direct interest are included as random slopes, and the controlling parameters are not. 
+% Using a log-normal response distribution is appropriate for VOT, as long-lag VOT values can only be positive. The log-normal distribution is characterized by a lower bound of zero and a right tail. While modeling with a log-normal distribution is somewhat new to the field \citep[i.e., for response time:][]{haines_2020_theoretically}, prior work with VOT has used linear models with log-transformed VOT \citep[e.g.,][]{stuartsmith_2015_private}. 
+
+The model used in this section is provided in \ref{ch4:num:formula}. While the model is not the maximal model \citep{barr_2013_maximal}, it instead follows guidelines for parsimonious model building \citep{bates_2018_parsimonious}, in which the parameters of direct interest are included as random slopes, and the controlling parameters are not. 
 
 \begin{equation}
   \begin{aligned}\label{ch4:num:formula}
     \text{VOT } \sim \text{ 1 } + \text{ Place } \times \text{ Language } + \text{ Average Phone Duration } + \text{ Pause } + \text{ } \\
-    (\text{1 } + \text{ Place } \times \text{ Language }|\text{ Talker}) + (\text{1 }| \text{ Word}) \text{\medskip}
+    (\text{1 } + \text{ Place } \times \text{ Language }|\text{ Talker}) + (\text{1 }| \text{ Word})
   \end{aligned}
-\end{equation}
-
-So while the formula in \ref{ch4:num:formula} does not represent the maximal model \citep{barr_2013_maximal}, it instead follows guidelines for parsimonious model building \citep{bates_2018_parsimonious}, in which the parameters of direct interest are included as random slopes, and the controlling parameters are not. 
+\end{equation} 
+\newline
 
 % The interpretation of the linear ME model needs to be fleshed out and related more clearly to your original research question(s)
 % Frame this section as being motivated by the lack of strong uniformity, and by Chodroff's analysis of the random effects structure
@@ -227,12 +234,11 @@ So while the formula in \ref{ch4:num:formula} does not represent the maximal mod
 One of the main benefits of multilevel modeling is partial pooling, where information for different levels of a variable is shared across those levels. \citeauthor{mcelreath_2020_sr} argues that ``any batch of parameters with exchangeable index values can and probably should be pooled [where exchangeable] just means the index values have no true ordering'' \citeyearpar[][p. 435]{mcelreath_2020_sr}. Pooling can be done for both intercepts and slopes, much in the way that frequentist models allow for slopes and intercepts to vary in the random effects structure. As apparent in the formula in \ref{ch4:num:formula}, this model includes partial pooling for all of the parameters of interest. Details about how the parameters were specified are as follows.  
 
 \begin{description}
-  \item[VOT] was the dependent variable---it was scaled (i.e., divided by the standard deviation), in order to facilite the specification of priors and a ROPE. VOT was \textit{centered}, however, as the log-normal distribution requires positive values in the response variable distribution.
-  % \item[Phone] encodes both place of articulation and language, such that there are six levels---one for each phone in each language. Phone uses index variable coding, as advocated for by \citet{mcelreath_2020_sr}. This means that the model estimates a separate intercept for each of the phones, but not an overall intercept. Ultimately, this facilitates the comparisons of interest.
-  \item[Place] encodes place of articulation for the stops and has three levels. Following \citet{chodroff_2017_structure}, Place was weighted effect coded in order to account for unequal sample sizes across the three levels and to faciliate the interpretation of the simple effects in light of the interaction term \citep{brehm_2021_contrasts}. Coding was implemented using the \textit{wec} package \citep{nieuwenhuis_2017_weighted}, and results in reporting Place effects for T (weights: /p/ $=-1.92$, /t/ $=1$) and K (weights: /p/ $=-3.44$, /t/ $=10$, /k/ $=1$).
+  \item[VOT] was the dependent variable---it was standardized in order to facilite the specification of priors and a ROPE. %VOT was not \textit{centered}, however, as the log-normal distribution requires positive values in the response variable distribution.
+  \item[Place] encodes place of articulation for the stops and has three levels. Following \citet{chodroff_2017_structure}, Place was weighted effect coded in order to account for unequal sample sizes across the three levels and to faciliate the interpretation of the simple effects in light of the interaction term \citep{brehm_2021_contrasts}. Coding was implemented using the \textit{wec} package \citep{nieuwenhuis_2017_weighted}, and leads to reporting Place effects for T (weights: /p/ $=-1.92$, /t/ $=1$, /k/ $=0$) and K (weights: /p/ $=-3.44$, /t/ $=0$, /k/ $=1$).
   \item[Language] is a binary variable that encodes whether the VOT measurement comes from an English or Cantonese word. As with Place, Language was also weighted effect coded (Cantonese $=-1.61$, English $=1$).
-  \item[Average Phone Duration] represents the average duration of phones within the word. It was calculated as the difference between the word's AutoVOT-estimated onset and the force-aligned word offset, divided by the number of segments in the canonical form of the word. As noted earlier, average phone duration serves as a proxy for local speaking rate. A word-internal measure is desirable, as many tokens were preceded by a pause and thus lack the preceding context from which to calculate it. Average phone duration was standardized---that is, both centered and scaled. 
-  \item[(Preceding) Pause] indicates whether or not the token occurred after a pause or not. Pauses were defined as X. The presence of a preceding pause was also implemented with weighted effect coding (False $=-0.33$, True $=1$).
+  \item[Average Phone Duration] represents the average duration of phones within the word. It was calculated as the difference between the word's AutoVOT-estimated onset and the force-aligned word offset, divided by the number of segments in the canonical form of the word. As noted in Section \ref{ch4:sec:correlations}, average phone duration serves as a proxy for local speaking rate. A word-internal measure is desirable here, as many tokens were preceded by a pause and thus lack the necessary preceding context from which to calculate it. Average phone duration was standardized---that is, both centered and scaled. 
+  \item[(Preceding) Pause] indicates whether or not the token occurred after a pause or not. Pauses were identified using the force-aligned transcripts and include any instance where the preceding phone was ``sil'' (silence) or ``sp'' (\hl{silent/short pause?}). The presence of a preceding pause was also implemented with weighted effect coding (weights: False $=-0.33$, True $=1$).
   \item[Word] indicates the word that the VOT measurement comes from. 
 \end{description}
 
@@ -240,6 +246,79 @@ The interaction for Language $\times$ Place was included in the model---it direc
 
 \subsubsection{Results}\label{ch4:sec:results}
 
+A summary of the model's population-level parameters is provided numerically in Table \ref{ch4:tab:poppar} and visually in Figure \ref{ch4:fig:poppar}. \hl{Including all of these is probably not necessary, thoughts?} The population parameters indicate that VOT is modulated by language, local speaking rate, and the presence of a preceding pause. Recall that the categorical population-level parameters were weighted effect coded---this facilitates the interpretation of simple effects in the presence of interaction terms.
+
+The overall effect of Language indicating that English long-lag stops were produced with longer VOT than Cantonese ($\beta =$ 0.16, 98.9\% HDI outside ROPE). The effect of Language did not seem to be modulated by place of articulation, as the HDIs for Place (T), Place (K), and both Place $\times$ Language interaction terms overlapped substantially with the ROPE. At most, 11\% of the posterior distribution fell outside the ROPE for these four parameters. Figure \ref{ch4:fig:conditionaleffects} shows the conditional effects for Place and Language---that is, the expected means for each of the six combinations. The effect of Language is readily apparent for /t/ and /k/. 
+
+The control parameters behaved as expected. VOT was longer when the local speaking rate was slower. This effect is captured by the relatively high posterior mean for Average Phone duration ($\beta =$ 0.32, 100.0\% HDI outside ROPE). VOT was also longer after a pause, though the effect size was considerably smaller than for speaking rate ($\beta =$ 0.12, 94.0\% HDI outside ROPE).
+
+\begin{table}[htbp]
+  \caption{Population parameter summary.}
+    \label{ch4:tab:poppar}
+    \centering 
+    \footnotesize
+    \begin{tabular}{llll}
+    \toprule
+    \textbf{Parameter}         & \textbf{Est.} &  \textbf{95\% HDI} & \textbf{\% Outside ROPE} \\
+    \midrule
+    Intercept                             &  0.18   & [0.09, 0.28]  & 95.1 \\
+    Place (T)                             &  0.05   & [-0.03, 0.13] & 11.1 \\
+    Place (K)                             & -0.02   & [-0.07, 0.03] & 0.1  \\
+    Language (English)                    &  0.16   & [0.11, 0.21]  & 98.9 \\
+    Average Phone Duration                &  0.32   & [0.30, 0.34]  & 100.0 \\
+    Preceding Pause (True)                &  0.12   & [0.09, 0.16]  & 94.0 \\
+    Place (T) $\times$ Language (English) & -0.01   & [-0.07, 0.04] & 0.2 \\
+    Place (K) $\times$ Language (English) &  0.04   & [0.00, 0.08]  & 0.3 \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \begin{center}
+  \includegraphics[width=\linewidth]{figures/ch4_poppar_5in.png} 
+  \caption{This figure...}
+  \label{ch4:fig:poppar}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+  \includegraphics[width=0.8\linewidth]{figures/ch4_conditionaleffects_4in.png} 
+  \caption{This figure...}
+  \label{ch4:fig:conditionaleffects}
+  \end{center}
+\end{figure}
+
+While the main takeaway from the population parameters is the difference in VOT across languages, the model also offers insight into the sources of variation in this population. A summary of the variability in the model's grouping parameters is provided numerically in Table \ref{ch4:tab:grppar} and visually in Figure \ref{ch4:fig:grppar}.
+
+\begin{table}[htbp]
+  \caption{Group parameter variability summary.}
+    \label{ch4:tab:grppar}
+    \centering 
+    \footnotesize
+    \begin{tabular}{llll}
+    \toprule
+    \textbf{Group}  &\textbf{Parameter S.D.} & \textbf{Est.} &  \textbf{95\% HDI} \\
+    \midrule
+    Word    & Intercept                             & 0.44 & [0.40, 0.50] \\
+    \midrule
+    Talker  & Intercept                             & 0.25 & [0.19, 0.32] \\
+    Talker  & Place (T)                             & 0.09 & [0.05, 0.14] \\
+    Talker  & Place (K)                             & 0.06 & [0.04, 0.09] \\
+    Talker  & Language (English)                    & 0.08 & [0.05, 0.11] \\
+    Talker  & Place (T) $\times$ Language (English) & 0.05 & [0.02, 0.08] \\
+    Talker  & Place (K) $\times$ Language (English) & 0.04 & [0.02, 0.06] \\
+    \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+  \begin{center}
+  \includegraphics[width=\linewidth]{figures/ch4_grppar_5in.png} 
+  \caption{This figure...}
+  \label{ch4:fig:grppar}
+  \end{center}
+\end{figure}
 
 
 

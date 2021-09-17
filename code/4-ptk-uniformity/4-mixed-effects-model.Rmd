@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(lme4)
 library(lmerTest)
@@ -43,7 +43,6 @@ df <- read_csv('dfs/ptk_clean_20210602.csv')
 df
 ```
 
-
 Center VOT and standardize average phone duration
 ```{r}
 df$vot_z <- scale(df$vot_ms, center=TRUE, scale=TRUE)
@@ -67,7 +66,7 @@ contrasts(df$language) <-  contr.wec(x=df$language, omitted = 'Cantonese')
 contrasts(df$language)
 ```
 
-```{r}
+```{r fig.width=3}
 df %>%
   ggplot(aes(x=vot_scaled)) +
   geom_histogram()
@@ -77,13 +76,21 @@ df %>%
   geom_histogram()
 ```
 
+```{r}
+get_prior(
+  vot_z ~ 1 + segment * language + apd_z + is_post_pausal + (1 + segment * language | talker) + (1 | word),
+    family = gaussian(),
+    data = df
+)
+```
 
-Same model structure as before, but bayesian and lognormal
+
+Same model structure as Interspeech, but bayesian
 ```{r}
 m <- 
   brm(
-  vot_scaled ~ 1 + segment * language + apd_z + is_post_pausal + (1 + segment * language | talker) + (1 | word),
-    family = lognormal(),
+  vot_z ~ 1 + segment * language + apd_z + is_post_pausal + (1 + segment * language | talker) + (1 | word),
+    family = gaussian(),
     data = df,
     prior = c(
       prior(student_t(3, 0, 2.5), class = Intercept),
@@ -91,13 +98,27 @@ m <-
       prior(lkj(2), class = cor) 
       ),
     chains = 4, cores = 4, iter = 5000, warmup = 2500,
-    file = 'fits/m.lognormal.final'
+    file = 'fits/m.gaussian.final'
   )
 ```
+```{r}
+betas <- m %>%
+  get_variables() %>%
+  head(8) %>%
+  array()
+```
+
 
 Model checks
+```{r fig.width=12, fig.height=4}
+mcmc_trace(m, pars = betas, facet_args = c(ncol = 4))
+```
+
 ```{r}
 mcmc_plot(m, type='rhat_hist')
+```
+
+```{r}
 mcmc_plot(m, type='neff_hist')
 ```
 
@@ -107,54 +128,212 @@ as_tibble(get_variables(m))
 ```
 
 ```{r}
-posterior_samples(m) %>% 
-  select(starts_with("b_")) %>% 
-  pivot_longer(everything()) %>% 
-  filter(name != 'b_Intercept') %>%
-  ggplot(aes(x = value, y = name)) +
-  stat_halfeye(.width = .95, size = 1/2) +
-  scale_y_discrete(NULL, labels = ggplot2:::parse_safe)
+mean(df$vot_ms) / sd(df$vot_ms)
 ```
+
+
+```{r}
+round(fixef(m),2)
+```
+
+```{r}
+summary(m)
+
+```
+
+```{r}
+popsamples <- posterior_samples(m) %>% 
+  select(
+    Intercept = b_Intercept,
+    `Place (T)` = b_segmentt,
+    `Place (K)` = b_segmentk,
+    `Language (English)` = b_languageEnglish,
+    `Place (T) × Language (English)` = `b_segmentt:languageEnglish`,
+    `Place (K) × Language (English)` = `b_segmentk:languageEnglish`,
+    `Average Phone Duration` = b_apd_z,
+    `Preceding Pause (True)` = b_is_post_pausalTRUE,
+    ) %>%
+  pivot_longer(everything(), names_to = 'Parameter') %>%
+  mutate(Parameter = as_factor(Parameter))
+
+
+```
+
+[1] "b_Intercept"                "b_segmentk"                 "b_segmentt"                 "b_languageEnglish"         
+[5] "b_apd_z"                    "b_is_post_pausalTRUE"       "b_segmentk:languageEnglish" "b_segmentt:languageEnglish"
+
+```{r}
+2*sd(df$vot_ms) + mean(df$vot_ms)
+```
+
+```{r}
+popsamples %>%
+  mutate(outside_rope = value < -0.1 | value > 0.1) %>%
+  arrange(value, desc=T) %>%
+  group_by(Parameter) %>%
+  summarise(sum(outside_rope)/100)
+```
+
+```{r}
+popsamples
+```
+
+
+```{r}
+popsamples %>%
+  filter(Parameter != 'Intercept') %>%
+  mutate(value = value ) %>%
+  ggplot(aes(x = value, y = Parameter)) +
+  stat_halfeye(.width = .95, size = 1/2) +
+  scale_y_discrete(limits = rev) +
+  annotate("rect", xmin=-0.1, xmax=0.1, ymin=0, ymax=Inf, fill = '#FEB77EFF' , alpha=0.5)
+
+ggsave('../../text/figures/ch4_poppar_5in.png', height = 3, width = 5, units='in')
+
+```
+
 
 ```{r }
-posterior_samples(m) %>% 
-  select(starts_with("sd")) %>% 
-  pivot_longer(everything()) %>% 
-  ggplot(aes(x = value, y = name)) +
-  stat_halfeye(.width = .95, size = 1/2) +
-  scale_y_discrete(NULL, labels = ggplot2:::parse_safe)
+sdsamples <- posterior_samples(m) %>%
+  select(
+    `Intercept: Word` = sd_word__Intercept,
+    `Intercept: Talker` = sd_talker__Intercept,
+    `By-talker slope: Place (T)` = sd_talker__segmentt,
+    `By-talker slope: Place (K)` = sd_talker__segmentk,
+    `By-talker slope: Language (English)` = sd_talker__languageEnglish,
+    `By-talker slope: Place (T) × Language (English)` = `sd_talker__segmentt:languageEnglish`,
+    `By-talker slope: Place (K) × Language (English)` = `sd_talker__segmentk:languageEnglish`
+    ) %>%
+  pivot_longer(everything(), names_to = 'Parameter', values_to = 'SD') %>%
+  mutate(Parameter = as_factor(Parameter))
 ```
 
-```{r fig.height=10, fig.width=5}
+
+```{r}
+sdsamples %>%
+  ggplot(aes(x = SD, y = Parameter)) +
+  stat_halfeye(.width = .95, size = 1/2) +
+  scale_y_discrete(limits = rev) +
+  xlab('Standard Deviation')
+
+ggsave('../../text/figures/ch4_grppar_5in.png', height = 3, width = 5, units='in')
+
+```
+
+```{r fig.height=10, fig.width=12}
 posterior_samples(m) %>% 
   select(starts_with("r_talker")) %>% 
   pivot_longer(everything()) %>% 
   separate(name, into = c('talker', 'parameter'), sep = ',') %>%
   mutate(talker = str_replace(talker, 'r_talker\\[', ''),
          parameter = str_replace(parameter, '\\]','')) %>%
-  
   ggplot(aes(x = value, y = talker, fill = parameter)) +
   stat_halfeye(.width = .95, size = 1/2, alpha=0.5) +
   scale_y_discrete(NULL, labels = ggplot2:::parse_safe) +
-  scale_fill_colorblind()
+  scale_fill_colorblind() + 
+  geom_vline(xintercept = 0) +
+  annotate("rect", xmin=-0.1, xmax=0.1, ymin=-Inf, ymax=Inf, fill = 'black' , alpha=0.5)
+
+  # facet_wrap(~parameter, ncol=6)
 ```
 
-
-
-
-
+This makes for a ~5 ms interval that tracks with the gradient effects in McMurray et al (2002)
+```{r}
+sd(df$vot_ms) * 0.1
+```
 
 ```{r}
 levels(df$segment) <- c('p', 't', 'k')
 
 df %>%
-  ggplot(aes(y=vot_ms, x=segment, fill=language)) +
-  geom_boxplot(alpha=0.5) +
-  scale_fill_colorblind()
+  ggplot(aes(y=vot_ms, x=language)) +
+  geom_violin(alpha=0.5, aes(fill=language)) +
+  geom_line(aes(group = talker), alpha=0.5)+
+  
+  scale_fill_colorblind() + 
+  facet_wrap(~segment)
+```
+
+```{r}
+m$formula
+```
+
+Posterior predictions for average talker/word
+```{r}
+newdata <- data.frame(
+  language = factor(c("Cantonese", "English","Cantonese", "English", "Cantonese", "English")),
+  segment = factor(c("p", "p", "t", "t", "k", "k")),
+  apd_z = c(0,0,0,0,0,0),
+  is_post_pausal = c(F,F,F,F,F,F)
+)
+
+pp <-predict(m, newdata = newdata, re_formula = ~ segment * language + apd_z + is_post_pausal, summary = FALSE)
+```
+
+
+```{r}
+sxl <- conditional_effects(m, effects = 'segment:language', method = 'fitted', prob=0.95)
+
+plot(sxl, plot = F)[[1]] + 
+  scale_color_viridis_d(option='magma', end=0.8) +
+  scale_x_discrete(limits=rev, breaks = c('p', 't', 'k'), labels = c('P', 'T', 'K')) +
+  xlab('Place') +
+  ylab('Estimated Mean VOT (z)')
+
+ggsave('../../text/figures/ch4_conditionaleffects_4in.png', height = 3, width = 4, units='in')
+
+```
+
+
+```{r}
+as_tibble(pp) %>%
+  select(Cantonese_P = V1, English_P = V2, Cantonese_T = V3, English_T = V4, Cantonese_K = V5, English_K = V6) %>%
+  pivot_longer(everything()) %>%
+  separate(name, into = c('Language', 'Phone')) %>%
+  mutate(Phone = as_factor(Phone)) %>%
+  ggplot(aes(x=value, color=Language)) +
+  geom_density()+
+  # scale_x_continuous(limits = c(0,3))+
+  geom_vline(xintercept=0, color='gray', linetype='dotted') +
+  facet_wrap(~Phone) +
+  scale_color_viridis_d(option='magma', end=0.8) +
+  ylab('Density') +
+  xlab('Predicted value')
+```
+
+```{r}
+as_tibble(pp) %>%
+  select(Cantonese_P = V1, English_P = V2, Cantonese_T = V3, English_T = V4, Cantonese_K = V5, English_K = V6) %>%
+  pivot_longer(everything()) %>%
+  separate(name, into = c('Language', 'Phone')) %>%
+  mutate(Phone = as_factor(Phone)) %>%
+  ggplot(aes(x=value, color=Phone)) +
+  geom_density()+
+  # scale_x_continuous(limits = c(0,3))+
+  geom_vline(xintercept=0, color='gray', linetype='dotted') +
+  facet_wrap(~Language) +
+  scale_color_viridis_d(option='magma', end=0.8) +
+  ylab('Density') +
+  xlab('Predicted value')
 ```
 
 
 
+```{r}
+
+
+```
+
+
+## predicted responses of patient 1 for new data
+newdata <- data.frame(
+  sex = factor(c("male", "female")),
+  age = c(20, 50),
+  patient = c(1, 1)
+)
+predict(fit, newdata = newdata)
+
+## End(Not run)
 
 
 
