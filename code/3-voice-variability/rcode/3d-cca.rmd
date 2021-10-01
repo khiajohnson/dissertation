@@ -165,7 +165,7 @@ long_pointinterval %>%
   scale_color_viridis_d(option='magma', begin = 0.9, end=0) +
   facet_wrap(~Variable, scales = 'free', ncol=3)
 
-```{r fig.width=5, fig.height=6.5}
+```{r fig.width=5, fig.height=6}
 all_redundancy %>%
   filter(same_talker==TRUE, same_language==FALSE) %>%
   mutate(average_redundancy = (xs+ys)/2) %>%
@@ -189,8 +189,9 @@ all_redundancy %>%
   scale_color_viridis_d(option='magma', begin = 0.9, end=0) +
   facet_wrap(~Variable, scales = 'free_x', ncol=3) +
   ylab('Redundancy (Average)') + 
-  xlab('Absolute Mean Difference')
+  xlab('Absolute Mean Difference') +
+    theme(legend.position = 'right')
 
-ggsave('../../../text/figures/ch3_redundancybyttestdiff_5in.png', width = 5, height = 6.5)
+ggsave('../../../text/figures/ch3_redundancybyttestdiff_5in.png', width = 5, height = 6)
 ```
 
