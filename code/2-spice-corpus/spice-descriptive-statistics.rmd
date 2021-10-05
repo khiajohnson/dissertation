@@ -17,7 +17,6 @@ library(tidyverse)
 library(ggthemes)
 library(GGally)
 library(ggrepel)
-# library(tidylog)
 library(DBI)
 library(viridis)
 ```
@@ -33,10 +32,6 @@ theme_set(theme_clean() + theme(
       strip.text = element_text(size=10, face='bold'),
       plot.background = element_blank()
     ))
-
-# ggplot <- function(...) ggplot2::ggplot(...) + 
-#     scale_color_colorblind() +
-#     scale_fill_colorblind()
 ```
 
 Connect to SpiCE SQLite database
@@ -75,10 +70,17 @@ words <- words %>%
 ```
 
 
+```{r}
+words %>%
+    group_by(word) %>%
+    summarise(n()) %>%
+    filter(str_detect(word,'our'))
+```
+
+
 ## Corpus Summary
 ### Assess code-switching from utterances level
 ```{r}
-
 results <- dbSendQuery(
     db,
     "SELECT utterance,
@@ -233,10 +235,6 @@ ggsave('../../text/figures/ch2_englishwordfrequency_5in.png', width = 5, height 
 
 
 
-
-
-
-
 Plot log word frequency for both languages, excluding instances of <unk>
 ```{r fig.width=6, fig.height=3}
 words %>%
@@ -332,21 +330,13 @@ phones %>%
     #pivot_wider(names_from = task, values_from = minutes)
 ```
 
-
-The Cantonese recordings include 8.3 hours of speech: 13.6 minutes of sentences, 44.0 minutes of storyboard narration, and 7.4 hours of conversational interview. These estimates are calculated from the summed duration of all non-silent intervals in the phone tier of the transcripts, and as such, do not include interviewer questions or any pauses in the participant's speech. 
-
-Using the same estimation technique as used for Cantonese, the English recordings include 8.9 hours of speech: 21.9 minutes of sentences, 45.7 minutes of storyboard narration, and 7.7 hours of conversational interview speech.
-
-
-
-
-
 Clear and close the database
 ```{r}
 dbClearResult(results)
 dbDisconnect(db)
 rm(db, results)
 ```
+
 
 ## Participant summary
 
@@ -357,8 +347,8 @@ lbq_raw <- read_csv('~/Corpora/spice/info/participants/spice-lbq-detailed.csv')
 ```
 
 ```{r}
-demographics <- lbq_raw %>% 
-    select(!matches("language"), -X253) 
+demographics <- lbq_raw #%>% 
+    # select(!matches("language"), -X253) 
 ```
 
 ```{r fig.width=5, fig.height=4}
@@ -377,7 +367,7 @@ demographics %>%
         geom_bar(fill='black', color='white') +
         facet_wrap(~Ages, ncol=2) +
         ylab('Country lived in') +
-        xlab('Count of articipants') +
+        xlab('Count of Participants') +
         theme(legend.position = 'none')
 
 ggsave('../../text/figures/ch2_placeslived_5in.png', width = 5, height = 4)
