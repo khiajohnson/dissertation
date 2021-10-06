@@ -34,6 +34,19 @@ theme_set(theme_clean() + theme(
 df <- fread('../data/spice_voicesauce_processed.csv', sep = ',') 
 ```
 
+Get correlation for F4 and FD
+```{r}
+fd <- df %>%
+    select(F1:F4) %>%
+    mutate(FD = ((F4-F3) + (F3-F2) + (F2-F1) )/3)
+```
+
+
+```{r}
+cor.test(x = fd$F4, y= fd$FD, method = 'pearson')
+```
+
+
 ## Visualize
 
 Pivot longer to prep for getting t-test and cohen's d results // data viz
@@ -56,6 +69,27 @@ long_df %>%
 
 #ggsave('../../../text/figures/ch3_allmeasuresdensity_5in.png', width = 5, height = 6.5)
 
+```
+
+```{r fig.width=10, fig.height=6.5}
+df %>%
+  select(Talker, Language, F2) %>%
+  left_join(f2d, by='Talker') %>%
+  mutate(Difference = Difference>0) %>%
+  ggplot(aes(x=F2, color=Language)) +
+    geom_density() +
+    scale_color_viridis_d(option='magma', begin = 0.75, end = 0)+
+    facet_wrap(~Talker, ncol = 8) +
+    ylab('Density') +
+    xlab('')
+```
+
+
+
+```{r}
+f2d <- cohensd %>%
+    filter(Variable=='F2') %>%
+    select(Talker, CohenD, Difference)
 ```
 
 
