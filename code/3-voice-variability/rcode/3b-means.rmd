@@ -13,7 +13,7 @@ library(lsr)
 library(broom)
 library(ggdist)
 
-sessionInfo()
+# sessionInfo()
 ```
 
 visualization defaults
@@ -54,11 +54,28 @@ Pivot longer to prep for getting t-test and cohen's d results // data viz
 long_df <- df %>%
   select(Talker, Language, F0:SHR_sd) %>%
   pivot_longer(F0:SHR_sd, names_to = 'Variable', values_to = 'Value')
+
+long_df 
+```
+
+```{r}
+long_df_main <- long_df %>%
+    mutate(
+        Variable = str_replace(Variable, 'H1H2c', 'H1*-H2*'),
+        Variable = str_replace(Variable, 'H2H4c', 'H2*-H4*'),
+        Variable = str_replace(Variable, 'H42Kc', 'H4*-H2kHz*'),
+        Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz*-H5kHz')
+    ) %>%
+    filter(str_detect(Variable, 'sd', negate=TRUE)) %>%
+    mutate(Variable = as_factor(Variable))
+```
+
+```{r}
+levels(long_df_main$Variable)
 ```
 
 ```{r fig.width=5, fig.height=6.5}
-long_df %>%
-    filter(str_detect(Variable, 'sd', negate=TRUE)) %>%
+long_df_main %>%
   select(Talker, Language, Variable, Value) %>%
   ggplot(aes(x=Value, color=Language)) +
     geom_density() +
@@ -67,7 +84,7 @@ long_df %>%
     ylab('Density') +
     xlab('')
 
-#ggsave('../../../text/figures/ch3_allmeasuresdensity_5in.png', width = 5, height = 6.5)
+ggsave('../../../text/figures/ch3_allmeasuresdensity_5in.png', width = 5, height = 6.5)
 
 ```
 
@@ -164,6 +181,8 @@ long_pointinterval <- long_df %>%
     q975 = quantile(Value, 0.975)
     ) %>%
   left_join(cohensd, by=c('Talker','Variable'))
+
+long_pointinterval
 ```
 
 ```{r}
@@ -200,6 +219,27 @@ plot_dist_cohen <-function(var, xlabel_text='!!!', cohensd_position=0) {
 # plot_dist_cohen('SHR', 'SHR', 1.05)
 ```
 
+```{r}
+long_pointinterval <- long_pointinterval %>%
+    mutate(Variable = as_factor(Variable))
+```
+
+```{r}
+levels(long_pointinterval$Variable) <- c("F0", "F0_sd", 
+                                         "F1", "F1_sd", 
+                                         "F2", "F2_sd", 
+                                         "F3", "F3_sd", 
+                                         "F4", "F4_sd",
+                                         "H1H2c", "H1H2c_sd",
+                                         "H2H4c", "H2H4c_sd",
+                                         "H42Kc", "H42Kc_sd",
+                                         "H2KH5Kc", "H2KH5Kc_sd",
+                                         "CPP", "CPP_sd",
+                                         "Energy", "Energy_sd",
+                                         "SHR", "SHR_sd"
+                                         )
+```
+
 
 
 ```{r fig.height=6.5, fig.width=5}
@@ -210,7 +250,8 @@ long_pointinterval %>%
     Variable = str_replace(Variable, 'H1H2c', 'H1*-H2*'),
     Variable = str_replace(Variable, 'H2H4c', 'H2*-H4*'),
     Variable = str_replace(Variable, 'H42Kc', 'H4*-H2kHz*'),
-    Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz-H5kHz*')
+    Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz*-H5kHz'),
+    Variable = as_factor(Variable)
   ) %>%
   filter(str_detect(Variable, 's.d.', negate=TRUE)) %>%
   ggplot(aes(x=cohen_d, y=Difference, color=CohenD, shape=CohenD)) + 
@@ -231,7 +272,8 @@ long_pointinterval %>%
     Variable = str_replace(Variable, 'H1H2c', 'H1*-H2*'),
     Variable = str_replace(Variable, 'H2H4c', 'H2*-H4*'),
     Variable = str_replace(Variable, 'H42Kc', 'H4*-H2kHz*'),
-    Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz-H5kHz*')
+    Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz*-H5kHz'),
+    Variable = as_factor(Variable)
   ) %>%
   filter(str_detect(Variable, 's.d.', negate=FALSE)) %>%
   ggplot(aes(x=cohen_d, y=Difference, color=CohenD, shape=CohenD)) + 
@@ -239,6 +281,7 @@ long_pointinterval %>%
   geom_hline(aes(yintercept = 0))+
   scale_color_viridis_d(option='magma', begin = 0.9, end=0.45) +
   facet_wrap(~Variable, scales = 'free', ncol=3)
+
 ggsave('../../../text/figures/ch3_cohend_part2_5in.png', width = 5, height = 6.5)
 ```
 

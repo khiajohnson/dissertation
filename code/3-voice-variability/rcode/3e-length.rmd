@@ -141,6 +141,12 @@ fwrite(pl_results, '../data/passage_length_pca_results.csv', sep = ',')
 
 ```
 
+
+```{r}
+pl_results <- read_csv('../data/passage_length_pca_results.csv')
+```
+
+
 ```{r}
 all_pairs <- tibble(V1 = unique(pl_results$File)) %>%
   separate(V1, sep='_I[12]_[0-9]+_', into = c('File','Length'), remove=FALSE) %>%
@@ -177,25 +183,27 @@ rm(px,py,xs,ys, x_file, y_file, this_CCA, this_red)
 ```
 
 
-```{r fig.width=5, fig.height=6.5}
+```{r fig.width=5, fig.height=3}
 pl_all_redundancy %>%
     separate(py, into = c('Talker','Language')) %>%
     mutate(size = as.numeric(str_extract(px, '[0-9]+$'))) %>%
     pivot_longer(cols = xs:ys) %>%
     ggplot(aes(x=size, y=value)) +
     # geom_point(size=0.1, aes(group=factor(paste(Talker,Language))) ) +
-    geom_smooth(color='black',  se=FALSE, size=0.1, aes(group=factor(paste(Talker,Language)))) +
-    geom_smooth(color='black', se=FALSE, size=2, ) +
-    scale_color_colorblind()+
+    geom_line( color='black', size=0.05, aes(group=factor(paste(Talker,Language,name)))) +
+    geom_smooth(method = 'gam', color='black', se=FALSE, size=2, ) +
+    scale_y_continuous(limits = c(0,1)) +
     theme_clean() +
     geom_vline(xintercept = 20124, color='orange') +
+        geom_vline(xintercept = 12000, color='orange') +
+
     geom_vline(xintercept = 5150, color='orange') +
     xlab('Sample Size') +
     ylab('Redundancy') +
-  facet_wrap(~Language, ncol=1) +
+  facet_wrap(~Language, ncol=2) +
   theme(strip.text = element_text(face='bold'))
 
-ggsave('../../../text/figures/ch3_passagelength.png', width = 5, height = 6.5)
+# ggsave('../../../text/figures/ch3_passagelength.png', width = 5, height = 3)
 
 ```
 

@@ -93,9 +93,11 @@ all_redundancy %>%
            grp = str_replace(grp, 'FALSETRUE', 'Different talker, same language'),
            grp = str_replace(grp, 'FALSEFALSE', 'Different talker, different language')
     ) %>%
-  ggplot(aes(x=xs, y=ys, color=grp, shape=grp)) +
-        geom_point(size=3, alpha=0.6) + 
-        scale_color_viridis_d(option = 'magma', begin=0.9, end=0) +
+  ggplot(aes(x=xs, y=ys, color=grp,fill=grp, shape=grp)) +
+        geom_point(size=4) + 
+        scale_color_viridis_d(alpha=0.6,option = 'magma', begin=0.85, end=0) +
+        scale_fill_viridis_d(alpha=0.9,option = 'magma', begin=0.85, end=0) +
+        scale_shape_manual(values = c(3,4,21)) +
         xlab('Redundancy (x)') +
         ylab('Redundancy (y)') +
         theme_clean() +
@@ -165,8 +167,13 @@ long_pointinterval %>%
   scale_color_viridis_d(option='magma', begin = 0.9, end=0) +
   facet_wrap(~Variable, scales = 'free', ncol=3)
 
+```{r}
+all_redundancy
+```
+
+
 ```{r fig.width=5, fig.height=6}
-all_redundancy %>%
+redbydiff <- all_redundancy %>%
   filter(same_talker==TRUE, same_language==FALSE) %>%
   mutate(average_redundancy = (xs+ys)/2) %>%
   select(Talker=x_talker, average_redundancy) %>%
@@ -179,9 +186,17 @@ all_redundancy %>%
     Variable = str_replace(Variable, 'H1H2c', 'H1*-H2*'),
     Variable = str_replace(Variable, 'H2H4c', 'H2*-H4*'),
     Variable = str_replace(Variable, 'H42Kc', 'H4*-H2kHz*'),
-    Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz-H5kHz*')
+    Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz*-H5kHz'),
+    Variable = as_factor(Variable)
   ) %>%
-  filter(str_detect(Variable, 's.d.', negate=TRUE)) %>%
+  filter(str_detect(Variable, 's.d.', negate=TRUE)) 
+
+levels(redbydiff$Variable)
+```
+
+
+```{r fig.width=5, fig.height=6}
+redbydiff %>%
   ggplot(aes(x=abs_difference, y=average_redundancy)) + 
   geom_point(aes(color=CohenD, shape=CohenD)) +
   stat_smooth(method = 'lm', color='black', fill='black') +
@@ -190,7 +205,7 @@ all_redundancy %>%
   facet_wrap(~Variable, scales = 'free_x', ncol=3) +
   ylab('Redundancy (Average)') + 
   xlab('Absolute Mean Difference') +
-    theme(legend.position = 'right')
+    theme(legend.position = 'bottom')
 
 ggsave('../../../text/figures/ch3_redundancybyttestdiff_5in.png', width = 5, height = 6)
 ```
