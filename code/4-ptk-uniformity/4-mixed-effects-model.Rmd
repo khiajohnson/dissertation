@@ -4,11 +4,7 @@ author: "Khia A Johnson"
 date: "4/1/2021"
 output: html_document
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
+## Imports
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(lme4)
@@ -101,13 +97,13 @@ m <-
     file = 'fits/m.gaussian.final'
   )
 ```
+
 ```{r}
 betas <- m %>%
   get_variables() %>%
   head(8) %>%
   array()
 ```
-
 
 Model checks
 ```{r fig.width=12, fig.height=4}
@@ -131,23 +127,14 @@ as_tibble(get_variables(m))
 mean(df$vot_ms) / sd(df$vot_ms)
 ```
 
-
 ```{r}
 round(fixef(m),2)
-```
-
-```{r}
-m
 ```
 
 
 ```{r}
 summary(m)
 
-```
-
-```{r}
-0.16*sd(df$vot_ms)
 ```
 
 
@@ -169,25 +156,14 @@ popsamples <- posterior_samples(m) %>%
 
 ```
 
-[1] "b_Intercept"                "b_segmentk"                 "b_segmentt"                 "b_languageEnglish"         
-[5] "b_apd_z"                    "b_is_post_pausalTRUE"       "b_segmentk:languageEnglish" "b_segmentt:languageEnglish"
-
-```{r}
-2*sd(df$vot_ms) + mean(df$vot_ms)
-```
 
 ```{r}
 popsamples %>%
   mutate(outside_rope = value < -0.1 | value > 0.1) %>%
   arrange(value, desc=T) %>%
   group_by(Parameter) %>%
-  summarise(sum(outside_rope)/100)
+  summarise(mean(value), sum(outside_rope)/100)
 ```
-
-```{r}
-popsamples
-```
-
 
 ```{r}
 popsamples %>%
@@ -199,7 +175,6 @@ popsamples %>%
   annotate("rect", xmin=-0.1, xmax=0.1, ymin=0, ymax=Inf, fill = '#FEB77EFF' , alpha=0.5)
 
 ggsave('../../text/figures/ch4_poppar_5in.png', height = 3, width = 5, units='in')
-
 ```
 
 
@@ -227,7 +202,6 @@ sdsamples %>%
   xlab('Standard Deviation')
 
 ggsave('../../text/figures/ch4_grppar_5in.png', height = 3, width = 5, units='in')
-
 ```
 
 ```{r fig.height=10, fig.width=12}
@@ -263,12 +237,6 @@ ggsave('../../text/figures/ch4_grpparvar_5in.png', height = 8.05, width = 5.75, 
 ```
 
 ```{r}
-7*1.15
-5*1.15
-```
-
-
-```{r}
 posterior_samples(m) %>% 
   select(starts_with("r_word")) %>% 
   pivot_longer(everything()) %>%
@@ -276,7 +244,6 @@ posterior_samples(m) %>%
   summarise(mv=mean(value)) %>%
   arrange(desc(mv))
 ```
-
 
 This makes for a ~5 ms interval that tracks with the gradient effects in McMurray et al (2002)
 ```{r}
@@ -357,4 +324,136 @@ as_tibble(pp) %>%
   ylab('Density') +
   xlab('Predicted value')
 ```
+
+
+## Revisiting model structure
+
+
+no interaction
+```{r}
+m.noint <- 
+  brm(
+  vot_z ~ 1 + segment + language + apd_z + is_post_pausal + (1 + segment + language | talker) + (1 | word),
+    family = gaussian(),
+    data = df,
+    prior = c(
+      prior(student_t(3, 0, 2.5), class = Intercept),
+      prior(normal(0, 1), class = b),
+      prior(lkj(2), class = cor) 
+      ),
+    chains = 4, cores = 4, iter = 5000, warmup = 2500,
+    file = 'fits/m.gaussian.noint'
+  )
+```
+
+```{r}
+m.compare <- add_criterion(m, c("loo", "waic"))
+m.noint.compare <- add_criterion(m.noint, c("loo", "waic"))
+
+loo_compare(m.compare, m.noint.compare)
+```
+
+
+```{r}
+model_weights(m.compare, m.noint.compare, weights = 'loo')
+```
+
+ok so model comparison says that the interaction is doing work
+
+
+## How does exclusion of word pooling change things
+
+
+no word pooling
+```{r}
+m.noword <- 
+  brm(
+  vot_z ~ 1 + segment * language + apd_z + is_post_pausal + (1 + segment * language | talker),
+    family = gaussian(),
+    data = df,
+    prior = c(
+      prior(student_t(3, 0, 2.5), class = Intercept),
+      prior(normal(0, 1), class = b),
+      prior(lkj(2), class = cor) 
+      ),
+    chains = 4, cores = 4, iter = 5000, warmup = 2500,
+    file = 'fits/m.gaussian.noword'
+  )
+```
+
+
+```{r}
+summary(m.noword)
+```
+
+
+```{r}
+conditional_effects(m.noword, effects = 'segment:language', method = 'fitted', prob=0.95)
+```
+
+
+
+```{r}
+popsamples.noword <- posterior_samples(m.noword) %>% 
+  select(
+    Intercept = b_Intercept,
+    `Place (T)` = b_segmentt,
+    `Place (K)` = b_segmentk,
+    `Language (English)` = b_languageEnglish,
+    `Place (T) × Language (English)` = `b_segmentt:languageEnglish`,
+    `Place (K) × Language (English)` = `b_segmentk:languageEnglish`,
+    `Average Phone Duration` = b_apd_z,
+    `Preceding Pause (True)` = b_is_post_pausalTRUE,
+    ) %>%
+  pivot_longer(everything(), names_to = 'Parameter') %>%
+  mutate(Parameter = as_factor(Parameter))
+
+popsamples.noword %>%
+  filter(Parameter != 'Intercept') %>%
+  mutate(value = value ) %>%
+  ggplot(aes(x = value, y = Parameter)) +
+  stat_halfeye(.width = .95, size = 1/2) +
+  scale_y_discrete(limits = rev) +
+  annotate("rect", xmin=-0.1, xmax=0.1, ymin=0, ymax=Inf, fill = '#FEB77EFF' , alpha=0.5)
+```
+
+```{r}
+sdsamples.noword <- posterior_samples(m.noword) %>%
+  select(
+    `Intercept: Talker` = sd_talker__Intercept,
+    `By-talker slope: Place (T)` = sd_talker__segmentt,
+    `By-talker slope: Place (K)` = sd_talker__segmentk,
+    `By-talker slope: Language (English)` = sd_talker__languageEnglish,
+    `By-talker slope: Place (T) × Language (English)` = `sd_talker__segmentt:languageEnglish`,
+    `By-talker slope: Place (K) × Language (English)` = `sd_talker__segmentk:languageEnglish`
+    ) %>%
+  pivot_longer(everything(), names_to = 'Parameter', values_to = 'SD') %>%
+  mutate(Parameter = as_factor(Parameter))
+
+sdsamples.noword %>%
+  ggplot(aes(x = SD, y = Parameter)) +
+  stat_halfeye(.width = .95, size = 1/2) +
+  scale_y_discrete(limits = rev) +
+  xlab('Standard Deviation')
+```
+
+
+```{r}
+sdsamples.noword$model <- 'no-word-ints'
+```
+
+```{r}
+sdsamples %>%
+  mutate(model = 'full') %>%
+  bind_rows(sdsamples.noword) %>%
+  ggplot(aes(x = SD, y = Parameter, fill=model)) +
+  stat_halfeye(.width = .95, size = 1/2, alpha=0.75) +
+  scale_y_discrete(limits = rev) +
+  xlab('Standard Deviation') 
+```
+
+
+
+sd
+
 
