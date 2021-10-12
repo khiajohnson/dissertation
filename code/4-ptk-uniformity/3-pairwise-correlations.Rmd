@@ -100,7 +100,7 @@ output
 
 ### Data Viz: Mean VOT
 
-```{r fig.width=5, fig.height=5}
+```{r}
 jointplot <- function(dataframe, col1, name1, col2, name2, color='black') {
   p <- ggplot(dataframe, aes(x=col1, y=col2)) +
     geom_point(color=color) +
@@ -114,14 +114,16 @@ jointplot <- function(dataframe, col1, name1, col2, name2, color='black') {
       axis.title.y = element_text(size = 7, face='bold'),
     )
   
+  x <- cor.test(x=col1, y=col2)
+  x <- paste("r =",as.character(round(x$estimate,2)))
   
-  p <- ggMarginal(p, type="histogram", fill=color, color='white')
+  p <- p + annotate("text", x = 60, y = 15, label = x)
+
+  p <- ggMarginal(p, type="histogram", fill=color, color='white') 
+
   return(p)
 }
 ```
-
-
-
 
 ```{r}
 cpt <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`Cantonese T`, 'Cantonese /t/', color='#000004FF')

@@ -127,7 +127,7 @@ df %>%
   filter_all(is.na)
 ```
 
-Count ptk by language
+Count ptk tokens by language
 ```{r}
 df %>%
   group_by(language, segment) %>%
@@ -136,6 +136,20 @@ df %>%
   pivot_wider(names_from = 'segment', values_from='n') %>%
   select(language, p, t, k)
 ```
+
+Count ptk types by language
+```{r}
+df %>%
+  group_by(language, segment, word) %>%
+  summarise(n=n()) %>%
+  ungroup() %>%
+  group_by(language, segment) %>%
+  summarise(n=n()) %>%
+  ungroup() %>%  
+  pivot_wider(names_from = 'segment', values_from='n') %>%
+  select(language, p, t, k)
+```
+
 
 Explore why Cantonese /p/ counts are lower
 ```{r}
@@ -155,14 +169,14 @@ df %>%
   arrange(desc(n)) 
 ```
 
-Range of stop counts by talker
+Range of stop token counts by talker
 ```{r}
 df %>%
-  group_by(talker, language) %>%
+  group_by(talker, language, segment) %>%
   summarise(n=n())  %>%
   ungroup() %>%
-  group_by(language) %>%
-  summarise(min(n), median(n), mean(n), max(n))
+  group_by(language, segment) %>%
+  summarise(min(n), max(n), mean(n), median(n), n())
 ```
 
 Select columns to keep and output clean data frame

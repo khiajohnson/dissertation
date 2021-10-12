@@ -79,49 +79,56 @@ This study uses the conversational interview recordings from the SpiCE corpus de
 
 \subsection{Segmentation and measurement}
 
-All instances of prevocalic word-initial /p t k/ were identified from the conversational interview portion of the SpiCE corpus' force-aligned Praat TextGrid transcripts. For English, only words with initial stress were included in the initial sample \citep{lisker_1967_some}---this means the extremely high-frequency English word ``to'' was excluded, as was the case in \citet{chodroff_2017_structure}.\footnote{While ``to'' only has one syllable, the most commonly used pronunciation variant in the dictionary is unstressed.} Code-switches out of the interview's primary language were not aligned, and as a result, they do not appear in the phone tier of the TextGrids. This limitation of forced alignment means that Cantonese /p t k/ were only considered if they occurred in the predominantly Cantonese interviews, and likewise for English. The initial total count of /p t k/ across talkers and languages included 10,428 tokens. 
+All instances of prevocalic word-initial /p t k/ were identified from the conversational interview portion of the SpiCE corpus' force-aligned Praat TextGrid transcripts. The identification of tokens was based on the phone tier of the transcripts, and as a result, derives from the forced aligner's identification of stops given a lexical item and its entry in the pronunciation dictionaries. For English, only words with initial stress were included in the initial sample \citep{lisker_1967_some}.\footnote{\citet{chodroff_2017_structure} specifically excludes the extremely high-frequency English word ``to.'' The initial stress requirement implicitly accomplishes this here---while ``to'' only has one syllable, the most commonly used pronunciation variant in the dictionary is unstressed.} Code-switches out of the interview's primary language were not aligned, and as a result, they do not appear in the phone tier of the TextGrids. This limitation of forced alignment means that Cantonese /p t k/ were only considered if they occurred in the predominantly Cantonese interviews, and likewise for English. The initial total count of /p t k/ across talkers and languages included 10,428 tokens. 
 
-While forced alignment performed reasonably well, anecdotally speaking, VOT estimates were refined using AutoVOT \citep{keshet_2014_autovot}---a command-line software tool that facilitates automated measurement of positive VOT. AutoVOT identifies the onset and offset of positive VOT within a specified window and with a minimum duration. Here, the minimum allowed VOT was set to 15 ms. This value was selected as the stops under consideration are all long-lag stops, and aspiration values under 15 ms are typical of short-lag stops \citep{lieberman_1988_speech}. The window used with AutoVOT was defined as the force-aligned segment boundaries plus or minus 31 ms \citep[as in][]{chodroff_2017_structure}. If stops were too close for a 31 ms buffer, the onset of the second stop's window was set as the offset of the preceding window, as TextGrids do not permit overlapping intervals and AutoVOT uses the full TextGrid.  
+While forced alignment performed reasonably well, anecdotally speaking, it was far from perfect. Additionally, forced alignment includes both the closure and release of the stop in the marking of stop consonants. For these reasons, VOT estimates were refined using AutoVOT \citep{keshet_2014_autovot}---a command-line software tool that facilitates automated measurement of positive VOT. AutoVOT identifies the onset and offset of positive VOT within a specified window and with a minimum duration. Here, the minimum allowed VOT was set to 15 ms. This value was selected as the stops under consideration are all long-lag stops, and aspiration values under 15 ms are typical of short-lag stops \citep{lieberman_1988_speech}. The window used with AutoVOT was defined as the force-aligned segment boundaries plus or minus 31 ms \citep[as recommended by][]{chodroff_2017_structure}. If stops were too close for a 31 ms buffer, the onset of the second stop's window was set as the offset of the preceding window, as TextGrids do not permit overlapping intervals and AutoVOT uses the full TextGrid. This would occur, for example, in cases where a short vowel separates two stops, as may be the case in a phrase like ``too tall'' in running speech.
 
-After running AutoVOT, instances of /p t k/ were subjected to exclusionary criteria to catch errors and exclude tokens immediately after a code switch. Tokens were excluded if there was substantial enough misalignment such that the AutoVOT offset did not fall within the original force-aligned boundaries of the word ($n=567$). Tokens were also excluded if the previous word was unknown (i.e., unintelligible or in a different language; $n=263$), if VOT was equal to the minimum value of 15 ms ($n=446$), or if tokens had a VOT more than 2.5 standard deviations above the grand mean ($>129.5$ ms; $n=191$).
+After running AutoVOT, instances of /p t k/ were subjected to exclusionary criteria to catch errors and exclude tokens immediately after a code switch. Tokens were excluded if there was substantial enough misalignment such that the AutoVOT offset did not fall within the original force-aligned boundaries of the word ($n=567$). Tokens were also excluded if the previous word was unknown (i.e., unintelligible or in a different language; $n=263$), if VOT was equal to the minimum value of 15 ms ($n=446$), or if tokens had a VOT more than 2.5 standard deviations above the grand mean ($>129.5$ ms; $n=191$), as in \citet{chodroff_2017_structure}.
 
-Of the initial sample, 14.1\% was excluded, resulting in 8,961 stop tokens, summarized in Table \ref{ch3:tab:counts}. Talkers had a median of 97 Cantonese stops (range: 54-194) and 150.5 English stops (range: 73-540). Cantonese stops were culled at a slightly higher rate---they represent 43\% of the initial sample, but only 38\% of the final, post-exclusions sample. As there were comparable amounts of recorded speech in each language, the higher number of English stops is likely due primarily to lexical distributional reasons. Additionally, English has a greater number of highly frequent /k/-initial word types, while Cantonese /p/ occurs in fewer, less frequent word types in the final sample ($n=60$, max frequency of 97) than English ($n=158$, max frequency of 215).
+Of the initial sample, 14.1\% was excluded, resulting in 8,961 stop tokens, summarized in Table \ref{ch3:tab:counts}. Talkers had a median of 97 Cantonese stops (range: 54-194) and 150.5 English stops (range: 73-540). Cantonese stops were culled at a slightly higher rate---they represent 43\% of the initial sample, but only 38\% of the final, post-exclusions sample. As there were comparable amounts of recorded speech in each language, the higher number of English stops in both the initial and final sample is likely due primarily to lexical distributional reasons. In addition to reporting on token frequency, Table \ref{ch3:tab:counts} also summarizes the number of word types for each of the segments in each language. 
+
+Additionally, English has a greater number of highly frequent /k/-initial word types, while Cantonese /p/ occurs in fewer, less frequent word types in the final sample ($n=60$, max token frequency of 97) than English ($n=158$, max token frequency of 215). 
 
 \begin{table}[htb]
-  \caption{The number of stop tokens for each language and sound category.}
+  \caption{The number of stop tokens (overall and range across talkers) and word types for each language and sound category.}
   \label{ch3:tab:counts}
   \centering
-  \begin{tabular}{llll}
+  \begin{tabular}{lllll}
     \toprule
-    \textbf{Language}  & \textbf{/p/} & \textbf{/t/} & \textbf{/k/} \\
+    \textbf{Language} & \textbf{Frequency} & \textbf{/p/} & \textbf{/t/} & \textbf{/k/} \\
     \midrule
-    Cantonese & 374          & 1373         & 1688   \\
-    English   & 1035         & 1336         & 3155   \\
+    Cantonese         & Token (overall) & 374      & 1373         & 1688    \\
+                      & Token (range)   & 0--32    & 17-79        & 19--116 \\
+                      & Type (overall)  & 60       & 157          & 68      \\
+    English           & Token (overall) & 1035     & 1336         & 3155   \\
+                      & Range (tokens)  & 4--96    & 15--150      & 52--294 \\
+                      & Type  (overall) & 158      & 143          & 208     \\
     \bottomrule     
   \end{tabular}
 \end{table}
 
-
 \section{Analysis and results}
 
-The articulatory uniformity framework offers solid theoretical grounds for interpreting the structure of VOT variation within and across talkers. This analysis qualifies and quantifies that structure from a few different angles. Section \ref{ch4:sec:ordrel} describes the ordinal relationship between each of the segments across talkers and languages. Section \ref{ch4:sec:correlations} reports on a series of pairwise correlations of talker means for each of the three segments in each language. Lastly, Section \ref{ch4:sec:lmem} comprises the results of a Bayesian mixed-effects model aimed at elucidating the role of language while accounting for variables known to impact VOT.
+The articulatory uniformity framework offers solid theoretical grounds for interpreting the structure of VOT variation within and across talkers. This analysis provides a qualitative description and quantifies that structure from a few different angles. Section \ref{ch4:sec:ordrel} describes the ordinal relationship between each of the segments across talkers and languages (i.e., how they are ordered by VOT). Section \ref{ch4:sec:correlations} reports on a series of pairwise correlations of talker means for each of the three segments in each language. Lastly, Section \ref{ch4:sec:lmem} comprises the results of a Bayesian mixed-effects model aimed at elucidating the role of language while accounting for variables known to impact VOT.
 
 \subsection{Ordinal relationships}\label{ch4:sec:ordrel}
 
-Prior work with lab and read speech strongly suggests an expected ordinal relationship for VOT across places of articulation, in which /p/ is consistently shorter than /k/ and /t/ tends to fall in the middle. The argument for this widely attested pattern is based on vocal tract aerodynamics and articulatory constraints \citep{cho_1999_vot}. One of the major contributions of \citet{chodroff_2017_structure} is that these relationships are tighter than would be expected from a purely ordinal perspective. While ordinal relationships are a starting place, they represent just one piece of the puzzle. 
+Prior work with lab and read speech strongly suggests an expected ordinal relationship for VOT across places of articulation, in which /p/ is consistently shorter than /k/ and /t/ tends to fall in the middle. The argument for this widely attested pattern is based on vocal tract aerodynamics and articulatory constraints \citep{cho_1999_vot}. One of the major contributions of \citet{chodroff_2017_structure} is that these ordinal relationships are much more constrained than would be expected from a purely ordinal perspective. While ordinal relationships are a starting place, they represent just one piece of the puzzle. 
 
-The results presented in this section suggest that \textit{puzzle} is an appropriate characterization, as talkers largely did not adhere to the expected order. While there is some reason to expect coronals not to pattern accordingly---particularly in English---the relationship between /p/ and /k/ is inconsistent across talkers. Table \ref{tab:ordrel} reports the proportion of talkers whose mean VOT values followed the expected /p/ $<$ /t/ $<$ /k/ relationships. Prior work with connected speech reports rates of adherence in the 80-90\% range, with the exception of /t/ $<$ /k/ being drastically lower for native English speakers \citep{chodroff_2019_l2}. While the English /t/ $<$ /k/ comparison is remarkably low here at 6\%, only English /p/ $<$ /t/ falls in the range that prior work suggests, at 82\%. This lack of adherence is apparent in the relative ordering or markers in Figures \ref{ch4:fig:ordrelvf} and \ref{ch4:fig:ordrelvm}, which depict the mean and standard error of VOT for each segment, language, and talker. The goal of Figures \ref{ch4:fig:ordrelvf} and \ref{ch4:fig:ordrelvm} is to showcase the variety of patterns across individuals and to highlight that a single summary plot of means only would be inappropriate. In many cases, the standard errors for the different segments in a given talker's panel overlap, as is the case for VM21B in Figure \ref{ch4:fig:ordrelvm}. Such overlap indicates that strict ordering may not be appropriate here. Additionally, talkers do not appear to be consistent across languages. For example, talker VF19B in Figure \ref{ch4:fig:ordrelvf} exhibits a clear /p/ $<$ /t/ $<$ /k/ relationship in Cantonese, but a clear /p/ $<$ /k/ $<$ /t/ relationship in English.
+The results presented in this section suggest that \textit{puzzle} is an appropriate characterization, as talkers largely did not adhere to the expected order. While there is some reason to expect coronals not to pattern accordingly in English, as \citeauthor{chodroff_2017_structure} report its behavior as more variable across dialects of English, the relationship between /p/ and /k/ is inconsistent across talkers in the SpiCE corpus. Table \ref{tab:ordrel} reports the proportion of talkers whose mean VOT values followed the expected /p/ $<$ /t/ $<$ /k/ relationships. Note that one talker (VM25A) did not have any instances of Cantonese /p/ in the final sample. The results of this analysis were unexpected. Cantonese /t/ is typically longer than Cantonese /p/---the opposite holds for English. Cantonese /k/ tends to be longer than Cantonese /t/, but this is almost never the case for English. The ordering of /p/ and /k/ is a toss-up in both languages. 
+
+Prior work with English connected speech reports rates of adherence in the 80-90\% range for all pairwise combinations, with the exception of /t/ $<$ /k/ being drastically lower for native English speakers in \citet{chodroff_2019_l2}. While the English /t/ $<$ /k/ comparison is remarkably low here at 6\%, only English /p/ $<$ /t/ falls in the range that prior work suggests, at 82\%. This lack of adherence is apparent in the relative ordering or markers in Figures \ref{ch4:fig:ordrelvf} and \ref{ch4:fig:ordrelvm}, which depict the mean and standard error of VOT for each segment, language, and talker. The goal of Figures \ref{ch4:fig:ordrelvf} and \ref{ch4:fig:ordrelvm} is to showcase the variety of patterns across individuals and to highlight that a single summary plot of means only would be inappropriate. In many cases, the standard errors for the different segments in a given talker's panel overlap, as is the case for VM21B in Figure \ref{ch4:fig:ordrelvm}. Such overlap in the standard errors indicates that strict ordering may not be appropriate here, as there is not a great deal of confidence in the means' ordering. Additionally, talkers do not appear to be consistent across languages. For example, talker VF19B in Figure \ref{ch4:fig:ordrelvf} exhibits a clear /p/ $<$ /t/ $<$ /k/ relationship in Cantonese, but a clear /p/ $<$ /k/ $<$ /t/ relationship in English. In fact, only three talkers in the corpus exhibit the same pattern of means across languages (VM21B, VM23A, and VM25A).
 
 \begin{table}[hb!]
-\caption{Proportion of talker means that adhered to expected ordinal relationship for VOT: /p/ $<$ /t/ $<$ /k/ VOT durations. Note that talker VM25A has no instances of Cantonese /p/ in the final sample.}
+\caption{Proportion of talker means that adhered to expected ordinal relationship for VOT: /p/ $<$ /t/ $<$ /k/ mean VOT durations. Note that talker VM25A has no instances of Cantonese /p/ in the final sample.}
   \label{tab:ordrel}
   \centering
-  \begin{tabular}{lllll}
+  \begin{tabular}{llllll}
     \toprule
-    \textbf{Language} & \textbf{/p/$<$/t/} & \textbf{/t/$<$/k/} & \textbf{/p/$<$/k/} & \textbf{N} \\
-    \midrule
-    Cantonese & 0.24  & 0.61  & 0.39  & 33 \\
-    English     & 0.82  & 0.06  & 0.47  & 34 \\
+    \textbf{Language} & \textbf{/p/$<$/t/} & \textbf{/t/$<$/k/} & \textbf{/p/$<$/k/} & \textbf{/p/$<$/t/$<$/k/} &  \textbf{N} \\
+    \midrule 
+    Cantonese   & 0.24  & 0.61  & 0.39  &  0.15 & 33 \\
+    English     & 0.82  & 0.06  & 0.47  &  0.00  & 34 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -137,34 +144,16 @@ The results presented in this section suggest that \textit{puzzle} is an appropr
 \begin{figure}[htbp]
   \begin{center}
   \includegraphics[width=0.9\linewidth]{figures/ch4_ordrel_vm_5in.png} 
-  \caption{This figure depicts the ordinal relationships for the male talkers. Each panel depicts the mean VOT and standard error for VOT for each segment, with E(nglish) and C(antonese) in separate rows.}
+  \caption{This figure depicts the ordinal relationships for the male talkers. Each panel depicts the mean VOT and standard error for VOT for each segment, with E(nglish) and C(antonese) in separate rows. VM25A had no /p/ tokens. }
   \label{ch4:fig:ordrelvm}
   \end{center}
 \end{figure}
 
 \subsection{Pairwise correlations}\label{ch4:sec:correlations}
 
-To examine the relationship between stops within and across languages, 15 pairwise Pearson's \textit{r} correlations were calculated using talker means. Each correlation compares talkers means for two different segments. The full set of pairwise correlations includes three within English, three within Cantonese, and nine comparing English to Cantonese. These correlations are reported along with Holm-adjusted \textit{p}-values to account for multiple comparisons. This analysis uses the \textit{psych} \citep{revelle_2021_psych} package in R \citep{r_2021}. As in \citet{chodroff_2017_structure}, this correlation analysis aims to elucidate within-talker invariance and between-talker variability. Tight correlations between-talker means signals within-talker invariance, while a wide-spread between points signals between-talker variability. While using means ignores information about within-category variability---a major shortcoming of this approach---prior work sets up strong, clear expectations about how the mean values for long-lag VOT pattern \citep{chodroff_2017_structure, cho_1999_vot}. The mixed-effects analysis in the following section takes this variation into account.
+To examine the relationship between stops within and across languages, 15 pairwise Pearson's \textit{r} correlations were calculated using talker means. Each correlation compares talkers means for two different segments. The full set of pairwise correlations includes three within English, three within Cantonese, and nine comparing English to Cantonese. These correlations are reported along with Holm-adjusted \textit{p}-values to account for multiple comparisons. This analysis uses the \textit{psych} \citep{revelle_2021_psych} package in R \citep{r_2021}. As in \citet{chodroff_2017_structure}, this correlation analysis aims to elucidate within-talker invariance and between-talker variability. Tight correlations for between-talker means signals within-talker invariance, while a wide spread between points signals between-talker variability. While using means ignores information about within-category variability---a major shortcoming of this approach---prior work sets up strong, clear expectations about how the mean values for long-lag VOT pattern \citep{chodroff_2017_structure, cho_1999_vot}. The mixed-effects analysis in the following section takes this variation into account.
 
-Table \ref{ch4:tab:correlations} summarizes the output of all 15 correlations in text form. Figure \ref{ch4:fig:correlations1} depicts the six within-language correlations and Figure \ref{ch4:fig:correlations2} depicts the across language correlations. While there is some evidence for both within- and across-language structured variation, the correlations reported here are considerably lower than prior work on English read speech, where within-language comparisons had $r>0.7$ \citep{chodroff_2017_structure, chodroff_2019_l2}. With the exception of the English /p/ $\sim$ /k/ ($r=0.70$, $p<0.001$), all of the correlations here were either moderate ($0.5<r<0.7$; $p<0.01$) or weak and non-significant. Within-English correlations were the most consistent---all three had \textit{r} at or above 0.65 (p $<$ 0.001). Of the within-Cantonese correlations only /p/ $\sim$ /t/ was significant (\textit{r}$=$ 0.59; \textit{p}$=$0.003), though the correlation for /p/ $\sim$ /k/ was marginal (\textit{r}$=$ 0.44; \textit{p}$=$0.08). This disparity across English and Cantonese for the same set of talkers highlights the need to study a variety of typologically distinct languages to understand how the structure of variation \textit{varies}.
-
-Two of three across-language correlations at the same place of articulation were significant, with moderate \textit{r} values (/p/ $\sim$ /p/: \textit{r}$=$0.62, \textit{p}$=$0.001; /k/ $\sim$ /k/: \textit{r}$=$0.57, \textit{p}$=$0.004). Notably, the correlation for /t/ $\sim$ /t/ was not significant (\textit{r}$=$0.40, \textit{p}$=$0.11), which may reflect the variable behavior of English coronals more broadly, even if the particular sample here only includes cases where aspiration was produced. Of the across-language comparisons that do not share a place of articulation, only one was significant---Cantonese /k/ $\sim$ English /p/ (\textit{r}$=$0.58, \textit{p}$=$0.003). Again, /t/ is absent here.
-
-\begin{figure}[htbp]
-  \begin{center}
-  \includegraphics[width=0.9\linewidth]{figures/ch4_correlations1_5in.png} 
-  \caption{Correlations for within-language pairwise comparisons of raw mean VOT are depicted with points representing talker means for the segments on the x and y axes, and superimposed linear smooths. The margins display histograms for each of the axes. Within-Cantonese comparisons are depicted in black, and within English comparisons in purple.}
-  \label{ch4:fig:correlations1}
-  \end{center}
-\end{figure}
-
-\begin{figure}[htbp]
-  \begin{center}
-  \includegraphics[width=0.9\linewidth]{figures/ch4_correlations2_5in.png} 
-  \caption{Correlations for the across-language comparisons of raw mean VOT are depcited in the same manner as Figure \ref{ch4:fig:correlations1}. Comparisons at the same place of articulation are depicted in pink, and comparisons at different places of articulation are in orange.} 
-  \label{ch4:fig:correlations2}
-  \end{center}
-\end{figure}
+Table \ref{ch4:tab:correlations} summarizes the output of all 15 correlations in text form. Figure \ref{ch4:fig:correlations1} depicts the six within-language correlations and Figure \ref{ch4:fig:correlations2} depicts the across-language correlations. While there is some evidence for both within- and across-language structured variation, the correlations reported here are considerably lower than prior work on English read speech, where within-language comparisons had $r>0.7$ \citep{chodroff_2017_structure, chodroff_2019_l2}. With the exception of the English /p/ $\sim$ /k/ ($r=0.70$, $p<0.001$), all of the correlations here were either moderate ($0.5<r<0.7$; $p<0.01$; n$=$6) or weak and non-significant (n$=$8). Within-English correlations were the most consistent---all three had \textit{r} at or above 0.65 (p $<$ 0.001). Of the within-Cantonese correlations only /p/ $\sim$ /t/ was significant (\textit{r}$=$ 0.59; \textit{p}$=$0.003). This disparity across English and Cantonese for the same set of talkers highlights the need to study a variety of typologically distinct languages to understand how the structure of variation \textit{varies}.
 
 \begin{table}[htbp]
   \caption{All 15 correlations are based on raw mean VOT---and separately, residual VOT after accounting for speaking rate---for each talker, language, and segment. Each row indicates the comparison, Pearson's \textit{r}, and the Holm-adjusted \textit{p}-value given 15 comparisons.}
@@ -198,13 +187,34 @@ Two of three across-language correlations at the same place of articulation were
     \end{tabular}
 \end{table}
 
+\begin{figure}[htbp] % XXX superimpose R on panels
+  \begin{center}
+  \includegraphics[width=0.9\linewidth]{figures/ch4_correlations1_5in.png} 
+  \caption{Correlations for within-language pairwise comparisons of raw mean VOT are depicted with points representing talker means for the segments on the x and y axes, and superimposed regression lines. The margins display histograms for each of the axes. Within-Cantonese comparisons are depicted in black, and within English comparisons in purple. \textit{Note that while some of the distributions in the margins appear different, they are not. This is an arifact of plotting the same distribution on different axes in different plots---they only appear mirrored.}}
+  \label{ch4:fig:correlations1}
+  \end{center}
+\end{figure}
+
+\begin{figure}[htbp]
+  \begin{center}
+  \includegraphics[width=0.9\linewidth]{figures/ch4_correlations2_5in.png} 
+  \caption{Correlations for the across-language comparisons of raw mean VOT are depcited in the same manner as Figure \ref{ch4:fig:correlations1}. Comparisons at the same place of articulation are depicted in pink, and comparisons at different places of articulation are in orange.} 
+  \label{ch4:fig:correlations2}
+  \end{center}
+\end{figure}
+
+Two of three across-language correlations at the same place of articulation were significant, with moderate \textit{r} values (/p/ $\sim$ /p/: \textit{r}$=$0.62, \textit{p}$=$0.001; /k/ $\sim$ /k/: \textit{r}$=$0.57, \textit{p}$=$0.004). Notably, the correlation for /t/ $\sim$ /t/ was not significant (\textit{r}$=$0.40, \textit{p}$=$0.11). Of the across-language comparisons that do not share a place of articulation, only one was significant---Cantonese /k/ $\sim$ English /p/ (\textit{r}$=$0.58, \textit{p}$=$0.003). Again, /t/ is absent here.
+
 \citet{chodroff_2017_structure} also repeat the correlation analysis in a way the coarsely accounts for speaking rate. This consideration is important, as the local speaking rate is known to influence long-lag VOT in spontaneous speech \citep{stuartsmith_2015_private} and because prior work demonstrates both talker and language effects on speech rate \citep{bradlow_2017_rate}. In comparing the two versions of the correlation analysis, \citeauthor{chodroff_2017_structure} found that ``the magnitudes of the correlations among voiceless stops did not deviate from the original magnitudes, demonstrating that differences among talkers in the realization of these sounds cannot be reduced to talker-specific speaking rates'' \citeyearpar[][p. 34]{chodroff_2017_structure}. 
 
-I conducted a similar analysis here, using means calculated over \textit{residual} VOT values from a simple linear regression in which VOT was predicted by average phone duration within the word. Average phone duration is a proxy for speech rate. It was calculated as the difference between the word's AutoVOT-estimated onset and force-aligned offset, divided by the number of segments in the canonical form of the word. The results---Pearson's \textit{r} and Holm-adjusted \textit{p} values---are reported in the rightmost columns of Table \ref{ch4:tab:correlations}. Qualitatively, the results mostly mirror the correlations based on raw VOT, though there are some differences in significance and magnitude. This difference can likely be attributed to the generally weak correlations found. 
+I conducted a similar analysis here, using means calculated over \textit{residual} VOT values from a simple linear regression in which VOT was predicted by average phone duration within the word. Average phone duration is a proxy for speech rate. It was calculated as the difference between the word's AutoVOT-estimated onset and force-aligned offset, divided by the number of segments in the canonical form of the word. The results---Pearson's \textit{r} and Holm-adjusted \textit{p} values---are reported in the rightmost columns of Table \ref{ch4:tab:correlations}. Qualitatively, the results mostly mirror the correlations based on raw VOT, though there are some differences in significance and magnitude. Both versions of the analysis support a conclusion in which the patterns are weak overall.
 
-While these relationships indicate some degree of articulatory reuse, the overall picture is far from compelling, particularly when considered alongside the results of the analysis of the ordinal relationships in Section \ref{ch4:sec:ordrel}. Compared to prior work, these correlations are less consistent and generally weaker.
+While these relationships indicate some degree of articulatory reuse, the overall picture is far from compelling, particularly when considered alongside the results of the analysis of the ordinal relationships in Section \ref{ch4:sec:ordrel}. Compared to prior work, these correlations are less consistent and generally weaker, indicating that the uniformity constraint discussed in Section \ref{ch4:sec:uniformity} may not be as robust as previously argued. This point will be returned to in this chapter's discussion (Section \ref{ch4:sec:discuss}).
 
-The next steps in \citeauthor{chodroff_2017_structure}'s \citeyearpar{chodroff_2017_structure} methods focus on validating the strength of the correlations. Their approach includes estimating confidence intervals for the correlations using a bootstrap procedure. In a later paper, \citet{chodroff_2019_covariation} simulate what would emerge from a purely ordinal relationship between stops and demonstrate that the observed correlations are much stronger—ultimately arguing for a uniformity constraint on phonetic variation. Given that the correlations found in this chapter are drastically lower and largely do not adhere to the expected ordinal relationships, the remainder of this analysis takes a different approach.
+The next steps in \citeauthor{chodroff_2017_structure}'s \citeyearpar{chodroff_2017_structure} methods focus on validating the strength of the correlations. Their approach includes estimating confidence intervals for the correlations using a bootstrap procedure. In a later paper, \citet{chodroff_2019_covariation} simulate what would emerge from a purely ordinal relationship (i.e., a system where the only requirement was the relative VOT ordering of segments) between stops and demonstrate that the observed correlations are much stronger---ultimately arguing for a uniformity constraint on phonetic variation. Given that the correlations found in this chapter are drastically lower and largely do not adhere to the expected ordinal relationships, the remainder of this analysis takes a different approach.
+
+% revised to here
+%^
 
 \subsection{Linear mixed-effects model}\label{ch4:sec:lmem}
 
@@ -352,7 +362,7 @@ While the main takeaway from the population parameters is the difference in VOT 
   \end{center}
 \end{figure}
 
-\section{Discussion}
+\section{Discussion}\label{ch4:sec:discuss}
 
 This chapter reports on a study of long-lag stops in Cantonese-English bilingual speech from the SpiCE corpus described in Chapter \ref{ch2:corpus}. It leverages the uniformity framework to assess VOT similarity within and across languages from a few different angles. In broad strokes, the evidence for uniformity both within and across languages was somewhat mixed. 
 

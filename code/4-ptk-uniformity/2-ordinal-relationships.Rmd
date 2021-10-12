@@ -49,8 +49,31 @@ df %>%
     pt = sum(p<t)/n(), 
     tk = sum(t<k)/n(), 
     pk = sum(p<k)/n(),
+    ptk = sum(p<t & t<k)/n(),
     n=n()
     )
+```
+
+```{r}
+df %>%
+  group_by(talker, segment, language) %>%
+  summarise(mv = mean(vot_ms)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = 'segment', values_from = 'mv') %>%
+  ungroup() %>%
+  mutate(
+    order = if_else(p<t & t<k, 'ptk', ''),
+    order = if_else(p<k & k<t, 'pkt', order),
+    order = if_else(t<p & p<k, 'tpk', order),
+    order = if_else(t<k & k<p, 'tkp', order),
+    order = if_else(k<p & p<t, 'kpt', order),
+    order = if_else(k<t & t<p, 'ktp', order),
+  ) %>%
+  select(talker, language, order) %>%
+  pivot_wider(names_from=language, values_from=order) %>%
+  mutate(same_order = Cantonese==English) %>%
+  drop_na() %>%
+  summarize(sum(same_order))
 ```
 
 But... looking at just the talkers who produce more /p/ tokens doesn't really change those proportions in ways that better reflect expected ordinal relationships. Takeaway? These might be differences between spontaneous and read speech. 
@@ -84,6 +107,20 @@ df %>%
 ```
 
 ## Visualizing ordinal relationships
+
+
+
+## Visualizing within talker segment relationships
+```{r fig.width=7, fig.height=3.5}
+std.error <- function(x, na.rm = T) {
+  sqrt(var(x, na.rm = na.rm)/length(x[complete.cases(x)]))
+}
+
+df$segment <- as_factor(df$segment)
+df$segment <- forcats::fct_relevel(df$segment, 'p','t','k')
+levels(df$segment)
+```
+
 Ordinal relationships within talker by language, in graphical form -- probably wont include this in the paper
 ```{r fig.width=5.5, fig.height=6.5}
 df %>%
@@ -93,18 +130,18 @@ df %>%
   ungroup() %>%
   mutate(lower = mean_vot - se_vot, upper = mean_vot + se_vot) %>%
   mutate(segment = str_to_upper(segment), language = if_else(language=='English', 'E', 'C')) %>%
-  ggplot(aes(y=mean_vot, x=language, color=segment, shape=segment)) +
-  geom_point(size = 2.5 , position=position_dodge(width = 0.750)) +
-    geom_errorbar(width=0.85, size=0.5 ,aes(ymin = lower, ymax = upper), position=position_dodge(width = 0.75)) +
+  ggplot(aes(y=mean_vot, x=language, color=segment, shape=segment, label=segment)) +
+    geom_errorbar(width=0.85, size=0.5 ,aes(ymin = lower, ymax = upper), position=position_dodge(width = 0.75), alpha=0.35) +
     scale_color_viridis_d(option = 'magma', begin = 0, end = 0.7, breaks = c('P','T','K')) +
-    scale_shape_discrete(breaks = c('P','T','K')) +
+    #scale_shape_discrete(breaks = c('P','T','K')) +
+    geom_text(size = 2.5 , position=position_dodge(width = 0.750), fontface = "bold") +
   ylab('Mean VOT (ms)') +
   xlab('') +
   coord_flip() +
-  facet_wrap(~talker, ncol=3, scales='free_x') +
+  facet_wrap(~talker, ncol=3) +
     theme(
       panel.grid.major.x = element_line(color = 'gray', linetype='dotted'),
-      legend.position = 'right'
+      legend.position = 'none'
     )
 
 ggsave('../../text/figures/ch4_ordrel_vm_5in.png', height = 6.5, width = 5, units='in')
@@ -119,17 +156,6 @@ df %>%
 ```
 
 
-
-## Visualizing within talker segment relationships
-```{r fig.width=7, fig.height=3.5}
-std.error <- function(x, na.rm = T) {
-  sqrt(var(x, na.rm = na.rm)/length(x[complete.cases(x)]))
-}
-
-df$segment <- as_factor(df$segment)
-df$segment <- forcats::fct_relevel(df$segment, 'p','t','k')
-levels(df$segment)
-```
 
 
 ```{r fig.height=4, fig.width=7.5}
