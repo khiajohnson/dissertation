@@ -211,14 +211,14 @@ rsamples <- posterior_samples(m) %>%
   separate(name, into = c('talker', 'parameter'), sep = ',') %>%
   mutate(talker = str_replace(talker, 'r_talker\\[', ''),
          parameter = str_replace(parameter, '\\]',''),
-         parameter = str_replace(parameter, 'languageEnglish', 'Langauge (English)'),
+         parameter = str_replace(parameter, 'languageEnglish', 'Language (English)'),
          parameter = str_replace(parameter, 'segmentk', 'Place (K)'),
          parameter = str_replace(parameter, 'segmentt', 'Place (T)'),
          parameter = str_replace(parameter, ':', ' ×\n'),
          parameter = as_factor(parameter)
          )
 
-levels(rsamples$parameter) <- c("Intercept", "Place (T)", "Place (K)", "Langauge (English)", "Place (T) ×\nLangauge (English)", "Place (K) ×\nLangauge (English)")
+levels(rsamples$parameter) <- c("Intercept", "Place (T)", "Place (K)", "Language (English)", "Place (T) ×\nLanguage (English)", "Place (K) ×\nLanguage (English)")
 ```
 
 ```{r fig.width=5, fig.height=7}
