@@ -10,6 +10,6 @@ This dissertation is still under review by my examining committee. Please don't 
 
 The written dissertation in this repository---that is, everything in the `text` directory---is licensed under a [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License](https://creativecommons.org/licenses/by-nc-nd/4.0/). 
 
-The data is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/), as specified in the [SpiCE Corpus Documentation](https://spice-corpus.readthedocs.io/en/latest/). 
+The data is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/), as specified in the [SpiCE Corpus Documentation](https://spice-corpus.readthedocs.io/en/latest/). This includes the data for Chapter 3 that is housed in a [OSF repository](https://osf.io/ybdkw/).
 
 The code in this repository---that is, everything in the `code` directory, is licensed under an [MIT License](https://github.com/git/git-scm.com/blob/main/MIT-LICENSE.txt).
