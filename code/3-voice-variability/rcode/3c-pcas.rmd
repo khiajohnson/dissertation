@@ -1,11 +1,13 @@
 ---
-title: 'Chapter 3: PCAs for varying passage lengths'
+title: 'Chapter 3: PCAs'
 author: "Khia A. Johnson"
 date: "7/23/2021"
 output: html_document
 ---
 
-# Imports & load data
+This file accompanies the principal componenent analysis portion of Chapter 3.
+
+# Setup
 ```{r message=FALSE, warning=FALSE}
 library(tidyverse)
 library(ggthemes)
@@ -34,7 +36,7 @@ df <- fread('../data/spice_voicesauce_processed.csv', sep = ',')
 grouping_vars <- read_csv('../data/spice_grouping_vars.csv')
 ```
 
-
+# Truncate 
 
 Summarize range of samples across interviews
 ```{r}
@@ -45,12 +47,17 @@ df %>%
     summarise(min(n), median(n), max(n))
 ```
 
+Create a truncated version of the dataframe, so that each participant has the same number of samples
 ```{r}
 df_trunc <- df %>%
     group_by(File) %>%
     slice_head(n=20124)
 nrow(df_trunc)
 ```
+
+# PCA
+
+## Run PCAs
 
 Function to run PCA for a single talker with promax rotation/standardization and process the output
 ```{r}
@@ -89,7 +96,6 @@ run_pca <- function(one_talker_df, filename, n=0) {
 }
 ```
 
-
 Using the function `run_pca()` function defined above, does PCA separately for each Talker/Language combo, and saves to `list_results`. *Note: prints file names as they finish running.*
 ```{r fig.height=4, fig.width=4}
 list_results <- list()
@@ -101,13 +107,14 @@ for (f in files) {
   list_results[[f]] <- this_pca
   print(f)
 }
+
+saveRDS(list_results, file='../data/pca_results_truncated.rds')
 ```
 
+Load the results if already run
 ```{r}
-saveRDS(list_results, file='../data/pca_results_truncated.rds')
 list_results <- readRDS(file='../data/pca_results_truncated.rds')
 ```
-
 
 Wrangle the `list_results` object into a more useable dataframe, and save it.  
 ```{r message=FALSE, warning=FALSE}
@@ -140,14 +147,14 @@ Clean up intermediate and auxiliary things
 rm(this_file, this_pca, f,variance_orders, grouping_vars)
 ```
 
-**cleaned up code until here**
 
-## Analyze PCA results
+## Analyze PCAs
+
 ```{r}
 results <- read_csv('../data/pca_results_truncated.csv')
 ```
 
-Plot a single talkers PCA in vertical format for exposition purposes in diss
+Plot a single talker's PCA in vertical format for exposition purposes in diss
 ```{r fig.height=6.5, fig.width=5}
 subset <- results %>%
     filter(Talker=='VF32A', abs(Loading) > 0.45) %>%
@@ -180,10 +187,9 @@ ggplot(subset, aes(y=Loading, x=Bar_Order, fill=Category, label=Variable)) +
         panel.border = element_rect(color = "lightgray", fill = NA, size = 0.5),
         plot.title = element_text(hjust = 0.5)) 
 
-ggsave('../../../text/figures/ch3_pca_vf32a_vert5in.png', width = 5, height = 7)
+# ggsave('../../../text/figures/ch3_pca_vf32a_vert5in.png', width = 5, height = 7)
 ```
-
-Inspect component counts and total variance accounte for across talkers, for table in dissertation
+Inspect component counts and total variance accounted for across talkers, for table in dissertation
 ```{r}
 results %>%
   filter(abs(Loading)>0.45) %>%
@@ -194,7 +200,6 @@ results %>%
   summarize(n=n(), sum_variance = sum(Variance)) %>%
   ungroup()  %>%
   pivot_wider(names_from = Language, values_from = n:sum_variance) 
-  # write_csv('components_variances.csv')
 ```
 
 Get a count of how many talkers have the same number of components across languages, versus a difference of 1 or 2
@@ -211,9 +216,7 @@ results %>%
   summarise(n())
 ```
 
-Compute how many components are shared across languages for each talker, 
-as well as a proportion of the total number of components that talker has across languages.
-Run without last two lines for individual numbers
+Compute how many components are shared across languages for each talker, as well as a proportion of the total number of components that talker has across languages. Run without last two lines for individual numbers.
 ```{r}
 results %>%
   filter(abs(Loading)>0.45) %>%
@@ -239,7 +242,7 @@ results %>%
 
 ```
 
-Messy block of code that can be used to manually inspect component composition
+This is a messy block of code that can be used to manually inspect component composition. In it's current form, it outputs all unique component configurations, along with the number of times it occurs, the minimum and maximum variance accounted for. 
 ```{r fig.width= 12, fig.height=6.5}
 results %>%
   filter(abs(Loading)>0.45) %>%
@@ -260,9 +263,9 @@ results %>%
   summarise(n=n(), minV = min(Variance), maxV = max(Variance)) %>%
   arrange(desc(maxV), Component) %>%
   ungroup()
-  # write_csv('component_summary.csv')
 ```
 
+This messy block of code was used to inspect and count how component configurations did or didn't differ across languages. It *was* tedious. 
 ```{r}
 results %>%
   filter(abs(Loading)>0.45) %>%
@@ -279,49 +282,5 @@ results %>%
          H42Kc, H42Kc_sd, CPP, CPP_sd, Energy, Energy_sd, SHR, SHR_sd)
 
 ```
-
-Identical: 
-Diff by 1: xxxxxx
-Diff by more" xxxx
-
-
-11 talkers had the same component configuration for H1*--H2*, and another 11 had similar component structures, differing in only 1 loading.
-In 6 cases, H1--H2 only emerged in only 1 language, and in another 6 instances there were larger component structure differences.
-
-
-Only emerged in 1 language: xxxxxx
-Differ by 1 loading: xxxxxxxxxxx
-Differ by more than 1: xxxxxx
-
-complex loading, VM19A - edit dist 1 for one of the comparisons
-
-Complex loading counts
-F0,       E-1 C-2 
-F0_sd,    E-1 C-2 
-F2,       E-1
-F3,       C-1
-F3_sd,    C-1
-F4,       C-1
-F4_sd,    C-1
-H1H2c,    C-1 E-1
-H1H2c_sd, C-1 E-1
-H2H4c,    C-3 E-3
-H2KH5Kc,  C-1 E-1
-H42Kc,    E-1
-CPP,      E-1
-Energy_sd, E-1
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---

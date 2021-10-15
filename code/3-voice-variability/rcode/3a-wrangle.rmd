@@ -5,6 +5,10 @@ date: "7/23/2021"
 output: html_document
 ---
 
+This file does data wrangling for the analyses in Chapter 3. The `spice_voicesauce_raw.csv` file can be downloaded from the `data` directory at <https://osf.io/ybdkw/>---at 2.71 GB, it's much too big for GitHub. 
+
+# Set-up
+
 ```{r message=FALSE}
 library(data.table)
 library(tidyverse)
@@ -13,13 +17,15 @@ library(ggthemes)
 library(zoo)
 ```
 
-Import the voicesauce output (here, for a two talkers), grab information from the filename, and inspect the tibble
+Import the voicesauce output
 ```{r}
 df <- fread('../data/spice_voicesauce_raw.csv', sep = ',') 
 nrow(df)
 ```
 
-Wrangle columns
+# Wrangle and filter
+
+Grab information from the filename, and inspect the tibble
 ```{r}
 df <- df %>% 
     mutate(i = t_ms/5) %>%
@@ -49,6 +55,7 @@ df <- df %>%
       )
 ```
 
+Calculate a cutoff to use for Energy
 ```{r}
 df %>%
   select(Energy) %>%
@@ -56,15 +63,17 @@ df %>%
   summarise(mean(Energy)+ 3*sd(Energy))
 ```
 
-Filter likely errors
+Filter likely errors, and keep track of percent excluded. Because re-running this file isn't super quick, the output was: 
+`filter: removed 2,417,994 rows (37%), 4,142,409 rows remaining`
 ```{r}
 df <- df %>% 
   tidylog::filter(F0>0, CPP>0, F1>0, F2>0, F3>0, F4>0, CPP!=0.0, H5Ku!=0.0, Energy<11.54119) 
-
 ```
-filter: removed 2,417,994 rows (37%), 4,142,409 rows remaining
 
+# Compute rolling sds
 
+Convert to a time series tibble, calculate the rolling standard deviations, and filter out NAs resulting from proximity to an edge. The output was: 
+`OUT: drop_na (grouped): removed 1,094,453 rows (26%), 3,071,736 rows remaining`
 ```{r}
 df <- as_tsibble(df, key = c(File, seg_Start, seg_End), index = i)
 
@@ -90,17 +99,16 @@ df <- df %>%
          ) %>%
   tidylog::drop_na() 
 ```
-OUT: drop_na (grouped): removed 1,094,453 rows (26%), 3,071,736 rows remaining
 
-
-Ungroup and inspect
+Ungroup and inspect the time series tibble
 ```{r}
 df <- ungroup(df)
-
 head(df)
 ```
 
-write processed data file
+# Save processed output
+
+Write processed data file. This is also saved in the OSF repository linked at the top of this file. 
 ```{r}
 fwrite(df, '../data/spice_voicesauce_processed.csv', sep = ',')
 ```

@@ -5,6 +5,13 @@ date: "8/17/2021"
 output: html_document
 ---
 
+This file accompanies the passage length analysis in Chapter 3.
+
+---
+
+# Setup
+
+Imports
 ```{r}
 library(tidyverse)
 library(ggthemes)
@@ -15,10 +22,12 @@ library(data.table)
 library(psych)
 ```
 
+Load data
 ```{r}
 df <- fread('../data/spice_voicesauce_processed.csv', sep = ',') 
 ```
 
+Viz defaults
 ```{r}
 theme_set(theme_clean() + theme(
       legend.title = element_text(face = 'bold', size=10),
@@ -31,8 +40,9 @@ theme_set(theme_clean() + theme(
     ))
 ```
 
+# PCAs with variable passage length
 
-### Variable passage length stuff
+## Run
 
 Function to get the PCA loadings for a subset of the big dataframe
 ```{r}
@@ -80,26 +90,12 @@ get_pca_loadings_tibble_pl <- function(f) {
 }
 ```
 
-seq
-
-- Manually fix number of components (striation issue)
-- go up to individual maximum with steps that get increasingly far apart
-biggest 74k
-
+Set the possible sample sizes
 ```{r}
 lengths <- c(500, 2000, 4500, 8000, 12500, 18000, 24500, 32000, 40500, 50000, 60500, 72000)
-
-lengths - c(0, 500, 2000, 4500, 8000, 12500, 18000, 24500, 32000, 40500, 50000, 60500)
-
 ```
 
-```{r}
-unique(df$File)[21:68]
-```
-
-VF22A_Cantonese_I1_20181206
-
-
+Run PCAs with fixed number of components and save the outpus
 ```{r}
 files <- unique(df$File)[21:68]
 # pl_list_results <- list()
@@ -141,12 +137,12 @@ fwrite(pl_results, '../data/passage_length_pca_results.csv', sep = ',')
 
 ```
 
-
+Load the pca results if already run
 ```{r}
 pl_results <- read_csv('../data/passage_length_pca_results.csv')
 ```
 
-
+Generate list of all the pairs to test and calculate redundancy.
 ```{r}
 all_pairs <- tibble(V1 = unique(pl_results$File)) %>%
   separate(V1, sep='_I[12]_[0-9]+_', into = c('File','Length'), remove=FALSE) %>%
@@ -180,9 +176,18 @@ pl_all_redundancy <- as_tibble(cbind(px,py,xs,ys)) %>%
   unnest(c(px,py,xs,ys))
 
 rm(px,py,xs,ys, x_file, y_file, this_CCA, this_red)
+
+fwrite(pl_all_redundancy, '../data/passage_length_redundancy_results.csv', sep = ',')
 ```
 
+Load if already run
+```{r}
+pl_all_redundancy <- read_csv('../data/passage_length_redundancy_results.csv')
+```
 
+## Visualize
+
+Plot how redundancy changes over the course of changing passage length
 ```{r fig.width=5, fig.height=3}
 pl_all_redundancy %>%
     separate(py, into = c('Talker','Language')) %>%
