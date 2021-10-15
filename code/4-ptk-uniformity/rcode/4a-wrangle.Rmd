@@ -1,14 +1,14 @@
 ---
-title: "1. /ptk/ uniformity - wrangle"
+title: "Chapter 4: Wrangle"
 author: "Khia A Johnson"
 date: "3/31/2021"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+This file wrangles and sets up the data for the analyses in chapter 4
 
+# Setup
+Imports
 ```{r import}
 library(tidyverse)
 library(tidylog, warn.conflicts = FALSE)
@@ -17,10 +17,10 @@ library(DBI)
 
 Load the ptk dataframe extracted from spice.db with both forced alignment and autovot tables
 ```{r}
-df <- read_csv('dfs/ptk_20210324.csv')
+df <- read_csv('../data/ptk_20210324.csv')
 ```
 
-Load pronunciation dictionary data (saved outside of repo, available with SpiCE corpus), combine into a single dictionary and clean up.
+Load pronunciation dictionary data (saved outside of repo, available with SpiCE corpus), combine into a single dictionary and clean up. 
 ```{r}
 cantodict <- read_tsv('~/Corpora/spice/info/alignment/cantonese_pronunciation.dict', 
                       col_names = c('word', 'pronunciation'))
@@ -59,7 +59,7 @@ df <- df %>%
 
 Connect to SpiCE SQLite database
 ```{r}
-db <- dbConnect(RSQLite::SQLite(), "../1-general/spice.db")
+db <- dbConnect(RSQLite::SQLite(), "../../1-general/spice.db")
 dbListTables(db)
 ```
 
@@ -85,6 +85,8 @@ df <- df %>%
   mutate(is_post_pausal = prev_phone %in% c('sp','sil')) %>%
   select(talker, language, segment=avot_phone, vot_ms, is_post_pausal, following_vowel=next_phone, avg_phone_dur_ms, prev_word, word, pronunciation)
 ```
+
+# Basic queries
 
 What proportion of the sample is Cantonese before filtering?
 ```{r}
@@ -150,7 +152,6 @@ df %>%
   select(language, p, t, k)
 ```
 
-
 Explore why Cantonese /p/ counts are lower
 ```{r}
 df %>%
@@ -179,9 +180,11 @@ df %>%
   summarise(min(n), max(n), mean(n), median(n), n())
 ```
 
+# Output
+
 Select columns to keep and output clean data frame
 ```{r}
 df %>%
   select(talker, language, segment, following_vowel, vot_ms, is_post_pausal, avg_phone_dur_ms, word) %>%
-  write_csv('dfs/ptk_clean_20210602.csv')
+  write_csv('../data/ptk_clean_20210602.csv')
 ```

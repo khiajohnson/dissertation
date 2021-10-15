@@ -1,0 +1,197 @@
+---
+title: "Chapter 4: Pairwise correlations"
+author: "Khia A Johnson"
+date: "4/1/2021"
+output: html_document
+---
+
+This file accompanies the pairwise correlations part of Chapter 4
+---
+
+# Setup
+Imports
+```{r}
+library(tidyverse)
+library(ggthemes)
+library(gridExtra)
+library(psych)
+library(kableExtra)
+library(ggExtra)
+library(scales)
+```
+
+Viz defaults
+```{r}
+options(scipen = 999)
+
+theme_set(
+  theme_clean() + 
+  theme(
+      legend.title = element_blank(),
+      legend.text = element_text(size=8),
+      legend.position = 'bottom',
+      axis.title.x = element_text(size = 8, face='bold'),
+      axis.title.y = element_text(size = 8, face='bold'),
+      axis.text.x = element_text(size = 8),
+      axis.text.y = element_text(size = 8),
+      strip.text = element_text(size = 8, face='bold'),
+      )
+  )
+```
+
+Get color hexes from theme for manual setting later
+```{r}
+pal <- viridis_pal(option='magma', begin=0, end=0.85)
+show_col(pal(4))
+pal(4)
+```
+
+Load data
+```{r}
+df <- read_csv('../data/ptk_clean_20210602.csv') # this version used in Interspeech paper
+```
+
+Get means
+```{r}
+means <- df %>%
+  group_by(talker, language, segment) %>%
+  summarise(mean_vot_ms = mean(vot_ms)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = 'segment', values_from = 'mean_vot_ms') 
+```
+
+# Correlations
+
+## Raw VOT 
+
+### Calculate
+
+Prep wide format data frame
+```{r}
+dfsummary <- df %>%
+  group_by(talker, language, segment) %>%
+  summarise(mvot = mean(vot_ms)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = c('language','segment'), values_from = 'mvot') %>%
+  select(
+    `Cantonese P`=Cantonese_p, 
+    `Cantonese T`=Cantonese_t, 
+    `Cantonese K`=Cantonese_k, 
+    `English P`=English_p, 
+    `English T`=English_t, 
+    `English K`=English_k)
+```
+
+Prep wide summary data frame and run correlation
+```{r}
+dfout <- corr.test(dfsummary, method='pearson', adjust = 'holm')
+
+dfout$ci %>%
+  rownames_to_column(var = 'comparison') %>%
+  left_join(dfout$ci2, by=c('r','p')) %>%
+  select(comparison, r, p.adj) %>%
+  separate(comparison, into = c('a', 'b'), sep='-') %>%
+  mutate(r = round(r, 2), p.adj = round(p.adj, 4)) 
+```
+
+Run correlations with adjusted p-values and inspect output
+```{r}
+output <- corr.test(dfsummary, method='pearson', adjust = 'holm')
+output
+```
+
+### Visualize
+
+```{r}
+jointplot <- function(dataframe, col1, name1, col2, name2, color='black') {
+  p <- ggplot(dataframe, aes(x=col1, y=col2)) +
+    geom_point(color=color) +
+    geom_smooth(method='lm', formula = 'y ~ x', color=color, fill=color) +
+    scale_x_continuous(limits = c(10,90)) + 
+    scale_y_continuous(limits = c(10,90)) +
+    xlab(paste(name1, '(Mean VOT)', sep = ' ')) +
+    ylab(paste(name2,'(Mean VOT)', sep = ' ')) +
+    theme(
+      axis.title.x = element_text(size = 7, face='bold'),
+      axis.title.y = element_text(size = 7, face='bold'),
+    )
+  
+  x <- cor.test(x=col1, y=col2)
+  x <- paste("r =",as.character(round(x$estimate,2)))
+  
+  p <- p + annotate("text", x = 60, y = 15, label = x)
+
+  p <- ggMarginal(p, type="histogram", fill=color, color='white') 
+
+  return(p)
+}
+```
+
+```{r}
+cpt <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`Cantonese T`, 'Cantonese /t/', color='#000004FF')
+cpk <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`Cantonese K`, 'Cantonese /k/', color='#000004FF')
+ctk <- jointplot(dfsummary, dfsummary$`Cantonese T`, 'Cantonese /t/', dfsummary$`Cantonese K`, 'Cantonese /K/', color='#000004FF')
+ept <- jointplot(dfsummary, dfsummary$`English P`, 'English /p/', dfsummary$`English T`, 'English /t/', color='#5D177FFF')
+epk <- jointplot(dfsummary, dfsummary$`English P`, 'English /p/', dfsummary$`English K`, 'English /k/', color='#5D177FFF')
+etk <- jointplot(dfsummary, dfsummary$`English T`, 'English /t/', dfsummary$`English K`, 'English /K/', color='#5D177FFF')
+cep <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`English P`, 'English /p/', color='#D1426FFF')
+cet <- jointplot(dfsummary, dfsummary$`Cantonese T`, 'Cantonese /t/', dfsummary$`English T`, 'English /t/', color='#D1426FFF')
+cek <- jointplot(dfsummary, dfsummary$`Cantonese K`, 'Cantonese /k/', dfsummary$`English K`, 'English /K/', color='#D1426FFF')
+cpet <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`English T`, 'English /t/', color='#FEB77EFF')
+cpek <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`English K`, 'English /k/', color='#FEB77EFF')
+ctep <- jointplot(dfsummary, dfsummary$`Cantonese T`, 'Cantonese /t/', dfsummary$`English P`, 'English /p/', color='#FEB77EFF')
+ctek <- jointplot(dfsummary, dfsummary$`Cantonese T`, 'Cantonese /t/', dfsummary$`English K`, 'English /k/', color='#FEB77EFF')
+ckep <- jointplot(dfsummary, dfsummary$`Cantonese K`, 'Cantonese /k/', dfsummary$`English P`, 'English /p/', color='#FEB77EFF')
+cket <- jointplot(dfsummary, dfsummary$`Cantonese K`, 'Cantonese /k/', dfsummary$`English T`, 'English /t/', color='#FEB77EFF')
+```
+
+```{r}
+p <- grid.arrange(cpt, cpk, ctk, ept, epk, etk, ncol=3)
+# ggsave('../../text/figures/ch4_correlations1_5in.png', plot=p, height = 4, width = 6, units='in')
+```
+
+```{r}
+p <- grid.arrange(cep, cet, cek, cpet, cpek, ctep, ctek, ckep, cket, ncol=3)
+# ggsave('../../text/figures/ch4_correlations2_5in.png',plot=p, height = 6, width = 6, units='in')
+
+```
+
+
+## Residual VOT (accounting for rate)
+
+Compute residual VOT via simple VOT ~ rate regression, and add to data frame
+```{r}
+rdf <- df
+resmodel <- lm(vot_ms ~ avg_phone_dur_ms, data = rdf)
+rdf$residual_vot_ms <- resid(resmodel)
+```
+
+Prep wide summary data frame and run correlation
+```{r}
+rdfsummary <- rdf %>%
+  group_by(talker, language, segment) %>%
+  summarise(mvot = mean(residual_vot_ms)) %>%
+  ungroup() %>%
+  pivot_wider(names_from = c('language','segment'), values_from = 'mvot') %>%
+  select(
+    `Cantonese P`=Cantonese_p, 
+    `Cantonese T`=Cantonese_t, 
+    `Cantonese K`=Cantonese_k, 
+    `English P`=English_p, 
+    `English T`=English_t, 
+    `English K`=English_k)
+ 
+rdfout <- corr.test(rdfsummary, method='pearson', adjust = 'holm')
+```
+
+Print the table output for the residual VOT comparisons
+```{r}
+rdfout$ci %>%
+  rownames_to_column(var = 'comparison') %>%
+  left_join(rdfout$ci2, by=c('r','p')) %>%
+  select(comparison, r, p.adj) %>%
+  separate(comparison, into = c('a', 'b'), sep='-') %>%
+  mutate(r = round(r, 2), p.adj = round(p.adj, 4)) 
+```
+
+---

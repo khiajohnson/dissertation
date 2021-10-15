@@ -1,11 +1,16 @@
 ---
-title: "2. /ptk/ uniformity - ordinal relationships"
+title: "Chapter 4: Bayesian Mixed-Effects Model"
 author: "Khia A Johnson"
 date: "4/1/2021"
 output: html_document
 ---
-## Imports
-```{r message=FALSE, warning=FALSE}
+
+This file accompanies the mixed effects model part of Chapter 4
+
+# Setup
+
+Imports
+```{r}
 library(tidyverse)
 library(lme4)
 library(lmerTest)
@@ -16,7 +21,10 @@ library(brms)
 library(ggthemes)
 library(tidybayes)
 library(bayesplot)
+```
 
+Viz defaults
+```{r}
 options(scipen=999)
 
 theme_set(
@@ -34,10 +42,12 @@ theme_set(
   )
 ```
 
+Load data
 ```{r}
-df <- read_csv('dfs/ptk_clean_20210602.csv')
-df
+df <- read_csv('../data/ptk_clean_20210602.csv')
 ```
+
+# Model prep
 
 Center VOT and standardize average phone duration
 ```{r}
@@ -62,6 +72,7 @@ contrasts(df$language) <-  contr.wec(x=df$language, omitted = 'Cantonese')
 contrasts(df$language)
 ```
 
+Inspect raw and scaled vot
 ```{r fig.width=3}
 df %>%
   ggplot(aes(x=vot_scaled)) +
@@ -72,6 +83,7 @@ df %>%
   geom_histogram()
 ```
 
+Show default priors for model
 ```{r}
 get_prior(
   vot_z ~ 1 + segment * language + apd_z + is_post_pausal + (1 + segment * language | talker) + (1 | word),
@@ -80,8 +92,8 @@ get_prior(
 )
 ```
 
-
-Same model structure as Interspeech, but bayesian
+# Model 1
+Run and save the model. Note that the models are too big to upload to GitHub.
 ```{r}
 m <- 
   brm(
@@ -94,10 +106,11 @@ m <-
       prior(lkj(2), class = cor) 
       ),
     chains = 4, cores = 4, iter = 5000, warmup = 2500,
-    file = 'fits/m.gaussian.final'
+    file = '../fits/m.gaussian.final'
   )
 ```
 
+save the names of the population level parameters
 ```{r}
 betas <- m %>%
   get_variables() %>%
@@ -105,39 +118,33 @@ betas <- m %>%
   array()
 ```
 
-Model checks
+## Check the fit
+
+Trace plot
 ```{r fig.width=12, fig.height=4}
 mcmc_trace(m, pars = betas, facet_args = c(ncol = 4))
 ```
 
+Rhat 
 ```{r}
 mcmc_plot(m, type='rhat_hist')
 ```
 
+Effective sample size
 ```{r}
 mcmc_plot(m, type='neff_hist')
 ```
 
-Get variable names for use in later plotting
-```{r}
-as_tibble(get_variables(m))
-```
+## Model summary
 
-```{r}
-mean(df$vot_ms) / sd(df$vot_ms)
-```
-
-```{r}
-round(fixef(m),2)
-```
-
-
+Insepct the summary
 ```{r}
 summary(m)
-
 ```
 
+## Population-level parameter summary
 
+Creat a data frame of the posterior samples of the population level parameters
 ```{r}
 popsamples <- posterior_samples(m) %>% 
   select(
@@ -152,11 +159,9 @@ popsamples <- posterior_samples(m) %>%
     ) %>%
   pivot_longer(everything(), names_to = 'Parameter') %>%
   mutate(Parameter = as_factor(Parameter))
-
-
 ```
 
-
+Calculate the mean and proportion outside of the rope for population-level parameters
 ```{r}
 popsamples %>%
   mutate(outside_rope = value < -0.1 | value > 0.1) %>%
@@ -165,6 +170,7 @@ popsamples %>%
   summarise(mean(value), sum(outside_rope)/100)
 ```
 
+Plot the parameter summary with the ROPE.
 ```{r}
 popsamples %>%
   filter(Parameter != 'Intercept') %>%
@@ -174,10 +180,12 @@ popsamples %>%
   scale_y_discrete(limits = rev) +
   annotate("rect", xmin=-0.1, xmax=0.1, ymin=0, ymax=Inf, fill = '#FEB77EFF' , alpha=0.5)
 
-ggsave('../../text/figures/ch4_poppar_5in.png', height = 3, width = 5, units='in')
+# ggsave('../../text/figures/ch4_poppar_5in.png', height = 3, width = 5, units='in')
 ```
 
+# Grouping-level parameter summary
 
+Creat a data frame of the posterior samples of the standard deviations of the grouping parameters
 ```{r }
 sdsamples <- posterior_samples(m) %>%
   select(
@@ -193,7 +201,7 @@ sdsamples <- posterior_samples(m) %>%
   mutate(Parameter = as_factor(Parameter))
 ```
 
-
+Plot the SD summary
 ```{r}
 sdsamples %>%
   ggplot(aes(x = SD, y = Parameter)) +
@@ -201,9 +209,10 @@ sdsamples %>%
   scale_y_discrete(limits = rev) +
   xlab('Standard Deviation')
 
-ggsave('../../text/figures/ch4_grppar_5in.png', height = 3, width = 5, units='in')
+# ggsave('../../text/figures/ch4_grppar_5in.png', height = 3, width = 5, units='in')
 ```
 
+Creat a data frame of the posterior samples of the individual groups of grouping parameters and wrangle
 ```{r fig.height=10, fig.width=12}
 rsamples <- posterior_samples(m) %>% 
   select(starts_with("r_talker")) %>% 
@@ -221,6 +230,7 @@ rsamples <- posterior_samples(m) %>%
 levels(rsamples$parameter) <- c("Intercept", "Place (T)", "Place (K)", "Language (English)", "Place (T) ×\nLanguage (English)", "Place (K) ×\nLanguage (English)")
 ```
 
+Plot individual deviations for all grouping parameters
 ```{r fig.width=5, fig.height=7}
 rsamples %>%
   ggplot(aes(x = value, y = talker, ))+#color = parameter)) +
@@ -232,41 +242,27 @@ rsamples %>%
   ylab('Talker') + 
   xlab('Estimate')
 
-ggsave('../../text/figures/ch4_grpparvar_5in.png', height = 8.05, width = 5.75, units='in')
+# ggsave('../../text/figures/ch4_grpparvar_5in.png', height = 8.05, width = 5.75, units='in')
 
 ```
 
+## Posterior preditions for Place by Language
+
+Plot the conditional effects for talker by language using the fitted method
 ```{r}
-posterior_samples(m) %>% 
-  select(starts_with("r_word")) %>% 
-  pivot_longer(everything()) %>%
-  group_by(name) %>%
-  summarise(mv=mean(value)) %>%
-  arrange(desc(mv))
+sxl <- conditional_effects(m, effects = 'segment:language', method = 'fitted', prob=0.95)
+
+plot(sxl, plot = F)[[1]] + 
+  scale_color_viridis_d(option='magma', end=0.8) +
+  scale_x_discrete(limits=rev, breaks = c('p', 't', 'k'), labels = c('P', 'T', 'K')) +
+  xlab('Place') +
+  ylab('Estimated Mean VOT (z)')
+
+# ggsave('../../text/figures/ch4_conditionaleffects_4in.png', height = 3, width = 4, units='in')
+
 ```
 
-This makes for a ~5 ms interval that tracks with the gradient effects in McMurray et al (2002)
-```{r}
-sd(df$vot_ms) * 0.1
-```
-
-```{r}
-levels(df$segment) <- c('p', 't', 'k')
-
-df %>%
-  ggplot(aes(y=vot_ms, x=language)) +
-  geom_violin(alpha=0.5, aes(fill=language)) +
-  geom_line(aes(group = talker), alpha=0.5)+
-  
-  scale_fill_colorblind() + 
-  facet_wrap(~segment)
-```
-
-```{r}
-m$formula
-```
-
-Posterior predictions for average talker/word
+Generate posterior predictions for average talker/word
 ```{r}
 newdata <- data.frame(
   language = factor(c("Cantonese", "English","Cantonese", "English", "Cantonese", "English")),
@@ -278,21 +274,7 @@ newdata <- data.frame(
 pp <-predict(m, newdata = newdata, re_formula = ~ segment * language + apd_z + is_post_pausal, summary = FALSE)
 ```
 
-
-```{r}
-sxl <- conditional_effects(m, effects = 'segment:language', method = 'fitted', prob=0.95)
-
-plot(sxl, plot = F)[[1]] + 
-  scale_color_viridis_d(option='magma', end=0.8) +
-  scale_x_discrete(limits=rev, breaks = c('p', 't', 'k'), labels = c('P', 'T', 'K')) +
-  xlab('Place') +
-  ylab('Estimated Mean VOT (z)')
-
-ggsave('../../text/figures/ch4_conditionaleffects_4in.png', height = 3, width = 4, units='in')
-
-```
-
-
+Plot posterior predictions for average talker/word
 ```{r}
 as_tibble(pp) %>%
   select(Cantonese_P = V1, English_P = V2, Cantonese_T = V3, English_T = V4, Cantonese_K = V5, English_K = V6) %>%
@@ -309,27 +291,12 @@ as_tibble(pp) %>%
   xlab('Predicted value')
 ```
 
-```{r}
-as_tibble(pp) %>%
-  select(Cantonese_P = V1, English_P = V2, Cantonese_T = V3, English_T = V4, Cantonese_K = V5, English_K = V6) %>%
-  pivot_longer(everything()) %>%
-  separate(name, into = c('Language', 'Phone')) %>%
-  mutate(Phone = as_factor(Phone)) %>%
-  ggplot(aes(x=value, color=Phone)) +
-  geom_density()+
-  # scale_x_continuous(limits = c(0,3))+
-  geom_vline(xintercept=0, color='gray', linetype='dotted') +
-  facet_wrap(~Language) +
-  scale_color_viridis_d(option='magma', end=0.8) +
-  ylab('Density') +
-  xlab('Predicted value')
-```
 
+# Model 2: No interaction
 
-## Revisiting model structure
+## Run
 
-
-no interaction
+Run the model without interaction
 ```{r}
 m.noint <- 
   brm(
@@ -342,29 +309,33 @@ m.noint <-
       prior(lkj(2), class = cor) 
       ),
     chains = 4, cores = 4, iter = 5000, warmup = 2500,
-    file = 'fits/m.gaussian.noint'
+    file = '../fits/m.gaussian.noint'
   )
 ```
 
+## Compare
+
+Prep for model comparison
 ```{r}
 m.compare <- add_criterion(m, c("loo", "waic"))
 m.noint.compare <- add_criterion(m.noint, c("loo", "waic"))
+```
 
+Compare with ELPD
+```{r}
 loo_compare(m.compare, m.noint.compare)
 ```
 
-
+Output model weights
 ```{r}
 model_weights(m.compare, m.noint.compare, weights = 'loo')
 ```
 
-ok so model comparison says that the interaction is doing work
 
+# Model 3: No Word intercepts
 
-## How does exclusion of word pooling change things
+## Run
 
-
-no word pooling
 ```{r}
 m.noword <- 
   brm(
@@ -377,22 +348,23 @@ m.noword <-
       prior(lkj(2), class = cor) 
       ),
     chains = 4, cores = 4, iter = 5000, warmup = 2500,
-    file = 'fits/m.gaussian.noword'
+    file = '../fits/m.gaussian.noword'
   )
 ```
 
+## Examine
 
+Model summary
 ```{r}
 summary(m.noword)
 ```
 
-
+Conditional effects plot
 ```{r}
 conditional_effects(m.noword, effects = 'segment:language', method = 'fitted', prob=0.95)
 ```
 
-
-
+Population level parameter plot
 ```{r}
 popsamples.noword <- posterior_samples(m.noword) %>% 
   select(
@@ -417,6 +389,7 @@ popsamples.noword %>%
   annotate("rect", xmin=-0.1, xmax=0.1, ymin=0, ymax=Inf, fill = '#FEB77EFF' , alpha=0.5)
 ```
 
+Group level parameter plot
 ```{r}
 sdsamples.noword <- posterior_samples(m.noword) %>%
   select(
@@ -437,12 +410,11 @@ sdsamples.noword %>%
   xlab('Standard Deviation')
 ```
 
-
+Plot sds for both original and no-word-intercpet model at the same time
 ```{r}
 sdsamples.noword$model <- 'no-word-ints'
-```
 
-```{r}
+
 sdsamples %>%
   mutate(model = 'full') %>%
   bind_rows(sdsamples.noword) %>%
@@ -451,9 +423,5 @@ sdsamples %>%
   scale_y_discrete(limits = rev) +
   xlab('Standard Deviation') 
 ```
-
-
-
-sd
 
 

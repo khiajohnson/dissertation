@@ -1,19 +1,23 @@
 ---
-title: "2. /ptk/ uniformity - ordinal relationships"
+title: "Chapter 4: Ordinal relationships"
 author: "Khia A Johnson"
 date: "4/1/2021"
 output: html_document
 ---
 
-## setup
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+This file accompanies the analysis of ordinal relationships in Chapter 4
 
+---
+
+# Setup
+Imports
 ```{r}
 library(tidyverse)
 library(ggthemes)
+```
 
+Visualization defaults
+```{r}
 theme_set(
   theme_clean() + 
   theme(
@@ -29,13 +33,15 @@ theme_set(
   )
 ```
 
+Load data
 ```{r}
-df <- read_csv('dfs/ptk_clean_20210602.csv') # this version used for interspeech revisions
+df <- read_csv('../data/ptk_clean_20210602.csv') 
 head(df)
 ```
 
 ## Oridnal relationship proportions
-Proportion of talkers adhering to expected ptk duration relationships (more posterior --> longer) given prior work on connected (but not spontaneous) speech. These numbers are all over the map, though if we take the estimates for /p/ with a grain of salt (some individuals have very few tokens), the t-k comparison more or less follows expectations.
+
+Proportion of talkers adhering to expected ptk duration relationships (more posterior --> longer)
 ```{r}
 df %>%
   group_by(talker, segment, language) %>%
@@ -54,6 +60,7 @@ df %>%
     )
 ```
 
+How many talkers have the same PTK order across languages?
 ```{r}
 df %>%
   group_by(talker, segment, language) %>%
@@ -76,7 +83,7 @@ df %>%
   summarize(sum(same_order))
 ```
 
-But... looking at just the talkers who produce more /p/ tokens doesn't really change those proportions in ways that better reflect expected ordinal relationships. Takeaway? These might be differences between spontaneous and read speech. 
+Do the proportions change much if there's a minumum requirement for /p/ count? Not really
 ```{r}
 df %>%
   group_by(talker, segment, language) %>%
@@ -96,7 +103,7 @@ df %>%
     )
 ```
 
-Range of counts that the means are based on -- far fewer per talker for /p/
+Range of counts that the means are based on.
 ```{r}
 df %>%
   group_by(talker, segment, language) %>%
@@ -106,11 +113,10 @@ df %>%
   summarise(min(n), mean(n), max(n))
 ```
 
-## Visualizing ordinal relationships
 
+## Visualization
 
-
-## Visualizing within talker segment relationships
+Prep function for standar error and other variable wrangling
 ```{r fig.width=7, fig.height=3.5}
 std.error <- function(x, na.rm = T) {
   sqrt(var(x, na.rm = na.rm)/length(x[complete.cases(x)]))
@@ -118,7 +124,6 @@ std.error <- function(x, na.rm = T) {
 
 df$segment <- as_factor(df$segment)
 df$segment <- forcats::fct_relevel(df$segment, 'p','t','k')
-levels(df$segment)
 ```
 
 Ordinal relationships within talker by language, in graphical form -- probably wont include this in the paper
@@ -133,7 +138,6 @@ df %>%
   ggplot(aes(y=mean_vot, x=language, color=segment, shape=segment, label=segment)) +
     geom_errorbar(width=0.85, size=0.5 ,aes(ymin = lower, ymax = upper), position=position_dodge(width = 0.75), alpha=0.35) +
     scale_color_viridis_d(option = 'magma', begin = 0, end = 0.7, breaks = c('P','T','K')) +
-    #scale_shape_discrete(breaks = c('P','T','K')) +
     geom_text(size = 2.5 , position=position_dodge(width = 0.750), fontface = "bold") +
   ylab('Mean VOT (ms)') +
   xlab('') +
@@ -144,43 +148,5 @@ df %>%
       legend.position = 'none'
     )
 
-ggsave('../../text/figures/ch4_ordrel_vm_5in.png', height = 6.5, width = 5, units='in')
+# ggsave('../../text/figures/ch4_ordrel_vm_5in.png', height = 6.5, width = 5, units='in')
 ```
-
-
-
-```{r}
-df %>%
-  ggplot(aes(x=vot_ms, color=segment, linetype=language)) +
-  geom_boxplot()
-```
-
-
-
-
-```{r fig.height=4, fig.width=7.5}
-df %>%
-  group_by(talker, language, segment) %>%
-  summarise(mean_vot = mean(vot_ms), se_vot = std.error(vot_ms), n=n()) %>%
-  ungroup() %>%
-  mutate(language.dodged = if_else(language=='Cantonese', 1, 0),
-         language.dodged = if_else(segment=='p', language.dodged+0.2, language.dodged),
-         language.dodged = if_else(segment=='k', language.dodged-0.2, language.dodged)
-         ) %>%
-  ggplot(aes(y=language.dodged, x=mean_vot, shape=segment, color=segment, group=segment)) +
-    geom_point(size=1) +
-    geom_errorbar(alpha=0.85, size=.5, width = .2, aes(xmin = mean_vot-se_vot, xmax = mean_vot+se_vot)) +
-    geom_line(alpha=0.5, size=.5) +
-    scale_color_viridis_d(option = 'inferno', begin = 0.1, end = 0.75) +
-    scale_y_continuous(breaks = c(0,1), labels = c('E', 'C')) +
-    facet_wrap(~talker, ncol=7)+
-    labs(y="",  x="VOT (ms)") +
-    theme(
-      strip.text = element_text(size=6),
-      legend.position = 'bottom',
-      legend.spacing.y = unit(0, 'cm')
-    )
-# ggsave('figs/ptk_vot_individuals.png', height = 4.5, width = 7.5, units='in')
-# ggsave('figs/ptk_vot_individuals_vert.png', height = 8.5, width = 3.5, units='in') # Used in interspeech paper with manually moved legend - don't re-run; different sizes for paper and poster
-```
-
