@@ -1,7 +1,8 @@
 #%% [markdown]
-# # Setting up a sqlite3 database for the 4-tiered SpiCE textgrids
+# # This script sets up a sqlite3 database based on the 4-tiered SpiCE textgrids.
+# For more detail about what this script does, see: https://www.khiajohnson.com/post/2021-03/textgrid-sqlite-database/
 
-#%%
+#%% Imports
 import os
 import re
 import sqlite3 as sql
@@ -14,7 +15,7 @@ cdir = '/Users/khia/Corpora/spice/cantonese'
 paths = [os.path.join(edir,f) for f in os.listdir(edir) if f.endswith('TextGrid')]
 paths.extend([os.path.join(cdir,f) for f in os.listdir(cdir) if f.endswith('TextGrid')])
 
-# %% Prepare pandas data frames for each of the tiers with file, annotation, and timestamps
+# %% Create pandas dataframes for each of the tiers with file, annotation, and timestamps
 tasks = []
 utterances = []
 words = []
@@ -37,7 +38,7 @@ utterances = pd.DataFrame(utterances, columns = ['file', 'utterance', 'utterance
 words = pd.DataFrame(words, columns = ['file', 'word', 'word_onset', 'word_offset'])
 phones = pd.DataFrame(phones, columns = ['file', 'phone', 'phone_onset', 'phone_offset'])
 
-#%% Build the spice.db database with with the pandas dataframes and sqlite3, with a table per tier
+#%% Build the spice.db database with with the pandas dataframes and sqlite3, with one table per tier
 con = sql.connect('spice.db')
 tasks.to_sql('tasks', con)
 utterances.to_sql('utterances', con)

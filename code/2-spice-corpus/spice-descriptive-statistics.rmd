@@ -1,18 +1,18 @@
 ---
-title: "SpiCE Descriptive Statistics"
+title: "Chapter 2: The SpiCE Corpus"
 author: "Khia A. Johnson"
 date: "5/21/2021"
 output: html_document
 ---
 
-# Chapter 2: The SpiCE Corpus
-
 This file accompanies chapter 2 of my dissertation. It includes descriptive statistics and data visualization summarizing the participants and contents of the corpus in broad strokes.
 
 ---
-## Setup
-Import packages
-```{r message=FALSE}
+
+# Setup
+
+Imports
+```{r}
 library(tidyverse)
 library(ggthemes)
 library(GGally)
@@ -34,21 +34,20 @@ theme_set(theme_clean() + theme(
     ))
 ```
 
-Connect to SpiCE SQLite database
+Connect to the SpiCE SQLite database created in `../1-general/setup-spice-db.py` file, and print out the names of the tables.
 ```{r}
 db <- dbConnect(RSQLite::SQLite(), "../1-general/spice.db")
 dbListTables(db)
 ```
 
-Load the words and tasks tables, and join
+Load the words, tasks, and phones tables
 ```{r}
 words <- dbReadTable(db, "words")
 tasks <- dbReadTable(db, "tasks")
 phones <- dbReadTable(db, "phones")
-phones
 ```
 
-Query the full word table merged with task by time stamps
+Query the full words table merged with tasks by timestamps with SQL query and grab variable info from file names.
 ```{r}
 results <- dbSendQuery(
     db,
@@ -63,13 +62,14 @@ results <- dbSendQuery(
 	LEFT JOIN tasks ON (tasks.file = words.file
 	                    AND word_onset BETWEEN task_onset AND task_offset)"
     )
+
 words <- fetch(results)
 
 words <- words %>%
     separate(file, into = c('talker','language','order','date'), remove = FALSE)
 ```
 
-
+Take a peek at a common Canadian/American spelling distinction... unfortunately it's not 100% consistent.
 ```{r}
 words %>%
     group_by(word) %>%
@@ -77,9 +77,11 @@ words %>%
     filter(str_detect(word,'our'))
 ```
 
+# Corpus Summary
 
-## Corpus Summary
-### Assess code-switching from utterances level
+## Counting words
+
+Query a table with both utterance and task information, and inspect it.
 ```{r}
 results <- dbSendQuery(
     db,
@@ -102,8 +104,9 @@ utts <- utts %>%
 utts
 ```
 
+Create a table of counting words by talker according to type of word: English, Cantonese, Other language, Fragment, or Unintelligible.
 ```{r}
-wordtcs <- utts %>%
+word_counts <- utts %>%
     filter(task == 'interview') %>%
     select(utt=utterance, talker, interview=language) %>%
     mutate(
@@ -129,16 +132,17 @@ wordtcs <- utts %>%
     select(word = utt, talker, interview, n, type)
 ```
 
-
+Generate a summary table for the word counts according to tyep of word for use in plotting.
 ```{r}
-wordtypecounts <- wordtcs %>%
+word_count_summary <- word_counts %>%
     group_by(interview, talker, type) %>%
     summarise(n=sum(n)) %>%
     ungroup()
 ```
 
+Figure showing proportion of word types by talker across Cantonese interviews.
 ```{r, fig.width=5, fig.height=7}
-wordtypecounts %>%
+word_count_summary %>%
     filter(interview=='Cantonese') %>%
     ggplot(aes(fill=type, x=talker, y=n)) + 
     geom_col() + 
@@ -151,11 +155,12 @@ wordtypecounts %>%
           legend.title = element_blank(),
           legend.text = element_text(size=6)) 
 
-ggsave('../../text/figures/ch2_cantonesetypecounts_5in.png', width = 5, height = 6.5)
+# ggsave('../../text/figures/ch2_cantonesetypecounts_5in.png', width = 5, height = 6.5)
 ```
 
+Figure showing proportion of word types by talker across English interviews.
 ```{r, fig.width=5, fig.height=7}
-wordtypecounts %>%
+word_count_summary %>%
     filter(interview=='English') %>%
     ggplot(aes(fill=type, x=talker, y=n)) + 
     geom_col() + 
@@ -168,11 +173,12 @@ wordtypecounts %>%
           legend.title = element_blank(),
           legend.text = element_text(size=6)) 
 
-ggsave('../../text/figures/ch2_englishtypecounts_5in.png', width = 5, height = 6.5)
+# ggsave('../../text/figures/ch2_englishtypecounts_5in.png', width = 5, height = 6.5)
 ```
 
+Unique number of words in each language
 ```{r}
-wordtcs %>%
+word_counts %>%
     ungroup() %>%
     select(word,interview) %>%
     unique() %>%
@@ -180,8 +186,9 @@ wordtcs %>%
     summarise(n()) 
 ```
 
+Token and type count information summarizing across talkers.
 ```{r}
-wordtcs %>%
+word_counts %>%
     group_by(interview, talker) %>%
     summarise(tokens = sum(n), types = n()) %>%
     group_by(interview) %>%
@@ -189,51 +196,7 @@ wordtcs %>%
              mean(types),sd(types), min(types),max(types))
 ```
 
-
-```{r}
-wordtcs %>%
-    group_by(talker, interview, type) %>%
-    summarise(n=sum(n)) %>%
-    pivot_wider(names_from = 'type', values_from = 'n') %>%
-    filter(Cantonese<10)
-```
-
-English and Canto token frequency in the English sessions
-
-```{r}
-wordtcs %>%
-    filter(type =='English' | type == 'Cantonese', interview=='Cantonese') %>%
-    mutate(type = if_else(type=='Cantonese', 'Cantonese in\nCantonese interview', 'English in\nCantonese interview')) %>%
-    group_by(word, interview, type) %>%
-    summarise(n = sum(n)) %>%
-    ungroup() %>%
-    mutate(log_frequency = log(n)) %>%
-    ggplot(aes(x=log_frequency)) + 
-        geom_histogram(binwidth = 0.5) + 
-        facet_wrap(~type) +
-        xlab('Log Frequency') + 
-        ylab('Count')
-
-ggsave('../../text/figures/ch2_cantonesewordfrequency_5in.png', width = 5, height = 3)
-
-wordtcs %>%
-    filter(type =='English' | type == 'Cantonese', interview=='English') %>%
-    mutate(type = if_else(type=='Cantonese', 'Cantonese in\nEnglish interview', 'English in\nEnglish interview')) %>%
-    group_by(word, interview, type) %>%
-    summarise(n = sum(n)) %>%
-    ungroup() %>%
-    mutate(log_frequency = log(n)) %>%
-    ggplot(aes(x=log_frequency)) + 
-        geom_histogram(binwidth = 0.5) + 
-        facet_wrap(~type) +
-        xlab('Log Frequency') + 
-        ylab('Count')
-
-ggsave('../../text/figures/ch2_englishwordfrequency_5in.png', width = 5, height = 3)
-
-```
-
-
+Word frequency
 
 Plot log word frequency for both languages, excluding instances of <unk>
 ```{r fig.width=6, fig.height=3}
@@ -249,15 +212,54 @@ words %>%
         xlab('Log frequency') +
         ylab('Count')
 
-ggsave('../../text/figures/ch2_wordfrequency_5in.png', width = 5, height = 3)
+# ggsave('../../text/figures/ch2_wordfrequency_5in.png', width = 5, height = 3)
 ```
 
-Hours of actual participant speech production -- excludes all pauses as this number is based purely on where the forced aligner identified words
+## Language switching
+
+English interviews with fewer than 10 Cantonese words
 ```{r}
-words %>%
-    mutate(word_dur = word_offset - word_onset) %>%
-    group_by(language) %>%
-    summarise(sum(word_dur)/60/60)
+word_counts %>%
+    group_by(talker, interview, type) %>%
+    summarise(n=sum(n)) %>%
+    pivot_wider(names_from = 'type', values_from = 'n') %>%
+    filter(Cantonese<10)
+```
+
+English and Cantonese token frequency in the Cantonese sessions
+```{r}
+word_counts %>%
+    filter(type =='English' | type == 'Cantonese', interview=='Cantonese') %>%
+    mutate(type = if_else(type=='Cantonese', 'Cantonese in\nCantonese interview', 'English in\nCantonese interview')) %>%
+    group_by(word, interview, type) %>%
+    summarise(n = sum(n)) %>%
+    ungroup() %>%
+    mutate(log_frequency = log(n)) %>%
+    ggplot(aes(x=log_frequency)) + 
+        geom_histogram(binwidth = 0.5) + 
+        facet_wrap(~type) +
+        xlab('Log Frequency') + 
+        ylab('Count')
+
+# ggsave('../../text/figures/ch2_cantonesewordfrequency_5in.png', width = 5, height = 3)
+```
+
+English and Cantonese token frequency in the English sessions
+```{r}
+word_counts %>%
+    filter(type =='English' | type == 'Cantonese', interview=='English') %>%
+    mutate(type = if_else(type=='Cantonese', 'Cantonese in\nEnglish interview', 'English in\nEnglish interview')) %>%
+    group_by(word, interview, type) %>%
+    summarise(n = sum(n)) %>%
+    ungroup() %>%
+    mutate(log_frequency = log(n)) %>%
+    ggplot(aes(x=log_frequency)) + 
+        geom_histogram(binwidth = 0.5) + 
+        facet_wrap(~type) +
+        xlab('Log Frequency') + 
+        ylab('Count')
+
+# ggsave('../../text/figures/ch2_englishwordfrequency_5in.png', width = 5, height = 3)
 ```
 
 Proportion of unknown words by talkers; an estimate of code-switching, as unknown words are almost always words in a different language.
@@ -281,12 +283,6 @@ unk_duration <- words %>%
     select(talker, language, proportion_unknown) %>%
     pivot_wider(names_from=language, values_from=proportion_unknown) 
 
-# ggparcoord(unk_count, columns = 2:3,
-#     scale="globalminmax",
-#     showPoints = TRUE,
-#     alphaLines = 0.5
-#     ) + xlab('Language') + ylab('Proportion')
-
 ggparcoord(unk_duration, columns = 2:3,
     scale="globalminmax",
     showPoints = TRUE,
@@ -294,10 +290,20 @@ ggparcoord(unk_duration, columns = 2:3,
     ) + xlab('Language') + ylab('Proportion') +
     scale_y_continuous(limits = c(0,.3),breaks = c(0,0.05,0.1,.15,.2,.25,.3))
 
-ggsave('../../text/figures/ch2_switchfrequency_4in.png', width = 4, height = 3)
+# ggsave('../../text/figures/ch2_switchfrequency_4in.png', width = 4, height = 3)
 ```
 
+## Quantity of speech
 
+Hours of actual participant speech production -- excludes all pauses as this number is based purely on where the forced aligner identified words
+```{r}
+words %>%
+    mutate(word_dur = word_offset - word_onset) %>%
+    group_by(language) %>%
+    summarise(sum(word_dur)/60/60)
+```
+
+Time actually speaking, i.e., non-silent streches summed up
 ```{r}
 results <- dbSendQuery(
     db,
@@ -314,10 +320,6 @@ results <- dbSendQuery(
     )
 phones <- fetch(results)
 
-phones
-```
-
-```{r}
 phones %>%
     filter(phone != 'sil', phone != 'sp') %>%
     mutate(dur = phone_offset - phone_onset) %>%
@@ -330,7 +332,7 @@ phones %>%
     #pivot_wider(names_from = task, values_from = minutes)
 ```
 
-Clear and close the database
+## Close SQLite database
 ```{r}
 dbClearResult(results)
 dbDisconnect(db)
@@ -338,7 +340,7 @@ rm(db, results)
 ```
 
 
-## Participant summary
+# Participant summary
 
 Load the data
 ```{r message=FALSE, warning=FALSE}
@@ -347,10 +349,13 @@ lbq_raw <- read_csv('~/Corpora/spice/info/participants/spice-lbq-detailed.csv')
 ```
 
 ```{r}
-demographics <- lbq_raw #%>% 
-    # select(!matches("language"), -X253) 
+demographics <- lbq_raw %>% 
+    select(!matches("language"))
 ```
 
+## Places
+
+Plot where participants have lived at different stages of their lives.
 ```{r fig.width=5, fig.height=4}
 demographics %>%
     select(id, starts_with('Places')) %>%
@@ -370,9 +375,10 @@ demographics %>%
         xlab('Count of Participants') +
         theme(legend.position = 'none')
 
-ggsave('../../text/figures/ch2_placeslived_5in.png', width = 5, height = 4)
+# ggsave('../../text/figures/ch2_placeslived_5in.png', width = 5, height = 4)
 ```
 
+Plot where caretakers were primarily raised.
 ```{r}
 demographics %>%
     select(id, contains('Caretaker')) %>%
@@ -396,11 +402,11 @@ demographics %>%
         xlab("Count of participants' caretakers") +
         ylab('Caretaker(s) primarily raised in')
 
-ggsave('../../text/figures/ch2_caretakers_3in.png', width = 3, height = 3)
+# ggsave('../../text/figures/ch2_caretakers_3in.png', width = 3, height = 3)
 
 ```
 
-
+Summarized number of caretakers who were born and/or raised in Hong Kong.
 ```{r}
 demographics %>%
     select(id, contains('Caretaker')) %>%
@@ -418,6 +424,9 @@ demographics %>%
     summarise(sum(bornHK>0), sum(bornHK==1), sum(raisedHK>0), sum(raisedHK==1))
 ```
 
+## Age of learning languages
+
+Wrangle raw LBQ for next set of plots.
 ```{r}
 lang_nums <- lbq_raw %>% 
     select(id, matches("^Language [0-9]$")) %>%
@@ -451,7 +460,7 @@ tidy_languages <- lbq_raw %>%
 rm(lang_nums)
 ```
 
-Visualize the age that each participant started learning each of their languages
+Visualize the age that each participant started learning each of their languages. This plot takes a few times to run to get acceptable overlaps in text for participants with lots of languages. 
 ```{r fig.height=9, fig.width=5}
 tidy_languages %>%
     filter(question=='Age Started', language!='French (Quebec)') %>%
@@ -477,42 +486,8 @@ tidy_languages %>%
               legend.position = 'none',
               strip.text = element_text(size = 8, face = 'bold'))
 
-ggsave('../../text/figures/ch2_multilingualism_vm_5in.png', width = 5, height = 7)
+# ggsave('../../text/figures/ch2_multilingualism_vm_5in.png', width = 5, height = 7)
 #ggsave('../../text/figures/ch2_multilingualism_vf_5in.png', width = 5, height = 7)
 ```
-
-```{r}
-nrow(words)
-```
-
-```{r}
-utts %>%
-    select(utterance, talker) %>%
-    filter(str_detect(utterance, '@e'))
-```
-
-@m 
-@h - VM25A
-@j
-@ml- VF27A
-@i - VM21B
-@e - VF23B
-
-
-```{r}
-lbq_summary %>%
-    filter(id=='VF23B') 
-```
-
-
-
-```{r}
-utts %>%
-    select(file, task, task_offset) %>%
-    filter(task=='interview') %>%
-    unique() %>%
-    summarise(time = sum(task_offset)/60/60)
-```
-
 
 ---
