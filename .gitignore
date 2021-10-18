@@ -7,6 +7,7 @@
 /code/4-ptk-uniformity/fits
 dissertation.code-workspace
 sent-to-committee-versions
+/presentation
 
 *.Rproj.user
 *.RData
