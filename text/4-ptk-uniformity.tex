@@ -215,7 +215,7 @@ The next steps in \citeauthor{chodroff_2017_structure}'s \citeyearpar{chodroff_2
 
 The analysis in this section leverages a Bayesian multilevel linear model to elucidate the sources of variation within and across talkers. As Bayesian modeling emphasizes the estimation of effect magnitudes, the model can be used to assess how talkers' sound categories compare to one another while simultaneously accounting for factors known to influence long-lag VOT, such as speaking rate and prosodic position. This section builds on the frequentist mixed-effects model analysis in \citet{chodroff_2017_structure}. Also, this modeling approach is more in line with the generative modeling approach advocated for by \citet{haines_2020_theoretically}---in a way that the correlation and ordinal relationships analyzed in the preceding sections are not. Specifically, this approach retains the variation lost when working with means and also uses a response variable distribution that aligns with the constraints of the variable in question. 
 
-This section proceeds as follows. First, Bayesian modeling and Bayesian inference are described in broad terms. References are provided that point the reader to further reading on the topic. Second, the structure of the model used in this chapter is described and motivated. Lastly, the results of the model are reported. All code used in this analysis is available on GitHub, at \url{https://github.com/khiajohnson/dissertation}.\footnote{Note that this repository is currently private.}
+This section proceeds as follows. First, Bayesian modeling and Bayesian inference are described in broad terms. References are provided that point the reader to further reading on the topic. Second, the structure of the model used in this chapter is described and motivated. Lastly, the results of the model are reported. All code used in this analysis is available on GitHub, at \url{https://github.com/khiajohnson/dissertation}.
 
 \subsubsection{Bayesian inference}
 
@@ -235,10 +235,10 @@ The model was specified as follows. First, Equation \ref{ch4:num:formula} gives 
 
 \begin{equation}
   \begin{aligned}\label{ch4:num:formula}
-    \text{VOT } \sim \text{ 1 } + \text{ Place } \times \text{ Language } + \text{ Average Phone Duration } + \text{ Pause } + \text{ } \\
-    (\text{1 } + \text{ Place } \times \text{ Language }|\text{ Talker}) + (\text{1 }| \text{ Word})
+    \text{VOT } \sim \text{ 1 } + \text{ Place } \times \text{ Language } + \text{ Average Phone Duration } + \\ 
+    \text{Pause } + \text{ } (\text{1 } + \text{ Place } \times \text{ Language }|\text{ Talker}) + (\text{1 }| \text{ Word})
   \end{aligned}
-\end{equation} 
+\end{equation}\vspace{3pt}
 
 \begin{description}
   \item[VOT] was the dependent variable---it was standardized (i.e., centered and scaled) in order to facilite the specification of priors and a ROPE. 
