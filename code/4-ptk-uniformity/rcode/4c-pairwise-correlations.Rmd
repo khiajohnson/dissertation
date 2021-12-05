@@ -130,13 +130,13 @@ jointplot <- function(dataframe, col1, name1, col2, name2, color='black') {
 ```{r}
 cpt <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`Cantonese T`, 'Cantonese /t/', color='#000004FF')
 cpk <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`Cantonese K`, 'Cantonese /k/', color='#000004FF')
-ctk <- jointplot(dfsummary, dfsummary$`Cantonese T`, 'Cantonese /t/', dfsummary$`Cantonese K`, 'Cantonese /K/', color='#000004FF')
+ctk <- jointplot(dfsummary, dfsummary$`Cantonese T`, 'Cantonese /t/', dfsummary$`Cantonese K`, 'Cantonese /k/', color='#000004FF')
 ept <- jointplot(dfsummary, dfsummary$`English P`, 'English /p/', dfsummary$`English T`, 'English /t/', color='#5D177FFF')
 epk <- jointplot(dfsummary, dfsummary$`English P`, 'English /p/', dfsummary$`English K`, 'English /k/', color='#5D177FFF')
-etk <- jointplot(dfsummary, dfsummary$`English T`, 'English /t/', dfsummary$`English K`, 'English /K/', color='#5D177FFF')
+etk <- jointplot(dfsummary, dfsummary$`English T`, 'English /t/', dfsummary$`English K`, 'English /k/', color='#5D177FFF')
 cep <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`English P`, 'English /p/', color='#D1426FFF')
 cet <- jointplot(dfsummary, dfsummary$`Cantonese T`, 'Cantonese /t/', dfsummary$`English T`, 'English /t/', color='#D1426FFF')
-cek <- jointplot(dfsummary, dfsummary$`Cantonese K`, 'Cantonese /k/', dfsummary$`English K`, 'English /K/', color='#D1426FFF')
+cek <- jointplot(dfsummary, dfsummary$`Cantonese K`, 'Cantonese /k/', dfsummary$`English K`, 'English /k/', color='#D1426FFF')
 cpet <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`English T`, 'English /t/', color='#FEB77EFF')
 cpek <- jointplot(dfsummary, dfsummary$`Cantonese P`, 'Cantonese /p/', dfsummary$`English K`, 'English /k/', color='#FEB77EFF')
 ctep <- jointplot(dfsummary, dfsummary$`Cantonese T`, 'Cantonese /t/', dfsummary$`English P`, 'English /p/', color='#FEB77EFF')
@@ -147,12 +147,12 @@ cket <- jointplot(dfsummary, dfsummary$`Cantonese K`, 'Cantonese /k/', dfsummary
 
 ```{r}
 p <- grid.arrange(cpt, cpk, ctk, ept, epk, etk, ncol=3)
-# ggsave('../../text/figures/ch4_correlations1_5in.png', plot=p, height = 4, width = 6, units='in')
+ggsave('../../../text/figures/ch4_correlations1_5in.png', plot=p, height = 4, width = 6, units='in')
 ```
 
 ```{r}
 p <- grid.arrange(cep, cet, cek, cpet, cpek, ctep, ctek, ckep, cket, ncol=3)
-# ggsave('../../text/figures/ch4_correlations2_5in.png',plot=p, height = 6, width = 6, units='in')
+ggsave('../../../text/figures/ch4_correlations2_5in.png',plot=p, height = 6, width = 6, units='in')
 
 ```
 

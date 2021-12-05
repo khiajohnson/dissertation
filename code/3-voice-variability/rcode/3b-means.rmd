@@ -235,5 +235,38 @@ df %>%
     ylab('Density') +
     xlab('')
 ```
+# Inspect F0
+```{r}
+f0d <- cohens_d_results %>%
+    filter(Variable=='F0') %>%
+    select(Talker, CohensD, Difference)
+```
+
+
+```{r}
+f0d %>%
+    mutate(nontrivial = abs(CohensD)>=0.2) %>%
+    filter(nontrivial==TRUE)
+```
+
+
+
+```{r fig.width=6, fig.height=3}
+df %>%
+  select(Talker, Language, F0) %>%
+  left_join(f0d, by='Talker') %>%
+  mutate(Difference = Difference>0) %>%
+    mutate(nontrivial = abs(CohensD)>=0.2) %>%
+    filter(nontrivial==TRUE) %>%
+  ggplot(aes(x=F0, color=Language, linetype=Language)) +
+    geom_density(size=1) +
+    scale_color_viridis_d(option='magma', begin = 0.75, end = 0)+
+    facet_wrap(~Talker, ncol = 6) +
+    scale_x_continuous(limits = c(70,325)) +
+    ylab('Density') +
+    xlab('')
+    
+ggsave('../../../text/figures/ch3_f0_means_10in.png', width = 10, height = 5.5)
+```
 
 ---
