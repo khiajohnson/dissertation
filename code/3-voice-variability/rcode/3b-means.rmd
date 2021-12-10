@@ -159,30 +159,27 @@ long_pointinterval <- long_df %>%
               q75= quantile(Value, 0.75), 
               q975 = quantile(Value, 0.975)) %>%
     left_join(cohens_d_results, by=c('Talker','Variable')) %>%
-    mutate(Variable = as_factor(Variable))
+    mutate(
+        CohensD_Group = as_factor(CohensD_Group),
+        Variable = str_replace(Variable, '_sd', ' s.d.'),
+        Variable = str_replace(Variable, 'H1H2c', 'H1*-H2*'),
+        Variable = str_replace(Variable, 'H2H4c', 'H2*-H4*'),
+        Variable = str_replace(Variable, 'H42Kc', 'H4*-H2kHz*'),
+        Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz*-H5kHz'),
+        Variable = as_factor(Variable))
 
-levels(long_pointinterval$Variable) <- c("F0", "F0_sd", "F1", "F1_sd", 
-                                         "F2", "F2_sd", "F3", "F3_sd", 
-                                         "F4", "F4_sd","H1H2c", "H1H2c_sd",
-                                         "H2H4c", "H2H4c_sd","H42Kc", "H42Kc_sd",
-                                         "H2KH5Kc", "H2KH5Kc_sd","CPP", "CPP_sd",
-                                         "Energy", "Energy_sd","SHR", "SHR_sd")
-
-fwrite(long_pointinterval, '../data/spice_long_pointinterval.csv')
+f <- c("F0", "F0 s.d.", "F1", "F1 s.d.", "F2", "F2 s.d.", "F3", "F3 s.d.",
+              "F4", "F4 s.d.","H1*-H2*", "H1*-H2* s.d.","H2*-H4*", "H2*-H4* s.d.",
+              "H4*-H2kHz*", "H4*-H2kHz* s.d.","H2kHz*-H5kHz", "H2kHz*-H5kHz s.d.",
+              "CPP", "CPP s.d.", "Energy", "Energy s.d.","SHR", "SHR s.d.")
+# 
+# fwrite(long_pointinterval, '../data/spice_long_pointinterval.csv')
 ```
 
 Plot cohen's d by difference across means, part 1
 ```{r fig.height=6.5, fig.width=5}
 long_pointinterval %>%
-  mutate(
-    CohensD_Group = as_factor(CohensD_Group),
-    Variable = str_replace(Variable, '_sd', ' s.d.'),
-    Variable = str_replace(Variable, 'H1H2c', 'H1*-H2*'),
-    Variable = str_replace(Variable, 'H2H4c', 'H2*-H4*'),
-    Variable = str_replace(Variable, 'H42Kc', 'H4*-H2kHz*'),
-    Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz*-H5kHz'),
-    Variable = as_factor(Variable)
-  ) %>%
+  mutate(Variable = factor(Variable, levels = f)) %>%
   filter(str_detect(Variable, 's.d.', negate=TRUE)) %>%
   ggplot(aes(x=CohensD, y=Difference, color=CohensD_Group, shape=CohensD_Group)) + 
   geom_point() +
@@ -196,15 +193,7 @@ long_pointinterval %>%
 Plot cohen's d by difference across means, part 2
 ```{r fig.height=6.5, fig.width=5}
 long_pointinterval %>%
-  mutate(
-    CohenD = as_factor(CohensD_Group),
-    Variable = str_replace(Variable, '_sd', ' s.d.'),
-    Variable = str_replace(Variable, 'H1H2c', 'H1*-H2*'),
-    Variable = str_replace(Variable, 'H2H4c', 'H2*-H4*'),
-    Variable = str_replace(Variable, 'H42Kc', 'H4*-H2kHz*'),
-    Variable = str_replace(Variable, 'H2KH5Kc', 'H2kHz*-H5kHz'),
-    Variable = as_factor(Variable)
-  ) %>%
+  mutate(Variable = factor(Variable, levels = f)) %>%
   filter(str_detect(Variable, 's.d.', negate=FALSE)) %>%
   ggplot(aes(x=CohensD, y=Difference, color=CohensD_Group, shape=CohensD_Group)) + 
   geom_point() +
@@ -212,7 +201,7 @@ long_pointinterval %>%
   scale_color_viridis_d(option='magma', begin = 0.9, end=0.45) +
   facet_wrap(~Variable, scales = 'free', ncol=3)
 
-# ggsave('../../../text/figures/ch3_cohend_part2_5in.png', width = 5, height = 6.5)
+ggsave('../../../text/figures/ch3_cohend_part2_5in.png', width = 5, height = 6.5)
 ```
 
 # Inspect F2
